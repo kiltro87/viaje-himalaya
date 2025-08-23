@@ -21,10 +21,11 @@
  * 
  * @author David Ferrer Figueroa
  * @version 2.0.0
- * @since 2024
+ * @since 2025
  */
 
 import Logger from '../utils/Logger.js';
+import { FirebaseManager } from '../utils/FirebaseManager.js';
 
 export class BudgetManager {
     /**
@@ -43,7 +44,132 @@ export class BudgetManager {
         // Inicializar objetos globales necesarios
         this.initializeGlobals();
         
+        // Inicializar Firebase para almacenamiento en la nube
+        this.firebaseManager = new FirebaseManager();
+        this.setupFirebaseIntegration();
+        
         Logger.success('BudgetManager initialized successfully');
+    }
+
+    /**
+     * Configurar integración con Firebase
+     * 
+     * Establece los callbacks y listeners necesarios para sincronizar
+     * los gastos con Firebase Firestore en tiempo real.
+     * 
+     * @private
+     */
+    setupFirebaseIntegration() {
+        if (!this.firebaseManager) return;
+        
+        // Configurar callbacks para eventos de Firebase
+        this.firebaseManager.onExpenseAdded = (expense) => {
+            Logger.budget('Expense synced to cloud:', expense.id);
+            this.updateSummaryCards();
+        };
+        
+        this.firebaseManager.onExpenseUpdated = (expenseId, updates) => {
+            Logger.budget('Expense updated in cloud:', expenseId);
+            this.updateSummaryCards();
+        };
+        
+        this.firebaseManager.onExpenseDeleted = (expenseId) => {
+            Logger.budget('Expense deleted from cloud:', expenseId);
+            this.updateSummaryCards();
+        };
+        
+        this.firebaseManager.onSyncStatusChanged = (status) => {
+            Logger.budget('Sync status changed:', status);
+            this.updateSyncStatus(status);
+        };
+        
+        // Configurar listener en tiempo real
+        this.setupRealtimeSync();
+        
+        Logger.success('Firebase integration configured');
+    }
+
+    /**
+     * Configurar sincronización en tiempo real
+     * 
+     * Establece un listener que actualiza automáticamente la UI
+     * cuando otros dispositivos modifican los gastos.
+     * 
+     * @private
+     */
+    setupRealtimeSync() {
+        if (!this.firebaseManager.isConnected) return;
+        
+        this.realtimeUnsubscribe = this.firebaseManager.setupRealtimeListener((expenses) => {
+            Logger.budget(`Realtime update: ${expenses.length} expenses received`);
+            
+            // Actualizar AppState global
+            if (window.AppState) {
+                window.AppState.expenses = expenses;
+            }
+            
+            // Actualizar UI si está visible
+            if (document.getElementById('budget-container')) {
+                this.updateSummaryCards();
+                
+                // Actualizar contenido de categorías si está abierto
+                const categoryContent = document.getElementById('category-content');
+                if (categoryContent && !categoryContent.classList.contains('hidden')) {
+                    const activeCategory = document.querySelector('.category-btn.active')?.dataset.category;
+                    if (activeCategory) {
+                        this.showCategoryContent(activeCategory);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Actualizar indicador de estado de sincronización
+     * 
+     * @private
+     * @param {string} status - Estado: 'connected', 'offline', 'syncing'
+     */
+    updateSyncStatus(status) {
+        // Crear o actualizar indicador de estado
+        let statusIndicator = document.getElementById('sync-status-indicator');
+        
+        if (!statusIndicator) {
+            statusIndicator = document.createElement('div');
+            statusIndicator.id = 'sync-status-indicator';
+            statusIndicator.className = 'fixed top-4 left-4 z-50 px-3 py-1 rounded-full text-sm font-medium transition-all duration-300';
+            document.body.appendChild(statusIndicator);
+        }
+        
+        // Actualizar apariencia según estado
+        switch (status) {
+            case 'connected':
+                statusIndicator.className = statusIndicator.className.replace(/bg-\w+-\d+/g, '') + ' bg-green-500 text-white';
+                statusIndicator.innerHTML = '☁️ Sincronizado';
+                break;
+            case 'offline':
+                statusIndicator.className = statusIndicator.className.replace(/bg-\w+-\d+/g, '') + ' bg-yellow-500 text-white';
+                statusIndicator.innerHTML = '📱 Sin conexión';
+                break;
+            case 'syncing':
+                statusIndicator.className = statusIndicator.className.replace(/bg-\w+-\d+/g, '') + ' bg-blue-500 text-white';
+                statusIndicator.innerHTML = '🔄 Sincronizando...';
+                break;
+        }
+        
+        // Auto-ocultar después de 3 segundos si está conectado
+        if (status === 'connected') {
+            setTimeout(() => {
+                if (statusIndicator) {
+                    statusIndicator.style.opacity = '0';
+                    setTimeout(() => {
+                        if (statusIndicator && statusIndicator.parentNode) {
+                            statusIndicator.parentNode.removeChild(statusIndicator);
+                        }
+                    }, 300);
+                }
+            }, 3000);
+        }
     }
 
     /**
