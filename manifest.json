@@ -15,87 +15,31 @@
       "src": "/viaje-himalaya/assets/icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "/viaje-himalaya/assets/icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/viaje-himalaya/assets/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "/viaje-himalaya/assets/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/viaje-himalaya/assets/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "/viaje-himalaya/assets/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/viaje-himalaya/assets/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     },
     {
       "src": "/viaje-himalaya/assets/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Ver Gastos",
-      "short_name": "Gastos",
-      "description": "Gestionar gastos del viaje",
-      "url": "/viaje-himalaya/?view=gastos",
-      "icons": [
-        {
-          "src": "/viaje-himalaya/assets/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Ver Mapa",
-      "short_name": "Mapa",
-      "description": "Explorar el mapa del viaje",
-      "url": "/viaje-himalaya/?view=mapa",
-      "icons": [
-        {
-          "src": "/viaje-himalaya/assets/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Ver Itinerario",
-      "short_name": "Itinerario",
-      "description": "Consultar el itinerario completo",
-      "url": "/viaje-himalaya/?view=itinerario",
-      "icons": [
-        {
-          "src": "/viaje-himalaya/assets/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
+      "purpose": "any maskable"
     }
   ]
 }
