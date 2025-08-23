@@ -24,12 +24,12 @@ export const firebaseConfig = {
     // 3. Habilita Firestore Database
     // 4. Copia la configuración aquí:
     
-    apiKey: "TU_API_KEY_AQUI",
+    apiKey: "AIzaSyBNEzeYTeaLkrMxQhMh-08RwxmTFOPc32s",
     authDomain: "viaje-himalaya.firebaseapp.com",
     projectId: "viaje-himalaya",
-    storageBucket: "viaje-himalaya.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef123456"
+    storageBucket: "viaje-himalaya.firebasestorage.app",
+    messagingSenderId: "89001303026",
+    appId: "1:89001303026:web:93e11085df1213a865296b"
     
     // EJEMPLO DE CONFIGURACIÓN REAL:
     // apiKey: "AIzaSyC...",
