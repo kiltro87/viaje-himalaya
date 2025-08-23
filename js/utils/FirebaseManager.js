@@ -45,11 +45,7 @@ export class FirebaseManager {
         
         Logger.init('FirebaseManager initialized');
         
-        // Debug: verificar configuración
-        console.log('🔥 DEBUG: FirebaseManager constructor ejecutándose');
-        console.log('🔥 DEBUG: firebaseConfig:', firebaseConfig);
-        console.log('🔥 DEBUG: isConfigured function:', isConfigured);
-        
+        // Verificar configuración de Firebase
         try {
             Logger.data('Firebase config check:', { 
                 apiKey: firebaseConfig?.apiKey || 'undefined',
