@@ -6,22 +6,23 @@
     <title>Mi Aventura en el Himalaya</title>
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#3B82F6">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Viaje Himalaya">
     <meta name="description" content="Aplicación completa para gestionar tu viaje a Nepal y Bután">
     
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="/assets/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icon-192x192.png">
+    <link rel="apple-touch-icon" href="./assets/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/icon-192x192.png">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./assets/icon-16x16.png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -107,7 +108,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', async () => {
                 try {
-                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    const registration = await navigator.serviceWorker.register('./sw.js');
                     console.log('✅ Service Worker registrado:', registration.scope);
                     
                     // Escuchar actualizaciones del SW
