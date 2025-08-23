@@ -45,10 +45,7 @@ export class BudgetManager {
         this.initializeGlobals();
         
         // Inicializar Firebase para almacenamiento en la nube
-        console.log('🔥 DEBUG: Antes de crear FirebaseManager');
-        console.log('🔥 DEBUG: FirebaseManager class:', FirebaseManager);
         this.firebaseManager = new FirebaseManager();
-        console.log('🔥 DEBUG: FirebaseManager creado:', this.firebaseManager);
         this.setupFirebaseIntegration();
         
         Logger.success('BudgetManager initialized successfully');
