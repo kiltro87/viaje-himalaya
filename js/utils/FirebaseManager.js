@@ -45,6 +45,12 @@ export class FirebaseManager {
         
         Logger.init('FirebaseManager initialized');
         
+        // Debug: verificar configuración
+        Logger.data('Firebase config check:', { 
+            apiKey: firebaseConfig.apiKey,
+            isConfigured: isConfigured() 
+        });
+        
         // Inicializar Firebase si está configurado
         if (isConfigured()) {
             this.initializeFirebase();
