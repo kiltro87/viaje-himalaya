@@ -1,0 +1,72 @@
+# Configuración de Netlify para PWA Viaje Himalaya
+[build]
+  # Directorio de publicación (raíz del proyecto)
+  publish = "."
+  
+  # Comando de build (no necesario para este proyecto estático)
+  command = "echo 'No build needed for static PWA'"
+
+# Configuración de headers para PWA
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Redirecciones para SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin"]}
+
+# Configuración de funciones (si se necesitan en el futuro)
+[functions]
+  directory = "netlify/functions"
+
+# Configuración de contexto
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+[context.deploy-preview]
+  environment = { NODE_ENV = "preview" }
+
+[context.branch-deploy]
+  environment = { NODE_ENV = "branch" }
+
+# Configuración de plugins
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+  
+  [plugins.inputs.thresholds]
+    performance = 0.9
+    accessibility = 0.9
+    best-practices = 0.9
+    seo = 0.9
+    pwa = 0.9
+
+# Configuración de Edge Functions (opcional)
+[[edge_functions]]
+  function = "geolocation"
+  path = "/api/geolocation"

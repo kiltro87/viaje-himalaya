@@ -1,0 +1,418 @@
+/**
+ * Mobile Responsive Fixes
+ * 
+ * Correcciones específicas para mejorar la experiencia en dispositivos móviles,
+ * especialmente para tarjetas en grid que se salen del viewport.
+ * 
+ * @author David Ferrer Figueroa
+ * @version 2.0.0
+ * @since 2024
+ */
+
+/* ============================================================================
+   CONTENEDORES PRINCIPALES
+   ============================================================================ */
+
+/* Asegurar que el contenido nunca se salga del viewport */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+#main-content {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+/* ============================================================================
+   GRIDS RESPONSIVOS MEJORADOS
+   ============================================================================ */
+
+/* Grid de estadísticas principales - Forzar 1 columna en móvil */
+@media (max-width: 640px) {
+    .grid.grid-cols-2.lg\:grid-cols-4 {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+}
+
+/* Grid de 2 columnas - Mejorar en tablets pequeñas */
+@media (max-width: 768px) {
+    .grid.md\:grid-cols-2 {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+}
+
+/* Grid de 3 columnas - Responsive escalonado */
+@media (max-width: 640px) {
+    .grid.md\:grid-cols-3 {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+    .grid.md\:grid-cols-3 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Grid de 4 columnas - Responsive escalonado */
+@media (max-width: 480px) {
+    .grid.md\:grid-cols-4,
+    .grid.lg\:grid-cols-4 {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 640px) {
+    .grid.md\:grid-cols-4,
+    .grid.lg\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .grid.lg\:grid-cols-4 {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+/* ============================================================================
+   FILTROS DE CATEGORÍAS DE PRESUPUESTO
+   ============================================================================ */
+
+/* Grid de filtros de categorías - Responsive mejorado */
+@media (max-width: 480px) {
+    .grid.grid-cols-2.sm\:grid-cols-3.md\:grid-cols-4.lg\:grid-cols-6 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+    }
+    
+    /* Hacer botones más pequeños en móvil */
+    .grid.grid-cols-2.sm\:grid-cols-3.md\:grid-cols-4.lg\:grid-cols-6 button {
+        padding: 0.5rem !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .grid.grid-cols-2.sm\:grid-cols-3.md\:grid-cols-4.lg\:grid-cols-6 .material-symbols-outlined {
+        font-size: 1.25rem !important;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 640px) {
+    .grid.grid-cols-2.sm\:grid-cols-3.md\:grid-cols-4.lg\:grid-cols-6 {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+/* ============================================================================
+   TARJETAS Y CONTENEDORES
+   ============================================================================ */
+
+/* Asegurar que las tarjetas no se salgan */
+.bg-white,
+.bg-slate-50,
+.bg-slate-800,
+.bg-slate-700 {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* Padding responsivo mejorado */
+@media (max-width: 640px) {
+    .p-6 {
+        padding: 1rem !important;
+    }
+    
+    .p-8 {
+        padding: 1.5rem !important;
+    }
+    
+    .px-8 {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    
+    .py-8 {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+}
+
+/* ============================================================================
+   TEXTO RESPONSIVO
+   ============================================================================ */
+
+/* Títulos más pequeños en móvil */
+@media (max-width: 640px) {
+    .text-3xl {
+        font-size: 1.5rem !important;
+        line-height: 2rem !important;
+    }
+    
+    .text-2xl {
+        font-size: 1.25rem !important;
+        line-height: 1.75rem !important;
+    }
+    
+    .text-4xl {
+        font-size: 1.75rem !important;
+        line-height: 2.25rem !important;
+    }
+}
+
+/* Evitar overflow de texto */
+.break-words {
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+/* ============================================================================
+   NAVEGACIÓN INFERIOR
+   ============================================================================ */
+
+/* Asegurar que la navegación no interfiera */
+@media (max-width: 640px) {
+    body {
+        padding-bottom: 6rem;
+    }
+    
+    #bottom-nav {
+        width: 98%;
+        max-width: none;
+        height: 4rem;
+        grid-template-columns: repeat(6, 1fr);
+    }
+    
+    #bottom-nav .nav-btn {
+        padding: 0.25rem;
+    }
+    
+    #bottom-nav .material-symbols-outlined {
+        font-size: 1.25rem;
+    }
+    
+    #bottom-nav .text-xs {
+        font-size: 0.625rem;
+    }
+}
+
+/* ============================================================================
+   MAPAS
+   ============================================================================ */
+
+/* Mapas responsivos */
+.leaflet-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+@media (max-width: 640px) {
+    .leaflet-container {
+        height: 60vh !important;
+        min-height: 300px !important;
+    }
+}
+
+/* ============================================================================
+   FORMULARIOS
+   ============================================================================ */
+
+/* Formularios más usables en móvil */
+@media (max-width: 640px) {
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        font-size: 16px !important; /* Evita zoom en iOS */
+        padding: 0.75rem !important;
+    }
+    
+    button {
+        min-height: 44px; /* Tamaño mínimo táctil */
+        padding: 0.75rem 1rem !important;
+    }
+}
+
+/* ============================================================================
+   MODALES
+   ============================================================================ */
+
+/* Modales responsivos */
+@media (max-width: 640px) {
+    .modal-content {
+        margin: 1rem !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+    
+    .modal-header {
+        padding: 1rem !important;
+    }
+    
+    .modal-body {
+        padding: 1rem !important;
+    }
+}
+
+/* ============================================================================
+   UTILIDADES ESPECÍFICAS
+   ============================================================================ */
+
+/* Clase para forzar contenido dentro del viewport */
+.mobile-safe {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* Espaciado mejorado para móvil */
+@media (max-width: 640px) {
+    .space-y-6 > * + * {
+        margin-top: 1rem !important;
+    }
+    
+    .space-y-8 > * + * {
+        margin-top: 1.5rem !important;
+    }
+    
+    .gap-6 {
+        gap: 1rem !important;
+    }
+    
+    .gap-8 {
+        gap: 1.5rem !important;
+    }
+}
+
+/* ============================================================================
+   ICONOS RESPONSIVOS
+   ============================================================================ */
+
+/* Iconos más pequeños en móvil para ahorrar espacio */
+@media (max-width: 640px) {
+    .text-6xl {
+        font-size: 2.5rem !important;
+    }
+    
+    .text-5xl {
+        font-size: 2rem !important;
+    }
+    
+    .text-4xl {
+        font-size: 1.75rem !important;
+    }
+}
+
+/* ============================================================================
+   ANIMACIONES OPTIMIZADAS PARA MÓVIL
+   ============================================================================ */
+
+/* Reducir animaciones en móvil para mejor rendimiento */
+@media (max-width: 640px) {
+    * {
+        animation-duration: 0.2s !important;
+        transition-duration: 0.2s !important;
+    }
+    
+    .hover\:shadow-xl:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    }
+}
+
+/* ============================================================================
+   SCROLL MEJORADO
+   ============================================================================ */
+
+/* Scroll suave en móvil */
+html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ocultar scrollbars en móvil cuando no son necesarias */
+@media (max-width: 640px) {
+    ::-webkit-scrollbar {
+        width: 2px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 1px;
+    }
+}
+
+/* ============================================================================
+   ACCESIBILIDAD TÁCTIL
+   ============================================================================ */
+
+/* Mejorar área táctil de elementos interactivos */
+@media (max-width: 640px) {
+    button,
+    a,
+    [role="button"] {
+        min-height: 44px;
+        min-width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Espaciado entre elementos táctiles */
+    .nav-btn + .nav-btn {
+        margin-left: 2px;
+    }
+}
+
+/* ============================================================================
+   FIXES ESPECÍFICOS PARA SAFARI iOS
+   ============================================================================ */
+
+/* Fix para viewport en Safari iOS */
+@supports (-webkit-touch-callout: none) {
+    .min-h-screen {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Fix para zoom en inputs en iOS */
+@media (max-width: 640px) {
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* ============================================================================
+   MODO LANDSCAPE EN MÓVIL
+   ============================================================================ */
+
+@media (max-width: 896px) and (orientation: landscape) {
+    #bottom-nav {
+        height: 3rem;
+    }
+    
+    body {
+        padding-bottom: 4rem;
+    }
+    
+    .hidden.md\:block {
+        display: none !important;
+    }
+}

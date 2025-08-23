@@ -1,0 +1,1942 @@
+// UIRenderer completamente restaurado basado en Viaje.html original
+import { tripConfig } from '../config/tripConfig.js';
+import { BudgetOriginal } from './BudgetOriginal.js';
+
+export class UIRendererRestored {
+    constructor() {
+        this.currentView = 'resumen';
+        // La fecha se calculará dinámicamente desde los datos de vuelos
+        this.budgetOriginal = new BudgetOriginal();
+    }
+
+    // Renderizar la vista principal
+    renderMainContent() {
+        console.log('🔄 Renderizando contenido principal para vista:', this.currentView);
+        console.log('🔍 Función renderMainContent llamada correctamente');
+        
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) {
+            console.error('❌ No se encontró el elemento main-content');
+            return;
+        }
+
+        switch (this.currentView) {
+            case 'resumen':
+                console.log('📊 Llamando renderSummary()');
+                this.renderSummary();
+                break;
+            case 'itinerario':
+                console.log('📅 Llamando renderItinerary()');
+                this.renderItinerary();
+                break;
+            case 'hoy':
+                console.log('🌅 Llamando renderToday()');
+                this.renderToday();
+                break;
+            case 'mapa':
+                console.log('🗺️ Llamando renderMap()');
+                this.renderMap();
+                break;
+            case 'gastos':
+                console.log('💰 Llamando renderGastos()');
+                console.log('💰 Verificando si renderGastos existe:', typeof this.renderGastos);
+                this.renderGastos();
+                break;
+            case 'extras':
+                console.log('🎒 Llamando renderExtras()');
+                console.log('🎒 Verificando si renderExtras existe:', typeof this.renderExtras);
+                this.renderExtras();
+                break;
+
+            default:
+                console.log(`⚠️ Vista desconocida: ${this.currentView}, renderizando resumen por defecto`);
+                this.renderSummary();
+        }
+    }
+
+    // Utilidades (basadas en el Utils original)
+    getTripDate(dayNumber) {
+        const startDate = this.getTripStartDate();
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + dayNumber);
+        return date;
+    }
+
+    formatShortDate(date) {
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        return `${date.getDate()} ${months[date.getMonth()]}`;
+    }
+
+    formatCurrency(amount, round = false) {
+        const value = round ? Math.round(amount) : amount;
+        return new Intl.NumberFormat('es-ES', { 
+            style: 'currency', 
+            currency: 'EUR', 
+            minimumFractionDigits: 0, 
+            maximumFractionDigits: round ? 0 : 2 
+        }).format(value);
+    }
+
+    getTripStartDate() {
+        if (tripConfig.flightsData && tripConfig.flightsData.length > 0) {
+            const firstFlight = tripConfig.flightsData[0];
+            if (firstFlight.segments && firstFlight.segments.length > 0) {
+                const dateStr = firstFlight.segments[0].fromDateTime;
+                const match = dateStr.match(/(\d+) de (\w+)/);
+                if (match) {
+                    const day = parseInt(match[1]);
+                    const monthName = match[2];
+                    const months = {
+                        'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3, 'Mayo': 4, 'Junio': 5,
+                        'Julio': 6, 'Agosto': 7, 'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
+                    };
+                    const month = months[monthName];
+                    if (month !== undefined) {
+                        // Usar 2025 como año del viaje futuro
+                        return new Date(2025, month, day);
+                    }
+                }
+            }
+        }
+        // Fecha de fallback si no se puede parsear
+        return new Date(2025, 9, 9); // 9 de octubre 2025
+    }
+
+    updateTripDates() {
+        const tripDatesElement = document.getElementById('trip-dates');
+        if (!tripDatesElement) return;
+        
+        try {
+            const startDate = this.getTripStartDate();
+            const totalDays = tripConfig.itineraryData.length;
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + totalDays - 1);
+            
+            const startFormatted = startDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+            const endFormatted = endDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+            
+            tripDatesElement.textContent = `${startFormatted} - ${endFormatted}`;
+        } catch (error) {
+            tripDatesElement.textContent = 'Fechas no disponibles';
+        }
+    }
+
+    updateBudgetSummary() {
+        try {
+            // Obtener gastos del localStorage si existe AppState
+            let totalSpent = 0;
+            if (window.AppState && window.AppState.expenses) {
+                totalSpent = window.AppState.expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+            }
+            
+            // Calcular presupuesto total
+            const budgetData = tripConfig.budgetData.budgetData;
+            const allExpenses = Object.values(budgetData).flat();
+            const totalBudget = allExpenses.reduce((sum, item) => {
+                if (item.cost) return sum + item.cost;
+                if (item.subItems) return sum + item.subItems.reduce((subSum, subItem) => subSum + (subItem.cost || 0), 0);
+                return sum;
+            }, 0);
+            
+            // Actualizar elementos
+            const totalSpentElement = document.getElementById('total-spent-summary');
+            const progressBar = document.getElementById('budget-progress-bar');
+            
+            if (totalSpentElement) {
+                totalSpentElement.textContent = this.formatCurrency(totalSpent);
+                // Cambiar color según si se excede el presupuesto
+                if (totalSpent > totalBudget) {
+                    totalSpentElement.className = 'text-red-600 dark:text-red-400';
+                } else {
+                    totalSpentElement.className = 'text-green-600 dark:text-green-400';
+                }
+            }
+            
+
+        } catch (error) {
+            console.error('Error al actualizar resumen de presupuesto:', error);
+        }
+    }
+
+    // Renderizar la vista de resumen (basada en el original)
+    renderSummary() {
+        console.log('📊 Renderizando resumen...');
+        
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        // Calcular estadísticas
+        const totalDays = tripConfig.itineraryData.length;
+        const totalCountries = tripConfig.calendarData.getTotalCountries();
+        const grandTotal = 4500; // Placeholder - calcular del presupuesto real
+        const costPerDay = grandTotal / totalDays;
+
+        mainContent.innerHTML = `
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+                <!-- Header con imagen de fondo (exacto del original) -->
+                <header class="relative h-96 rounded-3xl overflow-hidden shadow-2xl shadow-slate-900/20 border border-slate-200 dark:border-slate-700">
+                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 ease-out" style="background-image: url('https://www.lasociedadgeografica.com/blog/uploads/2019/10/bhutan-peaceful-tours-nido-del-tigre.jpg'); transform: scale(1.1);"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20"></div>
+                    
+                    <!-- Floating elements -->
+                    <div class="absolute top-6 right-6 flex gap-3">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-full p-3 shadow-lg">
+                            <span class="material-symbols-outlined text-white text-lg">flight_takeoff</span>
+                        </div>
+                        <div class="bg-white/20 backdrop-blur-sm rounded-full p-3 shadow-lg">
+                            <span class="material-symbols-outlined text-white text-lg">landscape</span>
+                        </div>
+                    </div>
+                    
+                    <div class="relative h-full flex flex-col justify-end p-8 md:p-12 text-white">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                                <span class="material-symbols-outlined text-white text-xl">hiking</span>
+                            </div>
+                            <div class="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                                <span id="trip-dates" class="text-sm font-medium">Cargando fechas...</span>
+                            </div>
+                        </div>
+                        <h1 class="text-4xl md:text-6xl font-black leading-tight mb-3">Mi Aventura en el Himalaya</h1>
+                        <p class="text-lg md:text-xl max-w-2xl opacity-90">Un recorrido para descubrir Nepal y Bután</p>
+                    </div>
+                </header>
+
+                <!-- Panel "Hoy" Dinámico (exacto del original) -->
+                <section class="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-xl text-blue-600 dark:text-blue-400">event_available</span>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">Estado del viaje</h2>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm">calendar_month</span>
+                                    <span id="today-date">Cargando...</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 border border-blue-200 dark:border-blue-800">
+                            <div id="today-day" class="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400">-</div>
+                            <div class="text-blue-600 dark:text-blue-400 text-sm">Día del viaje</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-5 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 transition-all duration-200">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="material-symbols-outlined text-xl text-blue-600 dark:text-blue-400">location_on</span>
+                                <h3 class="font-semibold text-slate-900 dark:text-white">Próximo destino</h3>
+                            </div>
+                            <p id="next-destination" class="text-slate-600 dark:text-slate-400 text-sm">Cargando...</p>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-5 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 transition-all duration-200">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="material-symbols-outlined text-xl text-green-600 dark:text-green-400">hotel</span>
+                                <h3 class="font-semibold text-slate-900 dark:text-white">Alojamiento</h3>
+                            </div>
+                            <p id="today-accommodation" class="text-slate-600 dark:text-slate-400 text-sm">Cargando...</p>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-5 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 transition-all duration-200">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="material-symbols-outlined text-xl text-orange-600 dark:text-orange-400">hiking</span>
+                                <h3 class="font-semibold text-slate-900 dark:text-white">Actividad principal</h3>
+                            </div>
+                            <p id="today-activity" class="text-slate-600 dark:text-slate-400 text-sm">Cargando...</p>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-5 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 transition-all duration-200">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="material-symbols-outlined text-xl text-sky-600 dark:text-sky-400">partly_cloudy_day</span>
+                                <h3 class="font-semibold text-slate-900 dark:text-white">Clima</h3>
+                            </div>
+                            <p id="today-weather" class="text-slate-600 dark:text-slate-400 text-sm">Cargando...</p>
+                        </div>
+                    </div>
+                    
+
+                </section>
+
+                <!-- Estadísticas principales (exacto del original) -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center hover:shadow-xl transition-all duration-300">
+                        <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">schedule</span>
+                        <p class="text-3xl font-bold text-slate-900 dark:text-white break-words">${totalDays}</p>
+                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mt-2">Días de Viaje</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center hover:shadow-xl transition-all duration-300">
+                        <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">public</span>
+                        <p class="text-3xl font-bold text-slate-900 dark:text-white break-words">${totalCountries}</p>
+                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mt-2">Países Increíbles</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center hover:shadow-xl transition-all duration-300">
+                        <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">account_balance_wallet</span>
+                        <div class="text-2xl font-bold text-slate-900 dark:text-white">
+                            <span id="total-spent-summary" class="text-green-600 dark:text-green-400">0 €</span>
+                            <span class="text-slate-400 dark:text-slate-500 text-lg"> / </span>
+                            <span class="text-slate-600 dark:text-slate-400 text-lg">${this.formatCurrency(grandTotal, true)}</span>
+                        </div>
+                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mt-2">Gastado / Presupuesto</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center hover:shadow-xl transition-all duration-300">
+                        <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">payments</span>
+                        <p class="text-3xl font-bold text-slate-900 dark:text-white break-words">~${this.formatCurrency(costPerDay, true)}</p>
+                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mt-2">Coste por Día</p>
+                    </div>
+                </div>
+
+                <!-- Resumen por fases (exacto del original) -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">Estilo del Viaje</h3>
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
+                            <div class="flex justify-between gap-2 sm:gap-4 lg:gap-8">
+                                <div class="text-center flex-1 min-w-0">
+                                    <div class="relative w-full aspect-square max-w-32 mx-auto">
+                                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                            <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                            <circle class="text-green-500" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="70" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                        </svg>
+                                        <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl">🏔️</span>
+                                    </div>
+                                    <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">Aventura</p>
+                                </div>
+                                <div class="text-center flex-1 min-w-0">
+                                    <div class="relative w-full aspect-square max-w-32 mx-auto">
+                                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                            <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                            <circle class="text-blue-500" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="140" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                        </svg>
+                                        <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl">🏛️</span>
+                                    </div>
+                                    <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">Cultura</p>
+                                </div>
+                                <div class="text-center flex-1 min-w-0">
+                                    <div class="relative w-full aspect-square max-w-32 mx-auto">
+                                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                            <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                            <circle class="text-emerald-500" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="113" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                        </svg>
+                                        <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl text-emerald-600">nature</span>
+                                    </div>
+                                    <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">Naturaleza</p>
+                                </div>
+                                <div class="text-center flex-1 min-w-0">
+                                    <div class="relative w-full aspect-square max-w-32 mx-auto">
+                                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                            <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                            <circle class="text-purple-500" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="184" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                        </svg>
+                                        <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl text-purple-600">self_improvement</span>
+                                    </div>
+                                    <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">Espiritualidad</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <!-- Información de Vuelos -->
+                ${this.renderFlightsSection()}
+            </div>
+        `;
+
+        // Actualizar información dinámica
+        this.updateTripDates();
+        this.updateTodayInfo();
+        this.updateBudgetSummary();
+
+        console.log('✅ Resumen renderizado correctamente');
+    }
+
+    updateTodayInfo() {
+        console.log('📅 Actualizando información de hoy...');
+        try {
+            const today = new Date();
+            const tripStartDate = this.getTripStartDate();
+            console.log('📅 Fecha de inicio del viaje:', tripStartDate);
+            console.log('📅 Fecha de hoy:', today);
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            console.log('📅 Diferencia en días:', dayDiff);
+            
+            if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
+                const currentDayData = tripConfig.itineraryData[dayDiff];
+                console.log('📅 Datos del día actual:', currentDayData);
+                
+                const todayDate = document.getElementById('today-date');
+                const todayDay = document.getElementById('today-day');
+                const nextDestination = document.getElementById('next-destination');
+                const todayAccommodation = document.getElementById('today-accommodation');
+                const todayActivity = document.getElementById('today-activity');
+                const todayWeather = document.getElementById('today-weather');
+                
+                console.log('📅 Elementos encontrados:', {
+                    todayDate: !!todayDate,
+                    todayDay: !!todayDay,
+                    nextDestination: !!nextDestination,
+                    todayAccommodation: !!todayAccommodation,
+                    todayActivity: !!todayActivity,
+                    todayWeather: !!todayWeather
+                });
+                
+                if (todayDate) todayDate.textContent = this.formatShortDate(today);
+                if (todayDay) todayDay.textContent = `${dayDiff + 1}`;
+                if (nextDestination) nextDestination.textContent = currentDayData.title;
+                if (todayAccommodation) todayAccommodation.textContent = currentDayData.accommodation || 'Por definir';
+                if (todayActivity) todayActivity.textContent = currentDayData.planA || 'Actividades del día';
+                if (todayWeather) todayWeather.textContent = this.getWeatherForDay(currentDayData.phase);
+                
+                // Actualizar subtítulo de la página "Hoy"
+                const todaySubtitle = document.getElementById('today-subtitle');
+                if (todaySubtitle) {
+                    todaySubtitle.textContent = `Día ${dayDiff + 1}: ${currentDayData.title}`;
+                }
+            } else {
+                // Antes o después del viaje
+                const todayDate = document.getElementById('today-date');
+                const todayDay = document.getElementById('today-day');
+                const nextDestination = document.getElementById('next-destination');
+                
+                if (todayDate) todayDate.textContent = this.formatShortDate(today);
+                if (todayDay) todayDay.textContent = dayDiff < 0 ? `${Math.abs(dayDiff)}` : '-';
+                if (nextDestination) nextDestination.textContent = dayDiff < 0 ? 'Preparando el viaje' : 'Viaje completado';
+            }
+        } catch (error) {
+            console.error('Error actualizando información de hoy:', error);
+        }
+    }
+
+    updateTodayMainContent() {
+        console.log('📅 Actualizando contenido principal de Hoy...');
+        try {
+            const today = new Date();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            
+            const mainContentContainer = document.querySelector('#today-main-content');
+            if (!mainContentContainer) {
+                console.warn('⚠️ Contenedor #today-main-content no encontrado');
+                return;
+            }
+            
+            if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
+                const currentDayData = tripConfig.itineraryData[dayDiff];
+                console.log('📅 Generando contenido para día:', dayDiff + 1, currentDayData.title);
+                
+                // Determinar el icono y tipo de actividad
+                let activityIcon = 'hiking';
+                let activityType = 'Actividades del día';
+                
+                if (currentDayData.icon === '✈️') {
+                    activityIcon = 'flight_takeoff';
+                    activityType = 'Vuelo';
+                } else if (currentDayData.icon === '🏛️') {
+                    activityIcon = 'temple_buddhist';
+                    activityType = 'Visita cultural';
+                } else if (currentDayData.icon === '🏔️') {
+                    activityIcon = 'hiking';
+                    activityType = 'Trekking';
+                } else if (currentDayData.icon === '🚣') {
+                    activityIcon = 'kayaking';
+                    activityType = 'Aventura';
+                }
+                
+                let contentHTML = `
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">${activityIcon}</span>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">${activityType}</h2>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800 mb-6">
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">${currentDayData.title}</h3>
+                        <p class="text-slate-600 dark:text-slate-400 mb-4">${currentDayData.description}</p>`;
+                        
+                if (currentDayData.planA) {
+                    contentHTML += `
+                        <div class="space-y-3">
+                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3">
+                                <h4 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm text-blue-600">schedule</span>
+                                    Plan Principal
+                                </h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.planA}</p>
+                            </div>`;
+                    
+                    if (currentDayData.planB) {
+                        contentHTML += `
+                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3">
+                                <h4 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm text-green-600">alt_route</span>
+                                    Plan Alternativo
+                                </h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.planB}</p>
+                            </div>`;
+                    }
+                    contentHTML += `</div>`;
+                }
+                
+                contentHTML += `
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">`;
+                
+                if (currentDayData.consejo) {
+                    contentHTML += `
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-outlined text-lg text-blue-600 dark:text-blue-400">lightbulb</span>
+                                <h4 class="font-semibold text-slate-900 dark:text-white">Consejo</h4>
+                            </div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.consejo}</p>
+                        </div>`;
+                }
+                
+                if (currentDayData.bocado) {
+                    contentHTML += `
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-outlined text-lg text-green-600 dark:text-green-400">restaurant</span>
+                                <h4 class="font-semibold text-slate-900 dark:text-white">Bocado</h4>
+                            </div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.bocado}</p>
+                        </div>`;
+                }
+                
+                contentHTML += `</div>`;
+                mainContentContainer.innerHTML = contentHTML;
+            } else {
+                // Antes o después del viaje
+                const statusTitle = dayDiff < 0 ? 'Preparando el viaje' : 'Viaje completado';
+                const statusMessage = dayDiff < 0 ? 
+                    `Faltan ${Math.abs(dayDiff)} días para comenzar la aventura` : 
+                    'El viaje ha terminado. ¡Esperamos que hayas disfrutado!';
+                    
+                mainContentContainer.innerHTML = `
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-slate-600 dark:text-slate-400">event</span>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información del Viaje</h2>
+                    </div>
+                    
+                    <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 text-center">
+                        <span class="material-symbols-outlined text-6xl text-slate-400 dark:text-slate-500 mb-4 block">schedule</span>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">${statusTitle}</h3>
+                        <p class="text-slate-600 dark:text-slate-400">${statusMessage}</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error al actualizar contenido principal de hoy:', error);
+        }
+    }
+
+    getActivityIconHTML(emoji, sizeClass = 'text-2xl') {
+        let materialIcon = 'location_on';
+        let iconColor = 'text-blue-600';
+        
+        if (emoji === '✈️') {
+            materialIcon = 'flight';
+            iconColor = 'text-blue-600';
+        } else if (emoji === '🏛️') {
+            materialIcon = 'temple_buddhist';
+            iconColor = 'text-purple-600';
+        } else if (emoji === '🏔️') {
+            materialIcon = 'hiking';
+            iconColor = 'text-green-600';
+        } else if (emoji === '🚣') {
+            materialIcon = 'kayaking';
+            iconColor = 'text-orange-600';
+        } else if (emoji === '🛬') {
+            materialIcon = 'flight_land';
+            iconColor = 'text-blue-600';
+        } else if (emoji === '🐘') {
+            materialIcon = 'pets';
+            iconColor = 'text-amber-600';
+        } else if (emoji === '♨️') {
+            materialIcon = 'hot_tub';
+            iconColor = 'text-red-600';
+        } else if (emoji === '🚙') {
+            materialIcon = 'directions_car';
+            iconColor = 'text-gray-600';
+        } else if (emoji === '🐅') {
+            materialIcon = 'hiking';
+            iconColor = 'text-orange-600';
+        }
+        
+        return `<span class="material-symbols-outlined ${sizeClass} ${iconColor}">${materialIcon}</span>`;
+    }
+
+    getWeatherForDay(phase) {
+        const weatherData = {
+            nepal: 'Templado, 22°C ☀️',
+            butan: 'Fresco, 18°C ⛅'
+        };
+        return weatherData[phase] || 'Información no disponible';
+    }
+
+    // Renderizar la vista de itinerario (exacta del original Viaje.html)
+    renderItinerary() {
+        console.log('📅 Renderizando itinerario...');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        // Generar fases dinámicamente basadas en los datos reales del itinerario
+        const phases = this.generateItineraryPhases();
+        console.log('🎨 Fases para renderizar:', phases);
+        
+        const timelineHTML = phases.map(p => {
+            console.log(`🔄 Procesando fase: ${p.title} con ${p.days ? p.days.length : 0} días`);
+            
+            const phaseDays = tripConfig.itineraryData.filter(day => day.phase === p.phase);
+            console.log(`📋 Días filtrados para fase ${p.phase}:`, phaseDays.length);
+            
+            return `
+            <div class="mb-16">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-xl">location_on</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-200">${p.title}</h3>
+                </div>
+                ${phaseDays.map((day, index) => {
+                    // Función para obtener el icono específico según la actividad
+                    const getActivityIcon = (day) => {
+                        const title = day.title.toLowerCase();
+                        const description = day.description.toLowerCase();
+                        
+                        if (title.includes('vuelo') || title.includes('llegada') || title.includes('salida')) return 'flight';
+                        if (title.includes('trekking') || title.includes('caminata') || description.includes('trekking')) return 'hiking';
+                        if (title.includes('rafting') || description.includes('rafting')) return 'kayaking';
+                        if (title.includes('safari') || description.includes('safari') || title.includes('chitwan')) return 'pets';
+                        if (title.includes('cocina') || description.includes('cocina') || description.includes('momos')) return 'restaurant';
+                        if (title.includes('templo') || title.includes('monasterio') || title.includes('dzong') || title.includes('estupa')) return 'temple_buddhist';
+                        if (title.includes('plaza') || title.includes('durbar') || description.includes('palacio')) return 'account_balance';
+                        if (title.includes('aguas termales') || description.includes('aguas termales')) return 'hot_tub';
+                        if (title.includes('patan') || title.includes('katmandú') || description.includes('ciudad')) return 'location_city';
+                        if (title.includes('nido del tigre') || title.includes('taktsang')) return 'temple_buddhist';
+                        return 'place';
+                    };
+                    
+                    return `
+                    <div class="timeline-item grid grid-cols-[auto,1fr] gap-x-6" id="${day.id}" data-coords="${day.coords ? day.coords.join(',') : ''}">
+                        <div class="flex flex-col items-center">
+                            <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 z-10">${getActivityIcon(day)}</span>
+                            ${index < phaseDays.length - 1 ? '<div class="w-0.5 h-full bg-gradient-to-b from-purple-300 to-violet-300 dark:from-purple-600 dark:to-violet-600"></div>' : ''}
+                        </div>
+                        <div class="pb-12 opacity-0 -translate-y-4" style="animation-delay: ${index * 100}ms;">
+                            <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer transition-all duration-200 hover:shadow-xl overflow-hidden">
+                                ${day.image ? `
+                                    <div class="relative h-48 md:h-56">
+                                        <img loading="lazy" src="${day.image}" alt="${day.title}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f46e5/ffffff?text=Imagen';">
+                                        <div class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
+                                            <p class="text-white text-sm font-semibold">${(() => {
+                                                const dayNumber = parseInt(day.id.replace('day-', ''));
+                                                return `Día ${dayNumber}`;
+                                            })()}</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-6">
+                                        <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-2">${day.title}</h4>
+                                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">${day.description}</p>
+                                        <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                                            <span class="material-symbols-outlined text-sm">touch_app</span>
+                                            <span class="text-xs font-medium">Toca para ver detalles</span>
+                                        </div>
+                                    </div>
+                                ` : `
+                                    <div class="p-6">
+                                        <div class="flex items-center gap-3 mb-4">
+                                            <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">${getActivityIcon(day)}</span>
+                                            <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">${(() => {
+                                                const dayNumber = parseInt(day.id.replace('day-', ''));
+                                                const tripDate = this.getTripDate(dayNumber - 1);
+                                                return `Día ${dayNumber} • ${this.formatShortDate(tripDate)}`;
+                                            })()}</p>
+                                        </div>
+                                        <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3">${day.title}</h4>
+                                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">${day.description}</p>
+                                        <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                                            <span class="material-symbols-outlined text-sm">touch_app</span>
+                                            <span class="text-xs font-medium">Toca para ver detalles</span>
+                                        </div>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+        `}).join('');
+
+        mainContent.innerHTML = `
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+                <!-- Header del itinerario -->
+                <div class="text-center mb-12">
+                    <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-violet-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <span class="material-symbols-outlined text-white text-3xl">list_alt</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4">Itinerario del Viaje</h1>
+                    <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Descubre día a día la aventura que te espera en Nepal y Bután</p>
+                </div>
+
+                <!-- Timeline del itinerario -->
+                <div class="relative">
+                    ${timelineHTML}
+                </div>
+            </div>
+        `;
+
+        // Agregar event listeners para los modales
+        document.querySelectorAll('.itinerary-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                this.showItineraryModal(e.currentTarget.dataset.dayId);
+            });
+        });
+
+        // Configurar Intersection Observer para animaciones
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelector(':scope > div:last-child').classList.add('animate-enter');
+                }
+            });
+        }, { threshold: 0.6 });
+        
+        document.querySelectorAll('.timeline-item').forEach(item => observer.observe(item));
+
+        console.log('✅ Itinerario renderizado correctamente');
+    }
+
+    generateItineraryPhases() {
+        console.log('🔍 Generando fases del itinerario...');
+        console.log('📊 Total días en itineraryData:', tripConfig.itineraryData.length);
+        
+        const phases = [];
+        const nepalDays = tripConfig.itineraryData.filter(day => day.phase === 'nepal');
+        const butanDays = tripConfig.itineraryData.filter(day => day.phase === 'butan');
+        const farewellDays = tripConfig.itineraryData.filter(day => day.phase === 'farewell');
+        
+        console.log('🇳🇵 Días de Nepal encontrados:', nepalDays.length);
+        console.log('🇧🇹 Días de Bután encontrados:', butanDays.length);
+        console.log('👋 Días de Despedida encontrados:', farewellDays.length);
+
+        if (nepalDays.length > 0) {
+            phases.push({
+                title: 'Nepal - Aventura en el Himalaya',
+                emoji: '🇳🇵',
+                icon: 'location_on',
+                gradient: 'from-purple-500 to-violet-600',
+                phase: 'nepal',
+                days: nepalDays
+            });
+            console.log('✅ Fase Nepal agregada con', nepalDays.length, 'días');
+        }
+
+        if (butanDays.length > 0) {
+            phases.push({
+                title: 'Bután - El Reino de la Felicidad',
+                emoji: '🇧🇹',
+                icon: 'flag',
+                gradient: 'from-orange-500 to-amber-600',
+                phase: 'butan',
+                days: butanDays
+            });
+            console.log('✅ Fase Bután agregada con', butanDays.length, 'días');
+        }
+
+        if (farewellDays.length > 0) {
+            phases.push({
+                title: 'Despedida - Regreso a Casa',
+                emoji: '👋',
+                icon: 'home',
+                gradient: 'from-slate-500 to-slate-600',
+                phase: 'farewell',
+                days: farewellDays
+            });
+            console.log('✅ Fase Despedida agregada con', farewellDays.length, 'días');
+        }
+
+        console.log('📋 Total fases generadas:', phases.length);
+        return phases;
+    }
+
+    getIconGradient(icon) {
+        const gradients = {
+            'flight': 'from-blue-500 to-indigo-600',
+            'temple_buddhist': 'from-orange-500 to-amber-600',
+            'account_balance': 'from-purple-500 to-violet-600',
+            'hiking': 'from-green-500 to-emerald-600',
+            'pets': 'from-yellow-500 to-orange-600',
+            'location_city': 'from-slate-500 to-slate-600',
+            'place': 'from-teal-500 to-cyan-600'
+        };
+        return gradients[icon] || 'from-gray-500 to-gray-600';
+    }
+
+    showItineraryModal(dayId) {
+        const day = tripConfig.itineraryData.find(d => d.id === dayId);
+        if (!day) return;
+
+        const detailCard = (icon, title, content) => content ? `
+            <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl">
+                <h4 class="font-semibold text-md flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">${icon}</span> 
+                    ${title}
+                </h4>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 pl-10">${content}</p>
+            </div>
+        ` : '';
+
+        const modalHTML = `
+            <div id="itinerary-modal-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+                    <button id="close-modal-btn" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-700 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                    <img src="${day.image}" alt="${day.title}" class="w-full h-60 object-cover rounded-t-2xl" onerror="this.onerror=null;this.src='https://placehold.co/800x400/4f46e5/ffffff?text=Himalaya';">
+                    <div class="p-6 space-y-4">
+                        <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">DÍA ${day.id.replace('day-','')}</p>
+                        <h3 class="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            ${this.getActivityIconHTML(day.icon, 'text-4xl')} 
+                            ${day.title}
+                        </h3>
+                        ${day.coords ? `
+                            <div class="mt-6">
+                                <h4 class="font-semibold text-md flex items-center gap-2 mb-4">
+                                    <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">map</span> 
+                                    Lugares de interés
+                                </h4>
+                                <div id="modal-map-${day.id}" class="h-64 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                                        <p class="text-sm text-slate-500">Cargando mapa...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${detailCard('map', 'Itinerario', day.planA)}
+                        ${detailCard('coffee', 'Tiempo Libre', day.planB)}
+                        ${detailCard('lightbulb', 'Consejo del Día', day.consejo)}
+                        ${detailCard('restaurant', 'Bocado del Día', day.bocado)}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Crear contenedor del modal si no existe
+        let modalContainer = document.getElementById('itinerary-modal-container');
+        if (!modalContainer) {
+            modalContainer = document.createElement('div');
+            modalContainer.id = 'itinerary-modal-container';
+            document.body.appendChild(modalContainer);
+        }
+        
+        modalContainer.innerHTML = modalHTML;
+
+        // Event listeners para cerrar el modal
+        document.getElementById('itinerary-modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'itinerary-modal-overlay') {
+                modalContainer.innerHTML = '';
+            }
+        });
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            modalContainer.innerHTML = '';
+        });
+
+        // Crear mapa del modal si hay coordenadas
+        if (day.coords) {
+            setTimeout(() => {
+                this.createModalMap(day.id, day.coords, day.title);
+            }, 500);
+        }
+    }
+
+    createModalMap(dayId, coords, title) {
+        console.log(`🗺️ Creando mapa del modal para: ${dayId}`);
+        
+        const mapContainer = document.getElementById(`modal-map-${dayId}`);
+        if (!mapContainer) {
+            console.error(`Contenedor del mapa no encontrado: modal-map-${dayId}`);
+            return;
+        }
+        
+        try {
+            // Limpiar el contenedor
+            mapContainer.innerHTML = '';
+            
+            // Crear el mapa
+            const map = L.map(`modal-map-${dayId}`, { 
+                closePopupOnClick: false,
+                zoomControl: false,
+                attributionControl: false
+            }).setView(coords, 12);
+            
+            // Añadir capa de tiles con estilo consistente
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
+                attribution: '&copy; OpenStreetMap &copy; CARTO' 
+            }).addTo(map);
+            
+            // Marcador principal del día
+            const mainIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                    ${this.getActivityIconHTML('📍', 'text-lg').replace('text-blue-600', 'text-white')}
+                </div>`,
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            });
+            
+            L.marker(coords, { icon: mainIcon })
+                .addTo(map)
+                .bindPopup(`<b>${title}</b><br><small>Ubicación principal del día</small>`, { closeButton: false });
+            
+            // Obtener lugares cercanos
+            const nearbyPlaces = tripConfig.placesByDay[dayId] || [];
+            const markers = [];
+            
+            nearbyPlaces.forEach(place => {
+                const placeIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="w-8 h-8 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-200 dark:border-slate-600">
+                        ${this.getActivityIconHTML(place.icon, 'text-sm')}
+                    </div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+                
+                const marker = L.marker(place.coords, { icon: placeIcon })
+                    .addTo(map)
+                    .bindPopup(`<b>${place.name}</b><br><small>${place.description}</small>`, { closeButton: false });
+                
+                markers.push(marker);
+            });
+            
+            // Ajustar vista para mostrar todos los marcadores
+            if (nearbyPlaces.length > 0) {
+                const allCoords = [coords, ...nearbyPlaces.map(p => p.coords)];
+                const bounds = L.latLngBounds(allCoords);
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
+            
+            // Forzar redibujado del mapa
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+            
+            console.log(`✅ Mapa del modal ${dayId} creado exitosamente`);
+        } catch (error) {
+            console.error(`Error al crear mapa del modal ${dayId}:`, error);
+            mapContainer.innerHTML = '<div class="h-full flex items-center justify-center text-slate-500">Error al cargar el mapa</div>';
+        }
+    }
+
+    renderToday() {
+        console.log('🌅 Renderizando hoy...');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        mainContent.innerHTML = `
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+                <!-- Header de Hoy -->
+                <div class="text-center mb-8">
+                    <span class="material-symbols-outlined text-6xl text-slate-600 dark:text-slate-400 mx-auto mb-6 block">today</span>
+                    <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4">Hoy en tu Viaje</h1>
+                    <p id="today-subtitle" class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Cargando información del día...</p>
+                </div>
+
+                <!-- Resumen del día -->
+                <div id="today-main-content" class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
+                    <!-- El contenido se generará dinámicamente -->
+                </div>
+
+                <!-- Información del día -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">location_on</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Origen</h3>
+                        <p class="text-slate-600 dark:text-slate-400">Madrid, España</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">flight_land</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Destino</h3>
+                        <p class="text-slate-600 dark:text-slate-400">Katmandú, Nepal</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">schedule</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Duración</h3>
+                        <p class="text-slate-600 dark:text-slate-400">8h 45m</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">airplane_ticket</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Aerolínea</h3>
+                        <p class="text-slate-600 dark:text-slate-400">Qatar Airways</p>
+                    </div>
+                </div>
+
+                <!-- Preparativos para el viaje -->
+                <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-emerald-600 dark:text-emerald-400">checklist</span>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Preparativos para el Viaje</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Documentos necesarios</h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    <span class="text-sm">Pasaporte válido</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    <span class="text-sm">Visa de Nepal (on arrival)</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-orange-600">
+                                    <span class="material-symbols-outlined text-sm">pending</span>
+                                    <span class="text-sm">Tarjeta de embarque</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Equipaje de mano</h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    <span class="text-sm">Documentos importantes</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    <span class="text-sm">Medicamentos básicos</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    <span class="text-sm">Cargador de móvil</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        `;
+
+        // Actualizar información dinámica
+        this.updateTripDates();
+        this.updateTodayInfo();
+        this.updateTodayMainContent();
+        
+        console.log('✅ Hoy renderizado correctamente');
+    }
+
+    renderMap() {
+        console.log('🗺️ Renderizando mapa principal...');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        try {
+            mainContent.innerHTML = `
+                <div class="fixed inset-0 z-10 p-4 pb-28">
+                    <!-- Tarjeta del mapa -->
+                    <div class="w-full h-full bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <!-- Header del mapa -->
+                        <div class="absolute top-6 left-1/2 -translate-x-1/2 z-20 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-2xl px-6 py-3 shadow-lg">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">map</span>
+                                <div>
+                                    <h1 class="text-lg font-bold text-slate-900 dark:text-white">Ruta del Viaje</h1>
+                                    <p class="text-xs text-slate-600 dark:text-slate-400">Nepal y Bután • ${tripConfig.itineraryData.length} días</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mapa -->
+                        <div id="map" class="w-full h-full rounded-3xl"></div>
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                try {
+                    // Crear el mapa centrado en Nepal/Bután
+                    const map = L.map('map', { closePopupOnClick: false }).setView([28.3949, 84.1240], 7);
+                    
+                    // Añadir capa de tiles
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
+                        attribution: '&copy; OpenStreetMap &copy; CARTO' 
+                    }).addTo(map);
+                    
+                    // Crear marcadores para cada día del itinerario
+                    const markers = [];
+                    tripConfig.itineraryData.forEach(day => {
+                        if (day.coords) {
+                            const dayNumber = parseInt(day.id.replace('day-', ''));
+                            const tripDate = this.getTripDate(dayNumber - 1);
+                            
+                            // Contenido del popup
+                            const popupContent = `
+                                <div class="w-48">
+                                    <img src="${day.image || 'https://placehold.co/400x200/4f46e5/ffffff?text=Himalaya'}" 
+                                         class="w-full h-24 object-cover rounded-t-lg" alt="${day.title}">
+                                    <div class="p-2">
+                                        <b class="text-blue-600">${day.title}</b>
+                                        <p class="text-xs">Día ${dayNumber} - ${this.formatShortDate(tripDate)}</p>
+                                        <p class="text-xs text-slate-600 mt-1">${day.description.substring(0, 80)}...</p>
+                                        <button onclick="window.uiRenderer.showItineraryModal('${day.id}')" 
+                                                class="text-blue-500 text-xs font-semibold mt-1 block hover:underline">
+                                            Ver detalles →
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            // Determinar icono Material Design
+                            let materialIcon = 'location_on';
+                            let iconColor = 'text-blue-600';
+                            
+                            if (day.icon === '✈️') {
+                                materialIcon = 'flight';
+                                iconColor = 'text-blue-600';
+                            } else if (day.icon === '🏛️') {
+                                materialIcon = 'temple_buddhist';
+                                iconColor = 'text-purple-600';
+                            } else if (day.icon === '🏔️') {
+                                materialIcon = 'hiking';
+                                iconColor = 'text-green-600';
+                            } else if (day.icon === '🚣') {
+                                materialIcon = 'kayaking';
+                                iconColor = 'text-orange-600';
+                            } else if (day.icon === '🛬') {
+                                materialIcon = 'flight_land';
+                                iconColor = 'text-blue-600';
+                            } else if (day.icon === '🐘') {
+                                materialIcon = 'pets';
+                                iconColor = 'text-amber-600';
+                            } else if (day.icon === '♨️') {
+                                materialIcon = 'hot_tub';
+                                iconColor = 'text-red-600';
+                            }
+                            
+                            // Crear icono personalizado con Material Design
+                            const customIcon = L.divIcon({
+                                className: 'custom-div-icon',
+                                html: `<div class="w-10 h-10 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-200 dark:border-slate-600">
+                                    <span class="material-symbols-outlined text-lg ${iconColor}">${materialIcon}</span>
+                                </div>`,
+                                iconSize: [40, 40],
+                                iconAnchor: [20, 20]
+                            });
+                            
+                            // Crear marcador
+                            const marker = L.marker(day.coords, { icon: customIcon })
+                                .addTo(map)
+                                .bindPopup(popupContent, { 
+                                    offset: L.point(0, -20), 
+                                    autoClose: false, 
+                                    closeButton: true 
+                                });
+                            
+                            // Eventos del marcador
+                            let hoverTimeout;
+                            marker.on('mouseover', function () { 
+                                clearTimeout(hoverTimeout); 
+                                this.openPopup(); 
+                            });
+                            marker.on('mouseout', function () { 
+                                hoverTimeout = setTimeout(() => this.closePopup(), 2000); 
+                            });
+                            marker.on('click', () => {
+                                this.showItineraryModal(day.id);
+                            });
+                            
+                            markers.push(marker);
+                            
+                            // Añadir coordenadas para la ruta
+                            if (day.coords) {
+                                this.routeCoords = this.routeCoords || [];
+                                this.routeCoords.push(day.coords);
+                            }
+                        }
+                    });
+                    
+                    // Crear ruta si hay coordenadas
+                    if (this.routeCoords && this.routeCoords.length > 1) {
+                        L.polyline(this.routeCoords, {
+                            color: '#3b82f6',
+                            weight: 3,
+                            opacity: 0.7,
+                            smoothFactor: 1
+                        }).addTo(map);
+                    }
+                    
+                    // Ajustar vista para mostrar todos los marcadores
+                    if (markers.length > 0) {
+                        const group = new L.featureGroup(markers);
+                        map.fitBounds(group.getBounds().pad(0.1));
+                    }
+                    
+                    // Guardar referencia del mapa
+                    this.map = map;
+                    
+                    console.log('✅ Mapa principal creado exitosamente');
+                } catch (error) {
+                    console.error('❌ Error al crear el mapa:', error);
+                    mainContent.innerHTML = `
+                        <div class="fixed inset-0 flex items-center justify-center bg-red-50 dark:bg-red-900/20 z-10">
+                            <div class="text-center p-8">
+                                <div class="text-red-500 text-6xl mb-4">🗺️</div>
+                                <h3 class="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">Error al cargar el mapa</h3>
+                                <p class="text-red-600 dark:text-red-300">${error.message}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }, 100);
+            
+        } catch (error) {
+            console.error('❌ Error al renderizar mapa:', error);
+            mainContent.innerHTML = `
+                <div class="fixed inset-0 flex items-center justify-center bg-red-50 dark:bg-red-900/20 z-10">
+                    <div class="text-center p-8">
+                        <div class="text-red-500 text-6xl mb-4">🗺️</div>
+                        <h3 class="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">Error al cargar el mapa</h3>
+                        <p class="text-red-600 dark:text-red-300">${error.message}</p>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    renderTools() {
+        console.log('🛠️ Renderizando herramientas...');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        mainContent.innerHTML = `
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32" style="opacity: 1 !important; display: block !important;">
+                
+                <!-- Header de Herramientas -->
+                <div class="text-center mb-8">
+                    <span class="material-symbols-outlined text-6xl text-purple-600 dark:text-purple-400 mx-auto mb-6 block">construction</span>
+                    <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4">Herramientas de Viaje</h1>
+                    <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Gestiona tu presupuesto, equipaje y toda la información útil para tu aventura</p>
+                </div>
+
+                <!-- Navegación por pestañas -->
+                <div class="flex justify-center mb-8">
+                    <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl">
+                        <button id="tab-gastos" class="tools-tab active px-6 py-3 rounded-xl font-medium transition-all duration-200 bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">
+                            <span class="material-symbols-outlined text-lg mr-2">account_balance_wallet</span>
+                            Gastos
+                        </button>
+                        <button id="tab-extras" class="tools-tab px-6 py-3 rounded-xl font-medium transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                            <span class="material-symbols-outlined text-lg mr-2">inventory_2</span>
+                            Extras
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contenido de Gastos -->
+                <div id="gastos-content" class="tools-content">
+                    <section id="budget" class="space-y-6 md:space-y-8" data-nav="Presupuesto" data-icon="account_balance_wallet" style="opacity: 1 !important; display: block !important;">
+                        <!-- El contenido se generará dinámicamente -->
+                    </section>
+                </div>
+
+                <!-- Contenido de Extras -->
+                <div id="extras-content" class="tools-content hidden">
+                    <!-- Lista de equipaje -->
+                    <section id="packing-list" class="space-y-6 md:space-y-8 mb-12" data-nav="Equipaje" data-icon="luggage" style="opacity: 1 !important; display: block !important;">
+                        <!-- El contenido se generará dinámicamente -->
+                    </section>
+
+                    <!-- Información climática -->
+                    <section id="weather" class="space-y-6 md:space-y-8 mb-12" data-nav="Clima" data-icon="wb_sunny" style="opacity: 1 !important; display: block !important;">
+                        <!-- El contenido se generará dinámicamente -->
+                    </section>
+
+                    <!-- Información de Agencias -->
+                    <section id="agencies" class="space-y-6 md:space-y-8" data-nav="Agencias" data-icon="business" style="opacity: 1 !important; display: block !important;">
+                        <!-- El contenido se generará dinámicamente -->
+                    </section>
+                </div>
+            </div>
+        `;
+        
+        // Forzar visibilidad del contenedor principal
+        mainContent.style.opacity = '1';
+        mainContent.style.display = 'block';
+
+        // Renderizar cada herramienta
+        setTimeout(() => {
+            console.log('🔄 Iniciando renderizado de herramientas...');
+            try {
+                console.log('💰 Renderizando presupuesto...');
+                this.renderBudget();
+                console.log('🎒 Renderizando equipaje...');
+                this.renderPackingList();
+                console.log('🌤️ Renderizando clima...');
+                this.renderWeather();
+                console.log('🏢 Renderizando información de agencias...');
+                this.renderAgencies();
+                console.log('✅ Todas las herramientas renderizadas');
+                
+                // Configurar navegación por pestañas después del renderizado
+                this.setupToolsTabs();
+            } catch (error) {
+                console.error('❌ Error al renderizar herramientas:', error);
+            }
+        }, 100);
+    }
+
+    // Renderizar sección de Gastos independiente
+    renderGastos() {
+        console.log('💰 Renderizando sección de gastos...');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        mainContent.innerHTML = `
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                
+                <!-- Header de Gastos -->
+                <div class="text-center mb-8">
+                    <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400 mx-auto mb-6 block">account_balance_wallet</span>
+                    <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4">Gestión de Gastos</h1>
+                    <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Controla tu presupuesto y registra todos los gastos de tu aventura</p>
+                </div>
+
+                <!-- Contenido de Gastos -->
+                <section id="budget" class="space-y-6 md:space-y-8" data-nav="Presupuesto" data-icon="account_balance_wallet">
+                    <!-- El contenido se generará dinámicamente -->
+                </section>
+            </div>
+        `;
+        
+        // Renderizar presupuesto
+        setTimeout(() => {
+            console.log('💰 Llamando renderBudget desde renderGastos...');
+            this.renderBudget();
+        }, 100);
+    }
+
+    // Renderizar sección de Extras independiente
+    renderExtras() {
+        console.log('🎒 Renderizando sección de extras...');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        mainContent.innerHTML = `
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                
+                <!-- Header de Extras -->
+                <div class="text-center mb-8">
+                    <span class="material-symbols-outlined text-6xl text-purple-600 dark:text-purple-400 mx-auto mb-6 block">inventory_2</span>
+                    <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4">Extras del Viaje</h1>
+                    <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Equipaje, clima y toda la información práctica para tu aventura</p>
+                </div>
+
+                <!-- Lista de equipaje -->
+                <section id="packing-list" class="space-y-6 md:space-y-8 mb-12" data-nav="Equipaje" data-icon="luggage">
+                    <!-- El contenido se generará dinámicamente -->
+                </section>
+
+                <!-- Información climática -->
+                <section id="weather" class="space-y-6 md:space-y-8 mb-12" data-nav="Clima" data-icon="wb_sunny">
+                    <!-- El contenido se generará dinámicamente -->
+                </section>
+
+                <!-- Información de Agencias -->
+                <section id="agencies" class="space-y-6 md:space-y-8" data-nav="Agencias" data-icon="business">
+                    <!-- El contenido se generará dinámicamente -->
+                </section>
+            </div>
+        `;
+        
+        // Renderizar cada sección
+        setTimeout(() => {
+            console.log('🎒 Llamando renderPackingList, renderWeather y renderAgencies desde renderExtras...');
+            this.renderPackingList();
+            this.renderWeather();
+            this.renderAgencies();
+        }, 100);
+    }
+
+    // Configurar navegación por pestañas de herramientas
+    setupToolsTabs() {
+        console.log('🔧 Configurando pestañas de herramientas...');
+        const tabButtons = document.querySelectorAll('.tools-tab');
+        const contents = document.querySelectorAll('.tools-content');
+        
+        console.log(`📱 Encontrados ${tabButtons.length} botones de pestaña`);
+        console.log(`📄 Encontrados ${contents.length} contenidos de pestaña`);
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remover clase activa de todos los botones
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active', 'bg-white', 'dark:bg-slate-700', 'text-slate-900', 'dark:text-white', 'shadow-sm');
+                    btn.classList.add('text-slate-600', 'dark:text-slate-400');
+                });
+
+                // Agregar clase activa al botón seleccionado
+                button.classList.add('active', 'bg-white', 'dark:bg-slate-700', 'text-slate-900', 'dark:text-white', 'shadow-sm');
+                button.classList.remove('text-slate-600', 'dark:text-slate-400');
+
+                // Ocultar todos los contenidos
+                contents.forEach(content => content.classList.add('hidden'));
+
+                // Mostrar el contenido correspondiente
+                const targetId = button.id.replace('tab-', '') + '-content';
+                const targetContent = document.getElementById(targetId);
+                if (targetContent) {
+                    targetContent.classList.remove('hidden');
+                }
+            });
+        });
+    }
+
+    // Renderizar información de agencias
+    renderAgencies() {
+        console.log('🏢 Renderizando información de agencias');
+        const container = document.getElementById('agencies');
+        if (!container) {
+            console.warn('⚠️ Contenedor #agencies no encontrado');
+            return;
+        }
+
+        const agenciesHTML = `
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 md:p-8">
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400">business</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Información de Agencias</h2>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- WeRoad Nepal -->
+                    <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="material-symbols-outlined text-2xl text-green-600 dark:text-green-400">groups</span>
+                            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">WeRoad - Nepal</h3>
+                        </div>
+                        <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">tour</span>
+                                <span>Tour: "Nepal 360"</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">language</span>
+                                <span>www.weroad.es</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">info</span>
+                                <span>Grupo de viajeros jóvenes</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Best of Bhutan -->
+                    <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">temple_buddhist</span>
+                            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Best of Bhutan</h3>
+                        </div>
+                        <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">tour</span>
+                                <span>Tour: "Best of Bhutan"</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">info</span>
+                                <span>Agencia local especializada</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">contact_page</span>
+                                <span>Contacto: Por definir</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seguro de Viaje -->
+                    <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="material-symbols-outlined text-2xl text-purple-600 dark:text-purple-400">security</span>
+                            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Seguro de Viaje</h3>
+                        </div>
+                        <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">edit</span>
+                                <span class="text-slate-500 italic">Por completar...</span>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-2">
+                                Información del seguro pendiente de añadir
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información Importante -->
+                    <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="material-symbols-outlined text-2xl text-red-600 dark:text-red-400">info</span>
+                            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Información Importante</h3>
+                        </div>
+                        <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                            <div class="flex items-start gap-2">
+                                <span class="material-symbols-outlined text-sm mt-0.5">emergency</span>
+                                <div>
+                                    <div class="font-medium text-slate-900 dark:text-white">Emergencias</div>
+                                    <div>Embajada España Nepal: +977 1 4123789</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="material-symbols-outlined text-sm mt-0.5">local_hospital</span>
+                                <div>
+                                    <div class="font-medium text-slate-900 dark:text-white">Hospital Recomendado</div>
+                                    <div>CIWEC Clinic, Katmandú</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="material-symbols-outlined text-sm mt-0.5">schedule</span>
+                                <div>
+                                    <div class="font-medium text-slate-900 dark:text-white">Zona Horaria</div>
+                                    <div>Nepal: UTC+5:45 | Bután: UTC+6:00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = agenciesHTML;
+        console.log('✅ Información de agencias renderizada');
+    }
+
+    // Renderizar presupuesto
+    renderBudget() {
+        console.log('💰 Renderizando sección de presupuesto');
+        const container = document.getElementById('budget');
+        if (!container) {
+            console.error('❌ Contenedor #budget no encontrado');
+            return;
+        }
+
+        // Usar la implementación original del presupuesto
+        this.budgetOriginal.render(container, tripConfig);
+        
+        console.log('✅ Presupuesto renderizado completamente');
+    }
+
+    renderBudgetItems(expenses) {
+        return expenses.map(item => {
+            // Manejar tanto items simples como items con subItems
+            const itemCost = item.cost || 0;
+            const itemName = item.concept || item.name || 'Sin nombre';
+            const itemCategory = item.category || 'Sin categoría';
+            
+            return `
+                <div class="budget-item flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl" data-category="${itemCategory}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 ${this.getCategoryColor(itemCategory)} rounded-lg flex items-center justify-center">
+                            <span class="material-symbols-outlined text-white text-sm">${this.getCategoryIcon(itemCategory)}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 dark:text-white">${itemName}</h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">${itemCategory}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-lg font-bold text-slate-900 dark:text-white">${itemCost.toLocaleString('es-ES')} €</span>
+                        ${item.paid ? '<div class="text-xs text-green-600 dark:text-green-400">✓ Pagado</div>' : '<div class="text-xs text-orange-600 dark:text-orange-400">⏳ Pendiente</div>'}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    calculateTotal(expenses) {
+        return expenses.reduce((total, item) => total + (item.cost || 0), 0);
+    }
+
+    getCategoryIcon(category) {
+        // Limpiar el nombre de la categoría eliminando emojis
+        const cleanCategory = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+        
+        const icons = {
+            'Ropa': 'checkroom',
+            'Calzado': 'footprint', 
+            'Equipo': 'backpack',
+            'Documentos y Salud': 'medical_services',
+            'Vuelos': 'flight',
+            'Alojamiento': 'hotel',
+            'Transporte': 'directions_bus',
+            'Comida': 'restaurant',
+            'Actividades': 'hiking',
+            'Visados': 'description',
+            'Seguro': 'security',
+            'Equipamiento': 'backpack',
+            'Otros': 'more_horiz'
+        };
+        return icons[cleanCategory] || 'inventory_2';
+    }
+
+    getCategoryColor(category) {
+        // Limpiar el nombre de la categoría eliminando emojis
+        const cleanCategory = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+        
+        const colors = {
+            'Ropa': 'bg-blue-500',
+            'Calzado': 'bg-green-500',
+            'Equipo': 'bg-purple-500',
+            'Documentos y Salud': 'bg-red-500',
+            'Vuelos': 'bg-blue-500',
+            'Alojamiento': 'bg-purple-500',
+            'Transporte': 'bg-green-500',
+            'Comida': 'bg-orange-500',
+            'Actividades': 'bg-red-500',
+            'Visados': 'bg-yellow-500',
+            'Seguro': 'bg-indigo-500',
+            'Equipamiento': 'bg-pink-500',
+            'Otros': 'bg-gray-500'
+        };
+        return colors[cleanCategory] || 'bg-slate-500';
+    }
+
+    setupBudgetFilters() {
+        const filterButtons = document.querySelectorAll('.budget-filter-btn');
+        const budgetItems = document.querySelectorAll('.budget-item');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remover clase active de todos los botones
+                filterButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-50', 'dark:bg-blue-900/20', 'ring-blue-200', 'dark:ring-blue-800'));
+                
+                // Agregar clase active al botón clickeado
+                button.classList.add('active', 'bg-blue-50', 'dark:bg-blue-900/20', 'ring-blue-200', 'dark:ring-blue-800');
+
+                const category = button.dataset.category;
+
+                budgetItems.forEach(item => {
+                    if (category === 'all' || item.dataset.category === category) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    }
+
+    // Renderizar lista de equipaje
+    renderPackingList() {
+        console.log('🎒 Renderizando lista de equipaje');
+        const container = document.getElementById('packing-list');
+        if (!container) {
+            console.error('❌ Contenedor #packing-list no encontrado');
+            return;
+        }
+        console.log('✅ Contenedor #packing-list encontrado');
+
+        const saved = JSON.parse(localStorage.getItem('packingListV2')) || {};
+        
+        const listHTML = Object.entries(tripConfig.packingListData).map(([category, items]) => {
+            const categoryIcon = this.getCategoryIcon(category);
+            const categoryColor = this.getCategoryColor(category);
+            // Limpiar el nombre de la categoría eliminando emojis
+            const cleanCategoryName = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+            
+            return `
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-2xl ${categoryColor.replace('bg-', 'text-')}">${categoryIcon}</span>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">${cleanCategoryName}</h3>
+                    </div>
+                    <div class="space-y-2">
+                        ${items.map(item => {
+                            const itemKey = `${category}-${item}`;
+                            const isChecked = saved[itemKey] || false;
+                            return `
+                                <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} 
+                                           data-item-key="${itemKey}"
+                                           class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                    <span class="text-slate-700 dark:text-slate-300 ${isChecked ? 'line-through opacity-50' : ''}">${item}</span>
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-lg">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-2xl text-teal-600 dark:text-teal-400">luggage</span>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Lista de Equipaje</h2>
+                </div>
+                <div class="grid gap-6 md:grid-cols-2">
+                    ${listHTML}
+                </div>
+            </div>
+        `;
+        
+        // Asegurar que el contenedor sea visible
+        container.style.opacity = '1 !important';
+        
+        // Configurar event listeners para los checkboxes
+        container.addEventListener('change', e => {
+            if (e.target.matches('input[type="checkbox"]')) {
+                const saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
+                const itemKey = e.target.getAttribute('data-item-key');
+                if (itemKey) {
+                    saved[itemKey] = e.target.checked;
+                    localStorage.setItem('packingListV2', JSON.stringify(saved));
+                }
+            }
+        });
+        
+        console.log('✅ Lista de equipaje renderizada completamente');
+    }
+
+    // Renderizar información climática
+    renderWeather() {
+        console.log('🌤️ Renderizando información climática');
+        const container = document.getElementById('weather');
+        if (!container) return;
+
+        const weatherData = [
+            { location: 'Katmandú', dayTemp: '22-25°C', nightTemp: '5-10°C', icon: 'location_city', color: 'text-blue-600' }, 
+            { location: 'Pokhara', dayTemp: '22-25°C', nightTemp: '5-10°C', icon: 'landscape', color: 'text-green-600' },
+            { location: 'Chitwan', dayTemp: '25-30°C', nightTemp: '15-20°C', icon: 'wb_sunny', color: 'text-orange-600' }, 
+            { location: 'Thimphu', dayTemp: '15-22°C', nightTemp: '0-7°C', icon: 'terrain', color: 'text-slate-600' },
+            { location: 'Paro', dayTemp: '15-22°C', nightTemp: '0-7°C', icon: 'terrain', color: 'text-slate-600' }, 
+            { location: 'Punakha', dayTemp: '18-25°C', nightTemp: '10-15°C', icon: 'landscape', color: 'text-green-600' }
+        ];
+
+        const weatherHTML = weatherData.map(weather => `
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-semibold text-slate-900 dark:text-white">${weather.location}</h4>
+                    <span class="material-symbols-outlined text-2xl ${weather.color}">${weather.icon}</span>
+                </div>
+                <div class="space-y-1 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-slate-600 dark:text-slate-400">Día:</span>
+                        <span class="font-medium text-slate-900 dark:text-white">${weather.dayTemp}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-600 dark:text-slate-400">Noche:</span>
+                        <span class="font-medium text-slate-900 dark:text-white">${weather.nightTemp}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        container.innerHTML = `
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-lg">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-2xl text-yellow-600 dark:text-yellow-400">wb_sunny</span>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información Climática</h2>
+                </div>
+                <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
+                        <h3 class="font-semibold text-blue-800 dark:text-blue-300">Clima General</h3>
+                    </div>
+                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                        Octubre es ideal: días soleados y secos, noches frescas. Perfecto para trekking y actividades al aire libre.
+                    </p>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    ${weatherHTML}
+                </div>
+            </div>
+        `;
+        
+        // Asegurar que el contenedor sea visible
+        container.style.opacity = '1 !important';
+    }
+
+    // Renderizar sección de vuelos para incluir en resumen
+    renderFlightsSection() {
+        try {
+            const flightSegmentHTML = (segment) => `
+                <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-2xl">
+                    <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">flight</span>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-bold text-lg text-slate-900 dark:text-white">${segment.from}</p>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">${segment.fromDateTime}</p>
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-400">
+                                <div class="w-8 border-t border-dashed border-slate-300"></div>
+                                <span class="material-symbols-outlined text-slate-400">flight_takeoff</span>
+                                <div class="w-8 border-t border-dashed border-slate-300"></div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-lg text-slate-900 dark:text-white">${segment.to}</p>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">${segment.toDateTime}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            const flightCardHTML = (flight) => `
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">${flight.title}</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">${flight.airline}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        ${flight.segments.map((segment, index) => `
+                            ${index > 0 && flight.segments[index-1].layover ? 
+                                `<div class="text-center py-2">
+                                    <div class="inline-flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-3 py-1 rounded-full text-sm border border-orange-200 dark:border-orange-800">
+                                        <span class="material-symbols-outlined text-sm">schedule</span>
+                                        ${flight.segments[index-1].layover}
+                                    </div>
+                                </div>` : ''}
+                            ${flightSegmentHTML(segment)}
+                        `).join('')}
+                    </div>
+                </div>`;
+
+            const internationalFlights = tripConfig.flightsData.filter(f => f.type === 'Internacional');
+            const regionalFlights = tripConfig.flightsData.filter(f => f.type === 'Regional');
+
+            return `
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-lg">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight</span>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información de Vuelos</h2>
+                    </div>
+                    <div class="space-y-8">
+                        ${flightCardHTML(internationalFlights[0])}
+                        <div class="grid md:grid-cols-2 gap-6">
+                            ${regionalFlights.map(flightCardHTML).join('')}
+                        </div>
+                        ${flightCardHTML(internationalFlights[1])}
+                    </div>
+                </div>`;
+
+        } catch (error) {
+            console.error('❌ Error al renderizar sección de vuelos:', error);
+            return `
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
+                    <h3 class="font-semibold">Error al cargar los vuelos</h3>
+                    <p class="text-sm">${error.message}</p>
+                </div>`;
+        }
+    }
+
+    // Renderizar información de vuelos (mantenido para compatibilidad)
+    renderFlights() {
+        console.log('✈️ Renderizando información de vuelos');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) {
+            console.error('❌ Contenedor main-content no encontrado');
+            return;
+        }
+
+        try {
+            const flightSegmentHTML = (segment) => `
+                <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-2xl">
+                    <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">flight</span>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-bold text-lg text-slate-900 dark:text-white">${segment.from}</p>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">${segment.fromDateTime}</p>
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-400">
+                                <div class="w-8 border-t border-dashed border-slate-300"></div>
+                                <span class="material-symbols-outlined text-slate-400">flight_takeoff</span>
+                                <div class="w-8 border-t border-dashed border-slate-300"></div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-lg text-slate-900 dark:text-white">${segment.to}</p>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">${segment.toDateTime}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            const flightCardHTML = (flight) => `
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">${flight.title}</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">${flight.airline}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        ${flight.segments.map((segment, index) => `
+                            ${index > 0 && flight.segments[index-1].layover ? 
+                                `<div class="text-center py-2">
+                                    <div class="inline-flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-3 py-1 rounded-full text-sm border border-orange-200 dark:border-orange-800">
+                                        <span class="material-symbols-outlined text-sm">schedule</span>
+                                        ${flight.segments[index-1].layover}
+                                    </div>
+                                </div>` : ''}
+                            ${flightSegmentHTML(segment)}
+                        `).join('')}
+                    </div>
+                </div>`;
+
+            const internationalFlights = tripConfig.flightsData.filter(f => f.type === 'Internacional');
+            const regionalFlights = tripConfig.flightsData.filter(f => f.type === 'Regional');
+
+            mainContent.innerHTML = `
+                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-lg">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight</span>
+                            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información de Vuelos</h2>
+                        </div>
+                        <div class="space-y-8">
+                            ${flightCardHTML(internationalFlights[0])}
+                            <div class="grid md:grid-cols-2 gap-6">
+                                ${regionalFlights.map(flightCardHTML).join('')}
+                            </div>
+                            ${flightCardHTML(internationalFlights[1])}
+                        </div>
+                    </div>
+                </div>`;
+
+            console.log('✅ Información de vuelos renderizada correctamente');
+
+        } catch (error) {
+            console.error('❌ Error al renderizar vuelos:', error);
+            mainContent.innerHTML = `
+                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
+                        <h3 class="font-semibold">Error al cargar los vuelos</h3>
+                        <p class="text-sm">${error.message}</p>
+                    </div>
+                </div>`;
+        }
+    }
+
+    // Cambiar vista
+    changeView(view) {
+        console.log(`🔄 Cambiando vista de '${this.currentView}' a '${view}'`);
+        this.currentView = view;
+        
+        // Log específico para herramientas
+        if (view === 'herramientas') {
+            console.log('🛠️ Vista de herramientas detectada, llamando renderMainContent...');
+        }
+        
+        this.renderMainContent();
+    }
+}

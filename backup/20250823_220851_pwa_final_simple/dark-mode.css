@@ -1,0 +1,669 @@
+/* CSS del Modo Oscuro - Viaje al Himalaya */
+
+/* Variables del modo oscuro */
+.dark {
+    /* Colores de texto */
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-inverse: #0f172a;
+    
+    /* Colores de fondo */
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-elevated: #475569;
+    --bg-overlay: rgba(0, 0, 0, 0.8);
+    
+    /* Colores de borde */
+    --border-color: #334155;
+    --border-light: #475569;
+    --border-dark: #1e293b;
+    
+    /* Colores de sombra */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    
+    /* Colores de acento */
+    --accent-blue: #60a5fa;
+    --accent-green: #34d399;
+    --accent-yellow: #fbbf24;
+    --accent-red: #f87171;
+    --accent-purple: #a78bfa;
+    --accent-pink: #f472b6;
+    
+    /* Colores de estado */
+    --success-bg: rgba(34, 197, 94, 0.1);
+    --success-border: rgba(34, 197, 94, 0.3);
+    --success-text: #4ade80;
+    
+    --error-bg: rgba(239, 68, 68, 0.1);
+    --error-border: rgba(239, 68, 68, 0.3);
+    --error-text: #f87171;
+    
+    --warning-bg: rgba(249, 115, 22, 0.1);
+    --warning-border: rgba(249, 115, 22, 0.3);
+    --warning-text: #fb923c;
+    
+    --info-bg: rgba(59, 130, 246, 0.1);
+    --info-border: rgba(59, 130, 246, 0.3);
+    --info-text: #60a5fa;
+}
+
+/* Transiciones suaves para cambios de modo */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Navegación inferior en modo oscuro */
+.dark #bottom-nav {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: #334155;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.dark .nav-item {
+    color: #cbd5e1;
+}
+
+.dark .nav-item:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+}
+
+.dark .nav-item.active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+.dark .nav-item.active::after {
+    background: #60a5fa;
+}
+
+/* Panel "Hoy" en modo oscuro */
+.dark #today-panel {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.dark #today-panel::before {
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
+}
+
+.dark .today-card {
+    background: #334155;
+    border-color: #475569;
+}
+
+.dark .today-card:hover {
+    background: #475569;
+    border-color: #60a5fa;
+}
+
+/* Header en modo oscuro */
+.dark header {
+    border-color: #334155;
+}
+
+.dark .floating-element {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: #475569;
+}
+
+/* Tarjetas de estadísticas en modo oscuro */
+.dark .stats-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+    border-color: #475569;
+    backdrop-filter: blur(20px);
+}
+
+.dark .stats-card:hover {
+    background: linear-gradient(135deg, rgba(51, 65, 85, 0.9), rgba(71, 85, 105, 0.7));
+    border-color: #60a5fa;
+}
+
+.dark .stats-icon::after {
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.3), transparent);
+}
+
+/* Filtros de categoría en modo oscuro */
+.dark .category-filter {
+    background: #334155;
+    border-color: #475569;
+    color: #cbd5e1;
+}
+
+.dark .category-filter:hover {
+    background: #475569;
+    border-color: #60a5fa;
+}
+
+.dark .category-filter.active {
+    background: rgba(96, 165, 250, 0.2);
+    border-color: #60a5fa;
+    color: #60a5fa;
+}
+
+/* Formulario de gastos en modo oscuro */
+.dark .expense-form {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: #475569;
+}
+
+.dark .expense-form input,
+.dark .expense-form select,
+.dark .expense-form textarea {
+    background: #334155;
+    border-color: #475569;
+    color: #f1f5f9;
+}
+
+.dark .expense-form input:focus,
+.dark .expense-form select:focus,
+.dark .expense-form textarea:focus {
+    background: #475569;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.dark .expense-form input::placeholder,
+.dark .expense-form textarea::placeholder {
+    color: #94a3b8;
+}
+
+/* Lista de gastos en modo oscuro */
+.dark .expense-item {
+    background: #334155;
+    border-color: #475569;
+}
+
+.dark .expense-item:hover {
+    background: rgba(96, 165, 250, 0.1);
+    border-color: #60a5fa;
+}
+
+.dark .expense-item::before {
+    background: linear-gradient(to bottom, #60a5fa, #34d399);
+}
+
+/* Lista de equipaje en modo oscuro */
+.dark .packing-category {
+    background: #334155;
+    border-color: #475569;
+}
+
+.dark .packing-category:hover {
+    background: #475569;
+    border-color: #60a5fa;
+}
+
+.dark .packing-category::before {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(52, 211, 153, 0.1));
+}
+
+.dark .packing-item {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.dark .packing-item:hover {
+    background: rgba(96, 165, 250, 0.1);
+    border-color: #60a5fa;
+}
+
+/* Paquetes de tour en modo oscuro */
+.dark .tour-package {
+    background: #334155;
+    border-color: #475569;
+}
+
+.dark .tour-package:hover {
+    background: #475569;
+    border-color: #60a5fa;
+}
+
+.dark .tour-package::before {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(52, 211, 153, 0.15));
+}
+
+/* Información adicional en modo oscuro */
+.dark .info-card {
+    background: #334155;
+    border-color: #475569;
+}
+
+.dark .info-card:hover {
+    background: #475569;
+    border-color: #60a5fa;
+}
+
+.dark .info-card::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+}
+
+/* Consejos de viaje en modo oscuro */
+.dark .travel-tip {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+/* Información del clima en modo oscuro */
+.dark .weather-info {
+    background: #334155;
+    border-color: #475569;
+}
+
+.dark .weather-info:hover {
+    background: #475569;
+    border-color: #60a5fa;
+}
+
+.dark .weather-info::before {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(52, 211, 153, 0.1));
+}
+
+/* Mapa en modo oscuro */
+.dark #map-container {
+    border-color: #334155;
+}
+
+.dark #map-container::before {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(52, 211, 153, 0.15));
+}
+
+/* Itinerario en modo oscuro */
+.dark .itinerary-card {
+    background: #334155;
+    border-color: #475569;
+}
+
+.dark .itinerary-card:hover {
+    background: #475569;
+    border-color: #60a5fa;
+}
+
+.dark .itinerary-card .day-number::after {
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.3), transparent);
+}
+
+/* Modal del itinerario en modo oscuro */
+.dark .modal-overlay {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.dark .modal-content {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.dark .close-modal-btn {
+    background: rgba(51, 65, 85, 0.8);
+    border-color: #475569;
+}
+
+.dark .close-modal-btn:hover {
+    background: rgba(71, 85, 105, 0.9);
+    border-color: #60a5fa;
+}
+
+.dark .close-modal-btn::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+/* Detalles del modal en modo oscuro */
+.dark .detail-card {
+    background: #334155;
+    border-color: #475569;
+}
+
+.dark .detail-card:hover {
+    background: rgba(96, 165, 250, 0.1);
+    border-color: #60a5fa;
+}
+
+.dark .detail-card::before {
+    background: #60a5fa;
+}
+
+/* Mapa del modal en modo oscuro */
+.dark #modal-map {
+    border-color: #334155;
+}
+
+.dark #modal-map::before {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(52, 211, 153, 0.1));
+}
+
+/* Marcadores del mapa en modo oscuro */
+.dark .custom-div-icon div {
+    background: #1e293b;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+
+.dark .custom-div-icon div:hover {
+    background: #334155;
+    border-color: #60a5fa;
+}
+
+/* Estados de carga en modo oscuro */
+.dark .loading-state::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+@keyframes loading-dark {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.dark .loading-state::after {
+    animation: loading-dark 1.5s infinite;
+}
+
+/* Mensajes de estado en modo oscuro */
+.dark .status-message.success {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+    color: var(--success-text);
+}
+
+.dark .status-message.error {
+    background: var(--error-bg);
+    border-color: var(--error-border);
+    color: var(--error-text);
+}
+
+.dark .status-message.warning {
+    background: var(--warning-bg);
+    border-color: var(--warning-border);
+    color: var(--warning-text);
+}
+
+.dark .status-message.info {
+    background: var(--info-bg);
+    border-color: var(--info-border);
+    color: var(--info-text);
+}
+
+/* Tooltips en modo oscuro */
+.dark .tooltip::after {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: #475569;
+    color: #f1f5f9;
+}
+
+/* Scrollbar personalizada en modo oscuro */
+.dark ::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+.dark .component-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dark .component-scroll::-webkit-scrollbar-thumb {
+    background: rgba(96, 165, 250, 0.5);
+}
+
+.dark .component-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(96, 165, 250, 0.7);
+}
+
+/* Estados de hover en modo oscuro */
+.dark .interactive:hover {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+/* Estados de selección en modo oscuro */
+.dark .selected {
+    background: rgba(96, 165, 250, 0.15);
+    border-color: #60a5fa;
+}
+
+.dark .selected::after {
+    color: #60a5fa;
+}
+
+/* Estados de deshabilitado en modo oscuro */
+.dark .disabled {
+    opacity: 0.3;
+}
+
+/* Efectos de glassmorphism en modo oscuro */
+.dark .glass {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.dark .glass:hover {
+    background: rgba(51, 65, 85, 0.9);
+    border-color: rgba(96, 165, 250, 0.5);
+}
+
+/* Efectos de neumorphism en modo oscuro */
+.dark .neumorph {
+    background: #1e293b;
+    box-shadow: 
+        8px 8px 16px #0f172a,
+        -8px -8px 16px #334155;
+}
+
+.dark .neumorph:hover {
+    box-shadow: 
+        4px 4px 8px #0f172a,
+        -4px -4px 8px #334155;
+}
+
+.dark .neumorph:active {
+    box-shadow: 
+        inset 4px 4px 8px #0f172a,
+        inset -4px -4px 8px #334155;
+}
+
+/* Efectos de gradiente en modo oscuro */
+.dark .gradient-border {
+    position: relative;
+    background: #1e293b;
+    border-radius: 0.75rem;
+}
+
+.dark .gradient-border::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, #60a5fa, #34d399, #fbbf24, #f87171);
+    border-radius: 0.875rem;
+    z-index: -1;
+}
+
+/* Efectos de animación en modo oscuro */
+@keyframes float-dark {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg); 
+        filter: brightness(0.8);
+    }
+    50% { 
+        transform: translateY(-20px) rotate(180deg); 
+        filter: brightness(1.2);
+    }
+}
+
+.dark .floating-element {
+    animation: float-dark 6s ease-in-out infinite;
+}
+
+/* Efectos de partículas en modo oscuro */
+.dark .particles {
+    position: relative;
+    overflow: hidden;
+}
+
+.dark .particles::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 80%, rgba(96, 165, 250, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(52, 211, 153, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(251, 191, 36, 0.1) 0%, transparent 50%);
+    animation: particles-float 20s ease-in-out infinite;
+}
+
+@keyframes particles-float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(-10px, -10px) rotate(90deg); }
+    50% { transform: translate(10px, -20px) rotate(180deg); }
+    75% { transform: translate(-5px, 10px) rotate(270deg); }
+}
+
+/* Efectos de ondas en modo oscuro */
+.dark .wave-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.dark .wave-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(96, 165, 250, 0.1) 50%, transparent 70%);
+    animation: wave 3s ease-in-out infinite;
+}
+
+@keyframes wave {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+}
+
+/* Efectos de brillo en modo oscuro */
+.dark .shine-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.dark .shine-effect::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(96, 165, 250, 0.1),
+        transparent,
+        rgba(52, 211, 153, 0.1),
+        transparent
+    );
+    animation: shine 4s ease-in-out infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(0deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(360deg); }
+}
+
+/* Responsive para modo oscuro */
+@media (max-width: 640px) {
+    .dark .stats-card {
+        margin-bottom: 1rem;
+    }
+    
+    .dark .category-filter {
+        margin-bottom: 0.5rem;
+    }
+    
+    .dark .expense-form {
+        padding: 1rem;
+    }
+    
+    .dark .packing-category {
+        margin-bottom: 1rem;
+    }
+    
+    .dark .tour-package {
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dark .grid-cols-2,
+    .dark .grid-cols-3,
+    .dark .grid-cols-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .dark .today-card {
+        margin-bottom: 1rem;
+    }
+    
+    .dark .info-card {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .dark .stats-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .dark .expense-item {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Preferencias de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+    .dark * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .dark .floating-element,
+    .dark .particles,
+    .dark .wave-effect,
+    .dark .shine-effect {
+        animation: none;
+    }
+}
+
+/* Alto contraste para modo oscuro */
+@media (prefers-contrast: high) {
+    .dark {
+        --border-color: #f1f5f9;
+        --border-light: #cbd5e1;
+        --text-muted: #f1f5f9;
+    }
+    
+    .dark .stats-card,
+    .dark .today-card,
+    .dark .expense-item,
+    .dark .packing-category,
+    .dark .tour-package,
+    .dark .info-card,
+    .dark .itinerary-card {
+        border-width: 2px;
+    }
+}
