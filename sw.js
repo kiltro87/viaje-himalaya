@@ -9,39 +9,42 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v2.2.1';
-const DATA_CACHE = 'viaje-data-v2.2.1';
+const CACHE_NAME = 'viaje-himalaya-v2.2.3';
+const DATA_CACHE = 'viaje-data-v2.2.3';
+
+// Base path para GitHub Pages
+const BASE_PATH = '/viaje-himalaya';
 
 // Recursos críticos para el funcionamiento offline
 const CORE_RESOURCES = [
-  './',
-  './index.html',
-  './manifest.json',
-  './css/main.css',
-  './css/components.css', 
-  './css/dark-mode.css',
-  './css/mobile-responsive.css',
-  './js/main.js',
-  './js/config/tripConfig.js',
-  './js/config/AppConstants.js',
-  './js/config/firebaseConfig.js',
-  './js/components/UIRenderer.js',
-  './js/components/BudgetManager.js',
-  './js/components/SyncStatusIndicator.js',
-  './js/utils/Logger.js',
-  './js/utils/DOMUtils.js',
-  './js/utils/FormatUtils.js',
-  './js/utils/ResponsiveUtils.js',
-  './js/utils/FirebaseManager.js',
-  './js/utils/GeolocationManager.js',
-  './js/utils/ShareManager.js',
-  './js/utils/ServiceWorkerUtils.js',
-  './assets/icon-192x192.png',
-  './assets/icon-512x512.png',
-  './assets/icon-152x152.png',
-  './assets/icon-144x144.png',
-  './assets/icon-96x96.png',
-  './assets/icon-72x72.png'
+  `${BASE_PATH}/`,
+  `${BASE_PATH}/index.html`,
+  `${BASE_PATH}/manifest.json`,
+  `${BASE_PATH}/css/main.css`,
+  `${BASE_PATH}/css/components.css`, 
+  `${BASE_PATH}/css/dark-mode.css`,
+  `${BASE_PATH}/css/mobile-responsive.css`,
+  `${BASE_PATH}/js/main.js`,
+  `${BASE_PATH}/js/config/tripConfig.js`,
+  `${BASE_PATH}/js/config/AppConstants.js`,
+  `${BASE_PATH}/js/config/firebaseConfig.js`,
+  `${BASE_PATH}/js/components/UIRenderer.js`,
+  `${BASE_PATH}/js/components/BudgetManager.js`,
+  `${BASE_PATH}/js/components/SyncStatusIndicator.js`,
+  `${BASE_PATH}/js/utils/Logger.js`,
+  `${BASE_PATH}/js/utils/DOMUtils.js`,
+  `${BASE_PATH}/js/utils/FormatUtils.js`,
+  `${BASE_PATH}/js/utils/ResponsiveUtils.js`,
+  `${BASE_PATH}/js/utils/FirebaseManager.js`,
+  `${BASE_PATH}/js/utils/GeolocationManager.js`,
+  `${BASE_PATH}/js/utils/ShareManager.js`,
+  `${BASE_PATH}/js/utils/ServiceWorkerUtils.js`,
+  `${BASE_PATH}/assets/icon-192x192.png`,
+  `${BASE_PATH}/assets/icon-512x512.png`,
+  `${BASE_PATH}/assets/icon-152x152.png`,
+  `${BASE_PATH}/assets/icon-144x144.png`,
+  `${BASE_PATH}/assets/icon-96x96.png`,
+  `${BASE_PATH}/assets/icon-72x72.png`
 ];
 
 // Recursos externos (CDN)
@@ -165,7 +168,7 @@ self.addEventListener('fetch', event => {
             
             // Fallback para navegación
             if (request.mode === 'navigate') {
-              return caches.match('./index.html');
+              return caches.match(`${BASE_PATH}/index.html`);
             }
             
             throw error;
@@ -213,4 +216,4 @@ self.addEventListener('sync', event => {
   }
 });
 
-console.log('📱 Service Worker v2.2.1 cargado y listo');
+console.log('📱 Service Worker v2.2.3 cargado y listo para GitHub Pages');
