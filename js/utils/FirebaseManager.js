@@ -46,15 +46,25 @@ export class FirebaseManager {
         Logger.init('FirebaseManager initialized');
         
         // Debug: verificar configuración
-        Logger.data('Firebase config check:', { 
-            apiKey: firebaseConfig.apiKey,
-            isConfigured: isConfigured() 
-        });
+        console.log('🔥 DEBUG: FirebaseManager constructor ejecutándose');
+        console.log('🔥 DEBUG: firebaseConfig:', firebaseConfig);
+        console.log('🔥 DEBUG: isConfigured function:', isConfigured);
         
-        // Inicializar Firebase si está configurado
-        if (isConfigured()) {
-            this.initializeFirebase();
-        } else {
+        try {
+            Logger.data('Firebase config check:', { 
+                apiKey: firebaseConfig?.apiKey || 'undefined',
+                isConfigured: isConfigured() 
+            });
+            
+            // Inicializar Firebase si está configurado
+            if (isConfigured()) {
+                this.initializeFirebase();
+            } else {
+                Logger.warning('Firebase not configured. Using localStorage only.');
+                this.showConfigurationInstructions();
+            }
+        } catch (error) {
+            Logger.error('Error checking Firebase configuration:', error);
             Logger.warning('Firebase not configured. Using localStorage only.');
             this.showConfigurationInstructions();
         }
