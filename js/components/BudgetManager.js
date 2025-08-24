@@ -1069,16 +1069,53 @@ export class BudgetManager {
                                                 </div>
                                             `;
                                         } else {
+                                            const itemId = `budget-${cat}-${item.concept}`.replace(/[^a-zA-Z0-9-]/g, '-');
                                             return `
-                                                <div class="budget-item-clickable flex justify-between items-center py-2 px-3 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-all duration-200" 
-                                                     data-concept="${item.concept}" 
-                                                     data-amount="${item.cost || 0}" 
-                                                     data-category="${cat}"
-                                                     title="Click para autorrellenar formulario de gasto">
-                                                    <span class="text-slate-700 dark:text-slate-300">${item.concept}</span>
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="font-medium text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0, true)}</span>
-                                                        <span class="material-symbols-outlined text-sm text-slate-400">add_circle</span>
+                                                <div class="budget-item-wrapper" data-item-id="${itemId}">
+                                                    <!-- Item Presupuestado -->
+                                                    <div class="budget-item-clickable flex justify-between items-center py-2 px-3 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-all duration-200" 
+                                                         data-concept="${item.concept}" 
+                                                         data-amount="${item.cost || 0}" 
+                                                         data-category="${cat}"
+                                                         data-item-id="${itemId}"
+                                                         title="Click para crear gasto basado en este item">
+                                                        <span class="text-slate-700 dark:text-slate-300">${item.concept}</span>
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="font-medium text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0, true)}</span>
+                                                            <span class="material-symbols-outlined text-sm text-slate-400">add_circle</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Formulario Inline para Crear Gasto (Oculto por defecto) -->
+                                                    <div class="budget-inline-form hidden mt-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl border-2 border-green-300 dark:border-green-700 shadow-md" data-item-id="${itemId}">
+                                                        <div class="flex items-center gap-2 mb-3">
+                                                            <span class="material-symbols-outlined text-green-600">add_circle</span>
+                                                            <h4 class="text-sm font-medium text-green-800 dark:text-green-200">Crear gasto basado en: ${item.concept}</h4>
+                                                        </div>
+                                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                                                            <div>
+                                                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Concepto</label>
+                                                                <input type="text" class="budget-inline-concept w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" value="${item.concept}">
+                                                            </div>
+                                                            <div>
+                                                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Cantidad (€)</label>
+                                                                <input type="number" step="0.01" class="budget-inline-amount w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" value="${item.cost || 0}">
+                                                            </div>
+                                                            <div>
+                                                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Categoría</label>
+                                                                <select class="budget-inline-category w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
+                                                                    ${allCategories.map(category => `<option value="${category}" ${category === cat ? 'selected' : ''}>${category}</option>`).join('')}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex gap-2 justify-end">
+                                                            <button class="cancel-budget-inline px-3 py-1 text-xs bg-slate-500 hover:bg-slate-600 text-white rounded transition-colors" data-item-id="${itemId}">
+                                                                <span class="material-symbols-outlined text-xs mr-1">close</span>Cancelar
+                                                            </button>
+                                                            <button class="create-budget-expense px-3 py-1 text-xs bg-green-500 hover:bg-green-600 text-white rounded transition-colors" data-item-id="${itemId}">
+                                                                <span class="material-symbols-outlined text-xs mr-1">add</span>Crear Gasto
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             `;
@@ -1191,15 +1228,22 @@ export class BudgetManager {
                         if (confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
                             try {
                                 await window.ExpenseManager.remove(expenseId);
-                                // 🔄 FORZAR ACTUALIZACIÓN DE UI DESPUÉS DE ELIMINAR
-                                setTimeout(() => {
-                                    this.updateBudgetUI();
-                                    // Actualizar también el contenido de la categoría activa
-                                    const activeCategory = document.querySelector('.category-btn.active')?.dataset.category;
-                                    if (activeCategory) {
-                                        this.showCategoryContent(activeCategory);
+                                
+                                // 🚀 ACTUALIZACIÓN INMEDIATA DE UI (sin setTimeout)
+                                this.updateSummaryCards();
+                                
+                                // 🔄 ACTUALIZAR CONTENIDO DE CATEGORÍAS SELECCIONADAS
+                                const selectedCategories = Array.from(document.querySelectorAll('.budget-filter-btn.ring-2'));
+                                if (selectedCategories.length > 0) {
+                                    // Si hay categorías seleccionadas, actualizar su contenido
+                                    this.showCategoryContent();
+                                } else {
+                                    // Si no hay categorías seleccionadas, ocultar contenido
+                                    const contentContainer = document.getElementById('budget-content');
+                                    if (contentContainer) {
+                                        contentContainer.style.display = 'none';
                                     }
-                                }, 100);
+                                }
                             } catch (error) {
                                 console.error('Error al eliminar gasto:', error);
                                 this.showNotification('❌ Error al eliminar gasto', 'error');
@@ -1208,8 +1252,37 @@ export class BudgetManager {
                     });
                 });
 
-                // 🎯 AUTORRELLENAR FORMULARIO: Items presupuestados
-                document.querySelectorAll('.budget-item-clickable, .budget-subitem-clickable').forEach(item => {
+                // 🎯 FORMULARIO INLINE: Items presupuestados
+                document.querySelectorAll('.budget-item-clickable').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const itemId = item.dataset.itemId;
+                        if (itemId) {
+                            this.toggleBudgetInlineForm(itemId);
+                        }
+                    });
+                });
+
+                // 💾 CREAR GASTO DESDE PRESUPUESTO
+                document.querySelectorAll('.create-budget-expense').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        const itemId = btn.dataset.itemId;
+                        await this.createExpenseFromBudget(itemId);
+                    });
+                });
+
+                // ❌ CANCELAR FORMULARIO PRESUPUESTO
+                document.querySelectorAll('.cancel-budget-inline').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const itemId = btn.dataset.itemId;
+                        this.hideBudgetInlineForm(itemId);
+                    });
+                });
+
+                // 🎯 SUBITEMS (mantener funcionalidad original)
+                document.querySelectorAll('.budget-subitem-clickable').forEach(item => {
                     item.addEventListener('click', (e) => {
                         e.preventDefault();
                         const concept = item.dataset.concept;
@@ -1377,6 +1450,119 @@ export class BudgetManager {
                 conceptInput.focus();
                 conceptInput.select();
             }, 500);
+        }
+    }
+
+    /**
+     * 🎯 FORMULARIO INLINE PRESUPUESTO: Mostrar/ocultar formulario
+     */
+    toggleBudgetInlineForm(itemId) {
+        // Ocultar todos los otros formularios inline abiertos
+        document.querySelectorAll('.budget-inline-form').forEach(form => {
+            if (form.dataset.itemId !== itemId && !form.classList.contains('hidden')) {
+                form.classList.add('hidden');
+            }
+        });
+        
+        // Toggle del formulario específico
+        const form = document.querySelector(`.budget-inline-form[data-item-id="${itemId}"]`);
+        if (form) {
+            const wasHidden = form.classList.contains('hidden');
+            form.classList.toggle('hidden');
+            
+            // Si se acaba de mostrar, hacer scroll y focus
+            if (wasHidden) {
+                setTimeout(() => {
+                    // Scroll suave al formulario
+                    form.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'nearest',
+                        inline: 'nearest'
+                    });
+                    
+                    // Focus en el primer input
+                    const firstInput = form.querySelector('.budget-inline-concept');
+                    if (firstInput) {
+                        firstInput.focus();
+                        firstInput.select();
+                    }
+                }, 100);
+            }
+        }
+    }
+
+    /**
+     * ❌ FORMULARIO INLINE PRESUPUESTO: Ocultar formulario
+     */
+    hideBudgetInlineForm(itemId) {
+        const form = document.querySelector(`.budget-inline-form[data-item-id="${itemId}"]`);
+        if (form) {
+            form.classList.add('hidden');
+        }
+    }
+
+    /**
+     * 💾 CREAR GASTO DESDE PRESUPUESTO: Crear gasto basado en item presupuestado
+     */
+    async createExpenseFromBudget(itemId) {
+        const form = document.querySelector(`.budget-inline-form[data-item-id="${itemId}"]`);
+        if (!form) return;
+
+        const concept = form.querySelector('.budget-inline-concept').value;
+        const amount = parseFloat(form.querySelector('.budget-inline-amount').value);
+        const category = form.querySelector('.budget-inline-category').value;
+
+        if (concept && amount > 0 && category) {
+            try {
+                // 🚀 CREAR GASTO AUTOMÁTICAMENTE (Optimistic UI)
+                const newExpense = {
+                    id: Date.now().toString(),
+                    concept,
+                    amount,
+                    category,
+                    date: new Date().toISOString(),
+                    deviceId: this.firebaseManager?.getDeviceId() || 'local'
+                };
+
+                // ➕ ADICIÓN OPTIMISTA INMEDIATA
+                window.AppState.expenses.unshift(newExpense);
+
+                // 🎯 ACTUALIZAR UI INMEDIATAMENTE
+                this.updateSummaryCards();
+                this.showCategoryContent();
+                this.hideBudgetInlineForm(itemId);
+
+                // 🔄 Indicar que se está sincronizando
+                this.updateSyncStatus('syncing');
+
+                // 🔥 FIREBASE EN BACKGROUND
+                const firebaseId = await window.ExpenseManager.add(newExpense);
+                
+                // Actualizar el ID local con el ID de Firebase si es diferente
+                if (firebaseId && firebaseId !== newExpense.id) {
+                    const localIndex = window.AppState.expenses.findIndex(exp => exp.id === newExpense.id);
+                    if (localIndex !== -1) {
+                        window.AppState.expenses[localIndex].id = firebaseId;
+                    }
+                }
+
+                // ✅ Sincronización completada
+                this.updateSyncStatus('connected');
+                this.showNotification(`✅ Gasto creado: ${concept} - ${window.Utils.formatCurrency(amount, true)}`, 'success');
+
+            } catch (error) {
+                Logger.error('Error creating expense from budget item:', error);
+                
+                // ❌ REVERTIR CAMBIOS OPTIMISTAS
+                window.AppState.expenses = window.AppState.expenses.filter(exp => 
+                    !(exp.concept === concept && exp.amount === amount && exp.category === category)
+                );
+                
+                this.updateSummaryCards();
+                this.showCategoryContent();
+                this.updateSyncStatus('error');
+                this.showNotification('❌ Error al crear gasto. Inténtalo de nuevo.', 'error');
+            }
         }
     }
 

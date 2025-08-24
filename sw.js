@@ -9,8 +9,8 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v4.2.3-category-filters-fixed';
-const DATA_CACHE = 'viaje-data-v4.2.3-category-filters-fixed';
+const CACHE_NAME = 'viaje-himalaya-v4.3.0-inline-budget-forms';
+const DATA_CACHE = 'viaje-data-v4.3.0-inline-budget-forms';
 
 // Base path para GitHub Pages
 const BASE_PATH = '/viaje-himalaya';
@@ -421,4 +421,4 @@ async function getOfflineActions() { return []; }
 async function processOfflineAction(action) { console.log('Processing action:', action.type); }
 async function removeOfflineAction(id) { console.log('Removing action:', id); }
 
-console.log('🔧 Service Worker v4.2.3 cargado - CATEGORY FILTERS FIXED: Filtros funcionando + allCategories definido + Firebase warning fixed');
+console.log('🎯 Service Worker v4.3.0 cargado - INLINE BUDGET FORMS: Formularios inline en items presupuestados + Eliminación en tiempo real');
