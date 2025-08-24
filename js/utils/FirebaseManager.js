@@ -416,45 +416,53 @@ export class FirebaseManager {
      * @param {Function} callback - Función a llamar cuando cambien los datos
      * @returns {Function} Función para desuscribirse
      */
-    setupRealtimeListener(callback) {
+    async setupRealtimeListener(callback) {
+        console.log('🔥 DEBUG: setupRealtimeListener called', { isConnected: this.isConnected });
+        
         if (!this.isConnected) {
             Logger.warning('Firebase not connected, realtime listener not available');
             return () => {};
         }
 
         try {
+            console.log('🔥 DEBUG: Importing Firestore modules for listener...');
             const { collection, onSnapshot, orderBy, query } = 
-                import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js').then(module => {
+                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+
+            console.log('🔥 DEBUG: Creating Firestore query...');
+            const q = query(
+                collection(this.db, firestoreConfig.collections.expenses),
+                orderBy('createdAt', 'desc')
+            );
+            
+            console.log('🔥 DEBUG: Setting up onSnapshot listener...');
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const expenses = [];
                 
-                const q = query(
-                    collection(this.db, firestoreConfig.collections.expenses),
-                    orderBy('createdAt', 'desc')
-                );
-                
-                const unsubscribe = onSnapshot(q, (querySnapshot) => {
-                    const expenses = [];
-                    
-                    querySnapshot.forEach((doc) => {
-                        expenses.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
+                querySnapshot.forEach((doc) => {
+                    expenses.push({
+                        id: doc.id,
+                        ...doc.data()
                     });
-                    
-                    Logger.data(`Realtime update: ${expenses.length} expenses`);
-                    
-                    // Actualizar localStorage como backup
-                    localStorage.setItem('tripExpensesV1', JSON.stringify(expenses));
-                    
-                    callback(expenses);
-                }, (error) => {
-                    Logger.error('Realtime listener error:', error);
                 });
                 
-                return unsubscribe;
+                console.log('🔥 DEBUG: Realtime update received:', expenses.length, 'expenses');
+                Logger.data(`Realtime update: ${expenses.length} expenses`);
+                
+                // Actualizar localStorage como backup
+                localStorage.setItem('tripExpensesV1', JSON.stringify(expenses));
+                
+                callback(expenses);
+            }, (error) => {
+                console.error('🔥 DEBUG: Realtime listener error:', error);
+                Logger.error('Realtime listener error:', error);
             });
             
+            console.log('🔥 DEBUG: Realtime listener configured successfully');
+            return unsubscribe;
+            
         } catch (error) {
+            console.error('🔥 DEBUG: Error setting up realtime listener:', error);
             Logger.error('Error setting up realtime listener:', error);
             return () => {};
         }
