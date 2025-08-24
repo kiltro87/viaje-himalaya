@@ -351,219 +351,241 @@ export const tripConfig = {
     // Datos del presupuesto
     budgetData: {
         "budgetData": {
-            "Transporte": [
-                {
-                    "concept": "Vuelos Principales",
-                    "cost": 693.97,
-                    "category": "Transporte",
-                    "phase": "general",
-                    "subItems": [
-                        {
-                            "concept": "Madrid ↔ Katmandú (Qatar)",
-                            "cost": 270.00
-                        },
-                        {
-                            "concept": "Katmandú → Paro (Drukair)",
-                            "cost": 227.76
-                        },
-                        {
-                            "concept": "Paro → Katmandú (Bhutan Airlines)",
-                            "cost": 196.21
-                        }
-                    ]
-                },
-                {
-                    "concept": "Transporte Local (Katmandú)",
-                    "cost": 41.00,
-                    "category": "Transporte",
-                    "phase": "nepal",
-                    "country": "Nepal",
-                    "subItems": [
-                        {
-                            "concept": "Taxis Aeropuerto (4 viajes)",
-                            "cost": 28.00
-                        },
-                        {
-                            "concept": "Taxis Ciudad (4 viajes)",
-                            "cost": 12.00
-                        },
-                        {
-                            "concept": "Autobuses (2 viajes)",
-                            "cost": 1.00
-                        }
-                    ]
-                }
-            ],
-            "Tour": [
-                {
-                    "concept": "Itinerario \"Nepal 360\"",
-                    "cost": 1100.00,
-                    "category": "Tour",
-                    "phase": "nepal",
-                    "country": "Nepal"
-                },
-                {
-                    "concept": "Itinerario \"Best of Bhutan\"",
-                    "cost": 1602.00,
-                    "category": "Tour",
-                    "phase": "butan",
-                    "country": "Bután"
-                }
-            ],
-            "Comida y Bebida": [
-                {
-                    "concept": "Comidas en Nepal",
-                    "cost": 187.00,
-                    "category": "Comida y Bebida",
-                    "phase": "nepal",
-                    "country": "Nepal"
-                },
-                {
-                    "concept": "Bebidas",
-                    "cost": 45.00,
-                    "category": "Comida y Bebida",
-                    "phase": "butan",
-                    "country": "Bután"
-                }
-            ],
-            "Entradas y Visados": [
-                {
-                    "concept": "Visados y Entradas",
-                    "cost": 68.50,
-                    "category": "Entradas y Visados",
-                    "phase": "nepal",
-                    "country": "Nepal",
-                    "subItems": [
-                        {
-                            "concept": "Visado de Nepal (30 días)",
-                            "cost": 50.00
-                        },
-                        {
-                            "concept": "Plaza Durbar, Katmandú",
-                            "cost": 7.00
-                        },
-                        {
-                            "concept": "Swayambhunath (Templo de los Monos)",
-                            "cost": 1.50
-                        },
-                        {
-                            "concept": "Pashupatinath",
-                            "cost": 7.00
-                        },
-                        {
-                            "concept": "Estupa de Boudhanath",
-                            "cost": 3.00
-                        }
-                    ]
-                },
-                {
-                    "concept": "Entradas a Monumentos",
-                    "cost": 77.00,
-                    "category": "Entradas y Visados",
-                    "phase": "butan",
-                    "country": "Bután",
-                    "subItems": [
-                        {
-                            "concept": "Monasterio Taktsang (Nido del Tigre)",
-                            "cost": 22.00
-                        },
-                        {
-                            "concept": "Tashichho Dzong",
-                            "cost": 11.00
-                        },
-                        {
-                            "concept": "Punakha Dzong",
-                            "cost": 11.00
-                        },
-                        {
-                            "concept": "Memorial Chorten",
-                            "cost": 11.00
-                        },
-                        {
-                            "concept": "Buddha Dordenma",
-                            "cost": 11.00
-                        },
-                        {
-                            "concept": "Rinpung Dzong",
-                            "cost": 11.00
-                        }
-                    ]
-                }
-            ],
-            "Varios": [
-                {
-                    "concept": "Gastos Varios y Propinas (Nepal)",
-                    "cost": 216.50,
-                    "category": "Varios",
-                    "phase": "nepal",
-                    "country": "Nepal",
-                    "subItems": [
-                        {
-                            "concept": "Propinas",
-                            "cost": 55.00
-                        },
-                        {
-                            "concept": "Fondo Común Estimado",
-                            "cost": 50.00
-                        },
-                        {
-                            "concept": "Parapente en Pokhara (Opcional)",
-                            "cost": 80.00
-                        },
-                        {
-                            "concept": "Comunicaciones (SIM)",
-                            "cost": 4.00
-                        },
-                        {
-                            "concept": "Souvenirs",
-                            "cost": 22.50
-                        },
-                        {
-                            "concept": "Lavandería",
-                            "cost": 5.00
-                        }
-                    ]
-                },
-                {
-                    "concept": "Gastos Varios y Propinas (Bután)",
-                    "cost": 116.50,
-                    "category": "Varios",
-                    "phase": "butan",
-                    "country": "Bután",
-                    "subItems": [
-                        {
-                            "concept": "Propinas Guía y Conductor",
-                            "cost": 90.00
-                        },
-                        {
-                            "concept": "Comunicaciones (SIM)",
-                            "cost": 4.00
-                        },
-                        {
-                            "concept": "Souvenirs",
-                            "cost": 22.50
-                        }
-                    ]
-                }
-            ],
-            "Contingencia": [
-                {
-                    "concept": "Fondo para Imprevistos (Nepal)",
-                    "cost": 149.20,
-                    "category": "Contingencia",
-                    "phase": "nepal",
-                    "country": "Nepal"
-                },
-                {
-                    "concept": "Fondo para Imprevistos (Bután)",
-                    "cost": 176.35,
-                    "category": "Contingencia",
-                    "phase": "butan",
-                    "country": "Bután"
-                }
-            ]
+          "Transporte": [
+            {
+              "concept": "Madrid ↔ Katmandú (Qatar)",
+              "cost": 270.0,
+              "category": "Transporte",
+              "phase": "general"
+            },
+            {
+              "concept": "Katmandú → Paro (Drukair)",
+              "cost": 227.76,
+              "category": "Transporte",
+              "phase": "general"
+            },
+            {
+              "concept": "Paro → Katmandú (Bhutan Airlines)",
+              "cost": 196.21,
+              "category": "Transporte",
+              "phase": "general"
+            },
+            {
+              "concept": "Taxis Aeropuerto (4 viajes)",
+              "cost": 28.0,
+              "category": "Transporte",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Taxis Ciudad (4 viajes)",
+              "cost": 12.0,
+              "category": "Transporte",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Autobuses (2 viajes)",
+              "cost": 1.0,
+              "category": "Transporte",
+              "phase": "nepal",
+              "country": "Nepal"
+            }
+          ],
+          "Tour": [
+            {
+              "concept": "Itinerario \"Nepal 360\"",
+              "cost": 1100.0,
+              "category": "Tour",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Itinerario \"Best of Bhutan\"",
+              "cost": 1602.0,
+              "category": "Tour",
+              "phase": "butan",
+              "country": "Bután"
+            }
+          ],
+          "Comida y Bebida": [
+            {
+              "concept": "Comidas en Nepal",
+              "cost": 187.0,
+              "category": "Comida y Bebida",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Bebidas",
+              "cost": 45.0,
+              "category": "Comida y Bebida",
+              "phase": "butan",
+              "country": "Bután"
+            }
+          ],
+          "Entradas y Visados": [
+            {
+              "concept": "Visado de Nepal (30 días)",
+              "cost": 50.0,
+              "category": "Entradas y Visados",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Plaza Durbar, Katmandú",
+              "cost": 7.0,
+              "category": "Entradas y Visados",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Swayambhunath (Templo de los Monos)",
+              "cost": 1.5,
+              "category": "Entradas y Visados",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Pashupatinath",
+              "cost": 7.0,
+              "category": "Entradas y Visados",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Estupa de Boudhanath",
+              "cost": 3.0,
+              "category": "Entradas y Visados",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Monasterio Taktsang (Nido del Tigre)",
+              "cost": 22.0,
+              "category": "Entradas y Visados",
+              "phase": "butan",
+              "country": "Bután"
+            },
+            {
+              "concept": "Tashichho Dzong",
+              "cost": 11.0,
+              "category": "Entradas y Visados",
+              "phase": "butan",
+              "country": "Bután"
+            },
+            {
+              "concept": "Punakha Dzong",
+              "cost": 11.0,
+              "category": "Entradas y Visados",
+              "phase": "butan",
+              "country": "Bután"
+            },
+            {
+              "concept": "Memorial Chorten",
+              "cost": 11.0,
+              "category": "Entradas y Visados",
+              "phase": "butan",
+              "country": "Bután"
+            },
+            {
+              "concept": "Buddha Dordenma",
+              "cost": 11.0,
+              "category": "Entradas y Visados",
+              "phase": "butan",
+              "country": "Bután"
+            },
+            {
+              "concept": "Rinpung Dzong",
+              "cost": 11.0,
+              "category": "Entradas y Visados",
+              "phase": "butan",
+              "country": "Bután"
+            }
+          ],
+          "Varios": [
+            {
+              "concept": "Propinas",
+              "cost": 55.0,
+              "category": "Varios",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Fondo Común Estimado",
+              "cost": 50.0,
+              "category": "Varios",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Parapente en Pokhara (Opcional)",
+              "cost": 80.0,
+              "category": "Varios",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Comunicaciones (SIM)",
+              "cost": 4.0,
+              "category": "Varios",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Souvenirs",
+              "cost": 22.5,
+              "category": "Varios",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Lavandería",
+              "cost": 5.0,
+              "category": "Varios",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Propinas Guía y Conductor",
+              "cost": 90.0,
+              "category": "Varios",
+              "phase": "butan",
+              "country": "Bután"
+            },
+            {
+              "concept": "Comunicaciones (SIM)",
+              "cost": 4.0,
+              "category": "Varios",
+              "phase": "butan",
+              "country": "Bután"
+            },
+            {
+              "concept": "Souvenirs",
+              "cost": 22.5,
+              "category": "Varios",
+              "phase": "butan",
+              "country": "Bután"
+            }
+          ],
+          "Contingencia": [
+            {
+              "concept": "Fondo para Imprevistos (Nepal)",
+              "cost": 149.2,
+              "category": "Contingencia",
+              "phase": "nepal",
+              "country": "Nepal"
+            },
+            {
+              "concept": "Fondo para Imprevistos (Bután)",
+              "cost": 176.35,
+              "category": "Contingencia",
+              "phase": "butan",
+              "country": "Bután"
+            }
+          ]
         }
-    },
+      },
 
     // Datos del clima
     weatherData: [
