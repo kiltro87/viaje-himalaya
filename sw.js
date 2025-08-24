@@ -9,8 +9,8 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v3.2.0-mobile-fix';
-const DATA_CACHE = 'viaje-data-v3.2.0-mobile-fix';
+const CACHE_NAME = 'viaje-himalaya-v3.2.1-firebase-euro-fix';
+const DATA_CACHE = 'viaje-data-v3.2.1-firebase-euro-fix';
 
 // Base path para GitHub Pages
 const BASE_PATH = '/viaje-himalaya';
@@ -216,4 +216,4 @@ self.addEventListener('sync', event => {
   }
 });
 
-console.log('📱 Service Worker v3.2.0 cargado y listo - SINGLETON PATTERN + DEBOUNCE APLICADO');
+console.log('📱 Service Worker v3.2.1 cargado y listo - FIREBASE SYNC + EURO SYMBOL FIXED');

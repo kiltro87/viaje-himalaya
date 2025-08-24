@@ -314,19 +314,25 @@ export class BudgetManager {
                     
                     const newExpense = { ...expense, id: Date.now().toString() };
                     
-                    // 🔥 SOLO AÑADIR A FIREBASE - El listener actualizará la UI
+                    // 🔥 VERIFICAR ESTADO DE FIREBASE
                     const budgetInstance = window.budgetInstance;
-                    if (budgetInstance && budgetInstance.firebaseManager) {
+                    console.log('🔥 DEBUG: Firebase status check:', {
+                        hasBudgetInstance: !!budgetInstance,
+                        hasFirebaseManager: !!(budgetInstance?.firebaseManager),
+                        isConnected: budgetInstance?.firebaseManager?.isConnected,
+                        expense: newExpense
+                    });
+                    
+                    if (budgetInstance && budgetInstance.firebaseManager && budgetInstance.firebaseManager.isConnected) {
                         if (!Logger.isMobile) {
                             console.log('🔥 DEBUG: Calling Firebase addExpense...');
                         }
                         try {
                             await budgetInstance.firebaseManager.addExpense(newExpense);
-                            if (!Logger.isMobile) {
-                                console.log('🔥 DEBUG: Firebase addExpense completed - UI will update via listener');
-                            }
+                            console.log('✅ Gasto añadido a Firebase correctamente');
+                            return; // Salir aquí - el listener actualizará la UI
                         } catch (error) {
-                            console.error('🔥 DEBUG: Firebase addExpense failed, falling back to localStorage:', error);
+                            console.error('❌ Firebase addExpense failed, falling back to localStorage:', error);
                             // Solo si Firebase falla, añadir a localStorage
                             window.AppState.expenses.push(newExpense);
                             window.AppState.saveAllData();
@@ -339,7 +345,7 @@ export class BudgetManager {
                             }
                         }
                     } else {
-                        console.warn('🔥 DEBUG: No Firebase manager available, using localStorage');
+                        console.warn('⚠️ Firebase no disponible o no conectado, usando localStorage');
                         // Fallback a localStorage si no hay Firebase
                         window.AppState.expenses.push(newExpense);
                         window.AppState.saveAllData();
@@ -350,6 +356,8 @@ export class BudgetManager {
                             budgetInstance.updateSummaryCards();
                             budgetInstance.showCategoryContent();
                         }
+                        
+                        console.log('✅ Gasto añadido a localStorage y UI actualizada');
                     }
                 },
                 
@@ -399,8 +407,24 @@ export class BudgetManager {
         if (!window.Utils) {
             window.Utils = {
                 formatCurrency(amount, showSymbol = false) {
-                    const formatted = amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    return showSymbol ? `${formatted} €` : formatted;
+                    if (typeof amount !== 'number' || isNaN(amount)) {
+                        return showSymbol ? '0,00 €' : '0,00';
+                    }
+                    
+                    if (showSymbol) {
+                        // Usar Intl.NumberFormat para formato correcto español (€ al final)
+                        return new Intl.NumberFormat('es-ES', {
+                            style: 'currency',
+                            currency: 'EUR',
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }).format(amount);
+                    } else {
+                        return amount.toLocaleString('es-ES', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+                    }
                 },
                 calculateSubtotal(expenses) {
                     return expenses.reduce((sum, item) => {
@@ -553,10 +577,10 @@ export class BudgetManager {
                         <div>
                             <label for="expense-amount" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Cantidad (€)</label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">€</span>
                                 <input type="number" id="expense-amount" step="0.01" required 
-                                       class="w-full pl-8 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-slate-900 dark:text-white placeholder-slate-400"
-                                       placeholder="0.00">
+                                       class="w-full pl-4 pr-12 py-3 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-slate-900 dark:text-white placeholder-slate-400"
+                                       placeholder="0,00">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium pointer-events-none">€</span>
                             </div>
                         </div>
                     </div>
@@ -671,9 +695,9 @@ export class BudgetManager {
                             <div class="flex-1">
                                 <h4 class="font-bold text-lg text-slate-900 dark:text-white">${cat}</h4>
                                 <div class="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                                    <span class="text-slate-600 dark:text-slate-400">${window.Utils.formatCurrency(expensesTotal)} €</span>
+                                    <span class="text-slate-600 dark:text-slate-400">${window.Utils.formatCurrency(expensesTotal, true)}</span>
                                     <span class="text-slate-400 dark:text-slate-500 text-lg"> / </span>
-                                    <span class="text-slate-500 dark:text-slate-400 text-lg">${window.Utils.formatCurrency(budgetTotal)} €</span>
+                                    <span class="text-slate-500 dark:text-slate-400 text-lg">${window.Utils.formatCurrency(budgetTotal, true)}</span>
                                 </div>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">${catItems.length} items presupuestados • ${catExpenses.length} gastos registrados</p>
                             </div>
@@ -695,7 +719,7 @@ export class BudgetManager {
                                                 <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-3">
                                                     <div class="flex justify-between items-center mb-2">
                                                         <span class="font-medium text-slate-800 dark:text-slate-200">${item.concept}</span>
-                                                        <span class="font-bold text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0)} €</span>
+                                                        <span class="font-bold text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0, true)}</span>
                                                     </div>
                                                     <div class="space-y-1 ml-3">
                                                         ${item.subItems.map(subItem => `
@@ -704,7 +728,7 @@ export class BudgetManager {
                                                                     <span class="w-1 h-1 bg-slate-400 rounded-full"></span>
                                                                     ${subItem.concept}
                                                                 </span>
-                                                                <span>${window.Utils.formatCurrency(subItem.cost || 0)} €</span>
+                                                                <span>${window.Utils.formatCurrency(subItem.cost || 0, true)}</span>
                                                             </div>
                                                         `).join('')}
                                                     </div>
@@ -714,7 +738,7 @@ export class BudgetManager {
                                             return `
                                                 <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-600 last:border-b-0">
                                                     <span class="text-slate-700 dark:text-slate-300">${item.concept}</span>
-                                                    <span class="font-medium text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0)} €</span>
+                                                    <span class="font-medium text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0, true)}</span>
                                                 </div>
                                             `;
                                         }
@@ -734,7 +758,7 @@ export class BudgetManager {
                                         <div class="expense-item-category group flex justify-between items-center py-2 px-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-all duration-200" data-expense-id="${exp.id}">
                                             <span class="text-slate-700 dark:text-slate-300">${exp.concept}</span>
                                             <div class="flex items-center gap-2">
-                                                <span class="font-medium text-green-700 dark:text-green-400">${window.Utils.formatCurrency(exp.amount)} €</span>
+                                                <span class="font-medium text-green-700 dark:text-green-400">${window.Utils.formatCurrency(exp.amount, true)}</span>
                                                 <button class="delete-expense-btn opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-all duration-200" data-expense-id="${exp.id}" title="Eliminar gasto">
                                                     <span class="material-symbols-outlined text-xs">delete</span>
                                                 </button>
