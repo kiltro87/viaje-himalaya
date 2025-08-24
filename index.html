@@ -51,6 +51,11 @@
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
 
     <!-- Bottom Navigation -->
+    <!-- Indicador de simulación de día -->
+    <div id="day-simulation-indicator" class="fixed bottom-28 left-1/2 -translate-x-1/2 hidden bg-amber-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg z-50 animate-pulse">
+        📅 Simulando día
+    </div>
+
     <nav id="bottom-nav" class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-lg h-20 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 z-40 grid grid-cols-6 rounded-3xl shadow-2xl shadow-slate-300/30 dark:shadow-black/30">
         <!-- Botón 1: Resumen (Activo por defecto) -->
         <button data-view="resumen" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full active">

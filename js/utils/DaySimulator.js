@@ -188,6 +188,7 @@ export class DaySimulator {
         // Verificar si ya existe
         if (document.getElementById('day-simulator')) return;
 
+        const currentView = window.uiRenderer?.currentView || 'resumen';
         const simulatorHTML = `
             <div id="day-simulator" class="fixed top-4 right-4 z-50 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 max-w-sm">
                 <div class="flex items-center justify-between mb-4">
@@ -201,6 +202,12 @@ export class DaySimulator {
                 </div>
                 
                 <div class="space-y-4">
+                    <!-- Vista actual -->
+                    <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                        <div class="text-xs text-blue-600 dark:text-blue-400">Vista actual:</div>
+                        <div class="font-semibold text-blue-800 dark:text-blue-200 capitalize">${currentView}</div>
+                    </div>
+                    
                     <!-- Selector de día -->
                     <div>
                         <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -222,6 +229,19 @@ export class DaySimulator {
                             <div class="font-semibold text-purple-800 dark:text-purple-200" id="day-title"></div>
                             <div class="text-purple-600 dark:text-purple-300" id="day-location"></div>
                             <div class="text-xs text-purple-500 dark:text-purple-400 mt-1" id="day-activities"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Accesos rápidos a vistas -->
+                    <div class="border-t border-slate-200 dark:border-slate-600 pt-3">
+                        <div class="text-xs text-slate-600 dark:text-slate-400 mb-2">Probar en otras vistas:</div>
+                        <div class="grid grid-cols-3 gap-1">
+                            <button class="quick-view-btn px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-view="resumen">📊 Resumen</button>
+                            <button class="quick-view-btn px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-view="itinerario">📅 Itinerario</button>
+                            <button class="quick-view-btn px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-view="hoy">⏰ Hoy</button>
+                            <button class="quick-view-btn px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-view="mapa">🗺️ Mapa</button>
+                            <button class="quick-view-btn px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-view="gastos">💰 Gastos</button>
+                            <button class="quick-view-btn px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-view="extras">🎒 Extras</button>
                         </div>
                     </div>
                     
@@ -257,6 +277,7 @@ export class DaySimulator {
         const resetBtn = document.getElementById('reset-simulation');
         const refreshBtn = document.getElementById('refresh-components');
         const closeBtn = document.getElementById('close-simulator');
+        const quickViewBtns = document.querySelectorAll('.quick-view-btn');
 
         // Selector de día
         daySelector?.addEventListener('change', (e) => {
@@ -277,10 +298,33 @@ export class DaySimulator {
             this.refreshContextualComponents();
         });
 
+        // Botones de navegación rápida
+        quickViewBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetView = btn.dataset.view;
+                if (window.changeView && targetView) {
+                    window.changeView(targetView);
+                    // Actualizar la vista mostrada en el panel
+                    this.updateCurrentViewDisplay(targetView);
+                    if (Logger && Logger.info) Logger.info(`🎮 Quick navigation to: ${targetView}`);
+                }
+            });
+        });
+
         // Cerrar
         closeBtn?.addEventListener('click', () => {
             this.hideSimulatorUI();
         });
+    }
+
+    /**
+     * 📱 ACTUALIZAR VISTA ACTUAL EN PANEL: Mostrar qué vista está activa
+     */
+    updateCurrentViewDisplay(viewName) {
+        const viewDisplay = document.querySelector('#day-simulator .bg-blue-50 .font-semibold');
+        if (viewDisplay) {
+            viewDisplay.textContent = viewName.charAt(0).toUpperCase() + viewName.slice(1);
+        }
     }
 
     /**
@@ -315,23 +359,193 @@ export class DaySimulator {
      */
     refreshContextualComponents() {
         try {
-            // Refrescar sección "Hoy en tu viaje"
-            if (window.uiRenderer && typeof window.uiRenderer.updateTodayInfo === 'function') {
+            if (!window.uiRenderer) {
+                if (Logger && Logger.warning) Logger.warning('🔄 UIRenderer not available for refresh');
+                return;
+            }
+
+            const currentView = window.uiRenderer.currentView;
+            if (Logger && Logger.info) Logger.info(`🔄 Refreshing components for view: ${currentView}`);
+
+            // Refrescar según la vista actual
+            switch (currentView) {
+                case 'resumen':
+                    this.refreshSummaryView();
+                    break;
+                case 'itinerario':
+                    this.refreshItineraryView();
+                    break;
+                case 'hoy':
+                    this.refreshTodayView();
+                    break;
+                case 'mapa':
+                    this.refreshMapView();
+                    break;
+                case 'gastos':
+                    this.refreshGastosView();
+                    break;
+                case 'extras':
+                    this.refreshExtrasView();
+                    break;
+                default:
+                    if (Logger && Logger.warning) Logger.warning(`🔄 Unknown view: ${currentView}`);
+            }
+
+            // Refrescar componentes globales que siempre deben actualizarse
+            this.refreshGlobalComponents();
+
+            // Disparar evento personalizado
+            this.triggerContextualUpdate();
+
+            if (Logger && Logger.success) Logger.success(`🔄 All components refreshed for view: ${currentView}`);
+
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('🔄 Error refreshing components:', error);
+        }
+    }
+
+    /**
+     * 📊 REFRESCAR VISTA RESUMEN: Actualizar dashboard principal
+     */
+    refreshSummaryView() {
+        try {
+            // Actualizar información de "hoy en tu viaje"
+            if (typeof window.uiRenderer.updateTodayInfo === 'function') {
                 window.uiRenderer.updateTodayInfo();
             }
 
-            // Refrescar clima si existe WeatherManager
+            // Actualizar análisis de estilo de viaje
+            if (typeof window.uiRenderer.renderTripStyleAnalysis === 'function') {
+                window.uiRenderer.renderTripStyleAnalysis();
+            }
+
+            if (Logger && Logger.info) Logger.info('📊 Summary view refreshed');
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('📊 Error refreshing summary view:', error);
+        }
+    }
+
+    /**
+     * 🗓️ REFRESCAR VISTA ITINERARIO: Actualizar timeline y actividades
+     */
+    refreshItineraryView() {
+        try {
+            // Re-renderizar el itinerario completo para destacar el día actual
+            if (typeof window.uiRenderer.renderItinerary === 'function') {
+                window.uiRenderer.renderItinerary();
+            }
+
+            if (Logger && Logger.info) Logger.info('🗓️ Itinerary view refreshed');
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('🗓️ Error refreshing itinerary view:', error);
+        }
+    }
+
+    /**
+     * 📅 REFRESCAR VISTA HOY: Actualizar información del día actual
+     */
+    refreshTodayView() {
+        try {
+            // Re-renderizar la vista "Hoy" completa
+            if (typeof window.uiRenderer.renderToday === 'function') {
+                window.uiRenderer.renderToday();
+            }
+
+            if (Logger && Logger.info) Logger.info('📅 Today view refreshed');
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('📅 Error refreshing today view:', error);
+        }
+    }
+
+    /**
+     * 🗺️ REFRESCAR VISTA MAPA: Actualizar marcadores y ubicación actual
+     */
+    refreshMapView() {
+        try {
+            // Re-renderizar el mapa para actualizar la posición actual
+            if (typeof window.uiRenderer.renderMap === 'function') {
+                window.uiRenderer.renderMap();
+            }
+
+            if (Logger && Logger.info) Logger.info('🗺️ Map view refreshed');
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('🗺️ Error refreshing map view:', error);
+        }
+    }
+
+    /**
+     * 💰 REFRESCAR VISTA GASTOS: Actualizar presupuesto y gastos
+     */
+    refreshGastosView() {
+        try {
+            // Re-renderizar la sección de gastos
+            if (typeof window.uiRenderer.renderGastos === 'function') {
+                window.uiRenderer.renderGastos();
+            }
+
+            if (Logger && Logger.info) Logger.info('💰 Gastos view refreshed');
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('💰 Error refreshing gastos view:', error);
+        }
+    }
+
+    /**
+     * 🎒 REFRESCAR VISTA EXTRAS: Actualizar clima, equipaje y agencias
+     */
+    refreshExtrasView() {
+        try {
+            // Re-renderizar la vista extras completa
+            if (typeof window.uiRenderer.renderExtras === 'function') {
+                window.uiRenderer.renderExtras();
+            }
+
+            if (Logger && Logger.info) Logger.info('🎒 Extras view refreshed');
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('🎒 Error refreshing extras view:', error);
+        }
+    }
+
+    /**
+     * 🌐 REFRESCAR COMPONENTES GLOBALES: Actualizar elementos que aparecen en todas las vistas
+     */
+    refreshGlobalComponents() {
+        try {
+            // Actualizar clima si existe WeatherManager
             if (window.WeatherManager && typeof window.WeatherManager.renderEnhancedWeather === 'function') {
                 window.WeatherManager.renderEnhancedWeather();
             }
 
-            // Refrescar cualquier otro componente contextual
-            this.triggerContextualUpdate();
+            // Actualizar información de fecha en la navegación si existe
+            this.updateNavigationDateInfo();
 
-            Logger.info('🔄 Contextual components refreshed');
-
+            if (Logger && Logger.info) Logger.info('🌐 Global components refreshed');
         } catch (error) {
-            Logger.error('🔄 Error refreshing components:', error);
+            if (Logger && Logger.error) Logger.error('🌐 Error refreshing global components:', error);
+        }
+    }
+
+    /**
+     * 📱 ACTUALIZAR INFO DE FECHA EN NAVEGACIÓN: Mostrar día simulado en la UI
+     */
+    updateNavigationDateInfo() {
+        try {
+            const indicator = document.getElementById('day-simulation-indicator');
+            
+            if (this.isSimulating && indicator) {
+                const dayInfo = this.getDayInfo(this.simulatedDay);
+                indicator.textContent = `📅 Simulando: ${dayInfo.title}`;
+                indicator.classList.remove('hidden');
+                indicator.classList.add('animate-pulse');
+                
+                if (Logger && Logger.info) Logger.info(`📱 Simulation indicator shown: ${dayInfo.title}`);
+            } else if (indicator) {
+                indicator.classList.add('hidden');
+                indicator.classList.remove('animate-pulse');
+                
+                if (Logger && Logger.info) Logger.info('📱 Simulation indicator hidden');
+            }
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('📱 Error updating navigation date info:', error);
         }
     }
 

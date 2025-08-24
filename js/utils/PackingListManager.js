@@ -27,6 +27,7 @@ export class PackingListManager {
         this.deviceId = this.generateDeviceId();
         this.isInitialized = false;
         this.syncInProgress = false;
+        this.firebaseSetupComplete = false;
         
         // Cache local para optimistic UI
         this.localCache = this.loadFromLocalStorage();
@@ -41,9 +42,32 @@ export class PackingListManager {
         try {
             this.firebaseManager = firebaseManager;
             
-            if (this.firebaseManager && this.firebaseManager.isInitialized()) {
-                await this.setupFirebaseSync();
-                if (Logger && Logger.success) Logger.success('🎒 PackingListManager initialized with Firebase');
+            // Configurar callback para cuando Firebase se conecte
+            if (this.firebaseManager) {
+                // Configurar el callback para detectar cuando Firebase esté listo
+                const originalCallback = this.firebaseManager.onSyncStatusChanged;
+                this.firebaseManager.onSyncStatusChanged = (status) => {
+                    // Llamar al callback original si existe
+                    if (originalCallback) {
+                        originalCallback(status);
+                    }
+                    
+                    // Configurar PackingList cuando Firebase esté conectado
+                    if (status === 'connected' && !this.firebaseSetupComplete) {
+                        this.setupFirebaseSync();
+                        this.firebaseSetupComplete = true;
+                        if (Logger && Logger.success) Logger.success('🎒 PackingListManager Firebase sync configured');
+                    }
+                };
+                
+                // Si ya está conectado, configurar inmediatamente
+                if (this.firebaseManager.isConnected) {
+                    await this.setupFirebaseSync();
+                    this.firebaseSetupComplete = true;
+                    if (Logger && Logger.success) Logger.success('🎒 PackingListManager initialized with Firebase');
+                } else {
+                    if (Logger && Logger.info) Logger.info('🎒 PackingListManager waiting for Firebase connection');
+                }
             } else {
                 if (Logger && Logger.warning) Logger.warning('🎒 PackingListManager initialized without Firebase (localStorage only)');
             }
@@ -101,7 +125,7 @@ export class PackingListManager {
             this.saveToLocalStorage();
             
             // 📡 FIREBASE UPDATE: Sincronizar en background
-            if (this.firebaseManager && this.firebaseManager.isInitialized()) {
+            if (this.firebaseManager && this.firebaseManager.isConnected) {
                 this.syncInProgress = true;
                 await this.syncToFirebase();
                 this.syncInProgress = false;
@@ -155,7 +179,7 @@ export class PackingListManager {
      * 🔄 SYNC TO FIREBASE: Subir datos locales a Firebase
      */
     async syncToFirebase() {
-        if (!this.firebaseManager || !this.firebaseManager.isInitialized()) return;
+        if (!this.firebaseManager || !this.firebaseManager.isConnected) return;
 
         try {
             const { doc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
@@ -328,7 +352,7 @@ export class PackingListManager {
             this.localCache = {};
             this.saveToLocalStorage();
             
-            if (this.firebaseManager && this.firebaseManager.isInitialized()) {
+            if (this.firebaseManager && this.firebaseManager.isConnected) {
                 await this.syncToFirebase();
             }
             
@@ -359,7 +383,7 @@ export class PackingListManager {
             
             this.saveToLocalStorage();
             
-            if (this.firebaseManager && this.firebaseManager.isInitialized()) {
+            if (this.firebaseManager && this.firebaseManager.isConnected) {
                 await this.syncToFirebase();
             }
             
