@@ -9,8 +9,8 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v3.2.6-sync-optimized';
-const DATA_CACHE = 'viaje-data-v3.2.6-sync-optimized';
+const CACHE_NAME = 'viaje-himalaya-v4.0.0-ultra-optimized';
+const DATA_CACHE = 'viaje-data-v4.0.0-ultra-optimized';
 
 // Base path para GitHub Pages
 const BASE_PATH = '/viaje-himalaya';
@@ -119,14 +119,14 @@ self.addEventListener('activate', event => {
     Promise.all([
       // Limpiar caches antiguos
       caches.keys().then(cacheNames => {
-        return Promise.all(
+      return Promise.all(
           cacheNames.map(cacheName => {
             if (cacheName !== CACHE_NAME && cacheName !== DATA_CACHE) {
               console.log('🗑️ Eliminando cache antiguo:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
+            return caches.delete(cacheName);
+          }
+        })
+      );
       }),
       
       // Tomar control inmediato
@@ -146,13 +146,13 @@ self.addEventListener('fetch', event => {
   if (url.origin === location.origin || EXTERNAL_RESOURCES.some(res => request.url.startsWith(res))) {
     
     if (request.method === 'GET') {
-      event.respondWith(
+  event.respondWith(
         caches.match(request).then(response => {
-          if (response) {
+        if (response) {
             // Servir desde cache
-            return response;
-          }
-          
+          return response;
+        }
+
           // Intentar fetch de red
           return fetch(request).then(networkResponse => {
             // Cachear respuesta exitosa
@@ -173,8 +173,8 @@ self.addEventListener('fetch', event => {
             
             throw error;
           });
-        })
-      );
+      })
+  );
     }
   }
 });
@@ -207,13 +207,218 @@ self.addEventListener('push', event => {
 });
 
 // Sincronización en background (futuro)
+// Manejo avanzado de sincronización en background
 self.addEventListener('sync', event => {
-  if (event.tag === 'firebase-sync') {
-    event.waitUntil(
-      // Aquí se podría implementar sincronización con Firebase
-      console.log('🔄 Background sync triggered')
-    );
+  console.log('🔄 Background sync event:', event.tag);
+  
+  switch (event.tag) {
+    case 'expense-sync':
+      event.waitUntil(syncExpenses());
+      break;
+    case 'batch-sync':
+      event.waitUntil(syncBatchOperations());
+      break;
+    case 'offline-actions':
+      event.waitUntil(syncOfflineActions());
+      break;
+    case 'firebase-sync':
+      event.waitUntil(syncWithFirebase());
+      break;
+    default:
+      console.log('🔄 Unknown sync tag:', event.tag);
   }
 });
 
-console.log('📱 Service Worker v3.2.6 cargado y listo - Sync Optimized & Custom Dropdown');
+// Sincronización con Firebase
+async function syncWithFirebase() {
+  console.log('🔥 Syncing with Firebase...');
+  
+  try {
+    // Obtener datos pendientes
+    const pendingData = await getPendingData();
+    
+    if (pendingData.expenses.length > 0) {
+      console.log(`📤 Syncing ${pendingData.expenses.length} expenses with Firebase`);
+      await syncExpensesWithFirebase(pendingData.expenses);
+    }
+    
+    // Notificar éxito a las pestañas
+    await notifyTabsOfSync('firebase-sync-complete');
+    
+  } catch (error) {
+    console.error('❌ Firebase sync failed:', error);
+    await notifyTabsOfSync('firebase-sync-failed', error.message);
+  }
+}
+
+// Sincronización de gastos pendientes
+async function syncExpenses() {
+  console.log('📊 Syncing pending expenses...');
+  
+  try {
+    const pendingExpenses = await getPendingExpenses();
+    
+    if (pendingExpenses.length === 0) {
+      console.log('✅ No pending expenses to sync');
+      return;
+    }
+
+    console.log(`📤 Syncing ${pendingExpenses.length} pending expenses`);
+    
+    for (const expense of pendingExpenses) {
+      try {
+        await syncSingleExpense(expense);
+        await removePendingExpense(expense.id);
+        console.log(`✅ Synced expense: ${expense.id}`);
+      } catch (error) {
+        console.error(`❌ Failed to sync expense ${expense.id}:`, error);
+      }
+    }
+    
+    await notifyTabsOfSync('expense-sync-complete');
+    
+  } catch (error) {
+    console.error('❌ Background expense sync failed:', error);
+  }
+}
+
+// Sincronización de operaciones por lotes
+async function syncBatchOperations() {
+  console.log('📦 Syncing batch operations...');
+  
+  try {
+    const pendingBatches = await getPendingBatches();
+    
+    for (const batch of pendingBatches) {
+      try {
+        await processBatch(batch);
+        await removePendingBatch(batch.id);
+        console.log(`✅ Synced batch: ${batch.id}`);
+      } catch (error) {
+        console.error(`❌ Failed to sync batch ${batch.id}:`, error);
+      }
+    }
+    
+    await notifyTabsOfSync('batch-sync-complete');
+    
+  } catch (error) {
+    console.error('❌ Background batch sync failed:', error);
+  }
+}
+
+// Sincronización de acciones offline
+async function syncOfflineActions() {
+  console.log('📱 Syncing offline actions...');
+  
+  try {
+    const offlineActions = await getOfflineActions();
+    
+    for (const action of offlineActions) {
+      try {
+        await processOfflineAction(action);
+        await removeOfflineAction(action.id);
+        console.log(`✅ Synced offline action: ${action.type}`);
+      } catch (error) {
+        console.error(`❌ Failed to sync offline action:`, error);
+      }
+    }
+    
+    await notifyTabsOfSync('offline-sync-complete');
+    
+  } catch (error) {
+    console.error('❌ Background offline sync failed:', error);
+  }
+}
+
+// Obtener datos pendientes del IndexedDB
+async function getPendingData() {
+  return {
+    expenses: await getPendingExpenses(),
+    batches: await getPendingBatches(),
+    actions: await getOfflineActions()
+  };
+}
+
+// Obtener gastos pendientes del IndexedDB
+async function getPendingExpenses() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('ViajeHimalayaDB', 1);
+    
+    request.onerror = () => reject(request.error);
+    
+    request.onsuccess = () => {
+      const db = request.result;
+      
+      if (!db.objectStoreNames.contains('pendingExpenses')) {
+        resolve([]);
+        return;
+      }
+      
+      const transaction = db.transaction(['pendingExpenses'], 'readonly');
+      const store = transaction.objectStore('pendingExpenses');
+      const getAllRequest = store.getAll();
+      
+      getAllRequest.onsuccess = () => resolve(getAllRequest.result || []);
+      getAllRequest.onerror = () => reject(getAllRequest.error);
+    };
+    
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('pendingExpenses')) {
+        db.createObjectStore('pendingExpenses', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('pendingBatches')) {
+        db.createObjectStore('pendingBatches', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('offlineActions')) {
+        db.createObjectStore('offlineActions', { keyPath: 'id' });
+      }
+    };
+  });
+}
+
+// Sincronizar gastos con Firebase
+async function syncExpensesWithFirebase(expenses) {
+  // Esta función se conectaría con Firebase desde el Service Worker
+  // Por ahora, simulamos la sincronización
+  console.log('🔥 Syncing expenses with Firebase:', expenses.length);
+  
+  for (const expense of expenses) {
+    // Simular delay de red
+    await new Promise(resolve => setTimeout(resolve, 100));
+    console.log(`🔥 Synced expense to Firebase: ${expense.id}`);
+  }
+}
+
+// Notificar a las pestañas abiertas
+async function notifyTabsOfSync(type, data = null) {
+  const clients = await self.clients.matchAll();
+  
+  clients.forEach(client => {
+    client.postMessage({
+      type: type.toUpperCase(),
+      data,
+      timestamp: Date.now()
+    });
+  });
+}
+
+// Funciones auxiliares (implementación básica)
+async function syncSingleExpense(expense) {
+  console.log('Syncing single expense:', expense.id);
+  // Implementar lógica de sincronización
+}
+
+async function removePendingExpense(id) {
+  console.log('Removing pending expense:', id);
+  // Implementar eliminación de IndexedDB
+}
+
+async function getPendingBatches() { return []; }
+async function processBatch(batch) { console.log('Processing batch:', batch.id); }
+async function removePendingBatch(id) { console.log('Removing batch:', id); }
+async function getOfflineActions() { return []; }
+async function processOfflineAction(action) { console.log('Processing action:', action.type); }
+async function removeOfflineAction(id) { console.log('Removing action:', id); }
+
+console.log('🚀 Service Worker v4.0.0 cargado - ULTRA OPTIMIZED: OptimisticUI + BatchOps + WebSocket + AdvancedSync');

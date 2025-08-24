@@ -26,6 +26,10 @@
 
 import Logger from '../utils/Logger.js';
 import { FirebaseManager } from '../utils/FirebaseManager.js';
+import OptimisticUI from '../utils/OptimisticUI.js';
+import BatchManager from '../utils/BatchManager.js';
+import RealtimeSync from '../utils/RealtimeSync.js';
+import OptimizedExpenseManager from '../utils/OptimizedExpenseManager.js';
 
 export class BudgetManager {
     /**
@@ -53,6 +57,17 @@ export class BudgetManager {
         // Inicializar Firebase para almacenamiento en la nube
         this.firebaseManager = new FirebaseManager();
         this.setupFirebaseIntegration();
+        
+        // 🚀 SISTEMAS AVANZADOS DE OPTIMIZACIÓN
+        this.optimisticUI = OptimisticUI;
+        this.batchManager = new BatchManager(this.firebaseManager);
+        this.realtimeSync = new RealtimeSync(this.firebaseManager);
+        
+        // 🎯 EXPENSE MANAGER ULTRA-OPTIMIZADO
+        this.optimizedExpenseManager = new OptimizedExpenseManager(this);
+        
+        // Configurar callbacks del sistema de tiempo real
+        this.setupAdvancedSyncCallbacks();
         
         // 🚨 ASIGNAR COMO INSTANCIA SINGLETON
         window.budgetInstance = this;
@@ -104,6 +119,142 @@ export class BudgetManager {
         this.setupRealtimeSync();
         
         Logger.success('Firebase integration configured');
+    }
+
+    /**
+     * Configurar callbacks del sistema de sincronización avanzado
+     * @private
+     */
+    setupAdvancedSyncCallbacks() {
+        // Configurar RealtimeSync callbacks
+        this.realtimeSync.onExpenseAdded = (expense) => {
+            Logger.data('Real-time expense added from another device:', expense.id);
+            this.handleRemoteExpenseChange('added', expense);
+        };
+
+        this.realtimeSync.onExpenseUpdated = (expense) => {
+            Logger.data('Real-time expense updated from another device:', expense.id);
+            this.handleRemoteExpenseChange('updated', expense);
+        };
+
+        this.realtimeSync.onExpenseDeleted = (expense) => {
+            Logger.data('Real-time expense deleted from another device:', expense.id);
+            this.handleRemoteExpenseChange('deleted', expense);
+        };
+
+        this.realtimeSync.onConnectionStatusChanged = (status) => {
+            Logger.data('Real-time connection status changed:', status);
+            this.updateConnectionIndicator(status);
+        };
+
+        Logger.success('Advanced sync callbacks configured');
+    }
+
+    /**
+     * Maneja cambios de gastos desde otros dispositivos
+     * @private
+     */
+    handleRemoteExpenseChange(action, expense) {
+        switch (action) {
+            case 'added':
+                // Verificar que no existe ya localmente
+                const existingIndex = window.AppState.expenses.findIndex(e => e.id === expense.id);
+                if (existingIndex === -1) {
+                    window.AppState.expenses.unshift(expense);
+                    this.updateBudgetUI();
+                    this.showNotification(`💰 Nuevo gasto añadido: ${expense.concept}`, 'success');
+                }
+                break;
+
+            case 'updated':
+                const updateIndex = window.AppState.expenses.findIndex(e => e.id === expense.id);
+                if (updateIndex !== -1) {
+                    window.AppState.expenses[updateIndex] = expense;
+                    this.updateBudgetUI();
+                    this.showNotification(`✏️ Gasto actualizado: ${expense.concept}`, 'info');
+                }
+                break;
+
+            case 'deleted':
+                const deleteIndex = window.AppState.expenses.findIndex(e => e.id === expense.id);
+                if (deleteIndex !== -1) {
+                    const deletedExpense = window.AppState.expenses.splice(deleteIndex, 1)[0];
+                    this.updateBudgetUI();
+                    this.showNotification(`🗑️ Gasto eliminado: ${deletedExpense.concept}`, 'warning');
+                }
+                break;
+        }
+    }
+
+    /**
+     * Actualiza el indicador de conexión
+     * @private
+     */
+    updateConnectionIndicator(status) {
+        const indicator = document.getElementById('connection-indicator');
+        if (!indicator) return;
+
+        switch (status) {
+            case 'websocket_connected':
+                indicator.className = 'connection-indicator websocket';
+                indicator.textContent = '⚡ Tiempo Real';
+                break;
+            case 'firebase_realtime_connected':
+                indicator.className = 'connection-indicator firebase';
+                indicator.textContent = '🔥 Firebase RT';
+                break;
+            case 'websocket_disconnected':
+                indicator.className = 'connection-indicator offline';
+                indicator.textContent = '📱 Offline';
+                break;
+        }
+    }
+
+    /**
+     * Muestra notificación temporal
+     * @private
+     */
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        `;
+
+        // Colores según tipo
+        switch (type) {
+            case 'success': notification.style.backgroundColor = '#10b981'; break;
+            case 'warning': notification.style.backgroundColor = '#f59e0b'; break;
+            case 'error': notification.style.backgroundColor = '#ef4444'; break;
+            default: notification.style.backgroundColor = '#3b82f6';
+        }
+
+        document.body.appendChild(notification);
+
+        // Animación de entrada
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+
+        // Auto-eliminar después de 3 segundos
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
     }
 
     /**
@@ -303,147 +454,57 @@ export class BudgetManager {
             };
         }
 
-        // Inicializar ExpenseManager si no existe
+        // 🚀 INICIALIZAR EXPENSE MANAGER ULTRA-OPTIMIZADO V4.0
         if (!window.ExpenseManager) {
             window.ExpenseManager = {
+                // ⚡ MÉTODOS OPTIMIZADOS CON OPTIMISTIC UI
                 add: async (expense) => {
-                    // Solo log en desktop para evitar crashes en móvil
-                    if (!Logger.isMobile) {
-                        console.log('🔥 DEBUG: ExpenseManager.add called', expense);
-                    }
-                    Logger.budget('Adding new expense', { concept: expense.concept, amount: expense.amount });
-                    
-                    const newExpense = { ...expense, id: Date.now().toString() };
-                    
-                    // 🔥 VERIFICAR ESTADO DE FIREBASE
                     const budgetInstance = window.budgetInstance;
-                    console.log('🔥 DEBUG: Firebase status check:', {
-                        hasBudgetInstance: !!budgetInstance,
-                        hasFirebaseManager: !!(budgetInstance?.firebaseManager),
-                        isConnected: budgetInstance?.firebaseManager?.isConnected,
-                        expense: newExpense
-                    });
-                    
-                    // 🔍 DEBUG: Mostrar todos los gastos actuales
-                    console.log('🔍 DEBUG: Gastos actuales en AppState:', window.AppState.expenses.map(e => ({
-                        id: e.id,
-                        concept: e.concept,
-                        amount: e.amount
-                    })));
-                    
-                    if (budgetInstance && budgetInstance.firebaseManager && budgetInstance.firebaseManager.isConnected) {
-                        if (!Logger.isMobile) {
-                            console.log('🔥 DEBUG: Calling Firebase addExpense...');
-                        }
-                        try {
-                            await budgetInstance.firebaseManager.addExpense(newExpense);
-                            console.log('✅ Gasto añadido a Firebase correctamente');
-                            return; // Salir aquí - el listener actualizará la UI
-                        } catch (error) {
-                            console.error('❌ Firebase addExpense failed, falling back to localStorage:', error);
-                            // Solo si Firebase falla, añadir a localStorage
-                            window.AppState.expenses.push(newExpense);
-                            window.AppState.saveAllData();
-                            Logger.crud('CREATE', 'expense', newExpense);
-                            
-                            // Actualizar UI manualmente solo si Firebase falló
-                            if (budgetInstance) {
-                                budgetInstance.updateSummaryCards();
-                                budgetInstance.showCategoryContent();
-                            }
-                        }
-                    } else {
-                        console.warn('⚠️ Firebase no disponible o no conectado, usando localStorage');
-                        // Fallback a localStorage si no hay Firebase
-                        window.AppState.expenses.push(newExpense);
-                        window.AppState.saveAllData();
-                        Logger.crud('CREATE', 'expense', newExpense);
-                        
-                        // Actualizar UI manualmente
-                        if (budgetInstance) {
-                            budgetInstance.updateSummaryCards();
-                            budgetInstance.showCategoryContent();
-                        }
-                        
-                        console.log('✅ Gasto añadido a localStorage y UI actualizada');
+                    if (!budgetInstance?.optimizedExpenseManager) {
+                        throw new Error('OptimizedExpenseManager not available');
                     }
+                    return await budgetInstance.optimizedExpenseManager.add(expense);
                 },
                 
-                async remove(id) {
-                    const expense = window.AppState.expenses.find(exp => exp.id === id);
-                    if (!expense) {
-                        Logger.error('Expense not found for deletion', { id });
-                        return;
-                    }
-                    
-                    Logger.budget('Removing expense', { id, concept: expense.concept });
-                    
-                    // 🔥 ELIMINAR DE FIREBASE PRIMERO
+                update: async (id, updates) => {
                     const budgetInstance = window.budgetInstance;
-                    if (budgetInstance && budgetInstance.firebaseManager && budgetInstance.firebaseManager.isConnected) {
-                        try {
-                            await budgetInstance.firebaseManager.deleteExpense(id);
-                            console.log('✅ Gasto eliminado de Firebase correctamente');
-                            return; // El listener actualizará la UI
-                        } catch (error) {
-                            console.error('❌ Firebase deleteExpense failed, falling back to localStorage:', error);
-                        }
+                    if (!budgetInstance?.optimizedExpenseManager) {
+                        throw new Error('OptimizedExpenseManager not available');
                     }
-                    
-                    // Fallback a localStorage si Firebase no funciona
-                    console.warn('⚠️ Firebase no disponible, eliminando solo de localStorage');
-                    window.AppState.expenses = window.AppState.expenses.filter(exp => exp.id !== id);
-                    window.AppState.saveAllData();
-                    Logger.crud('DELETE', 'expense', { id, concept: expense.concept });
-                    
-                    // Actualizar UI manualmente
-                    if (budgetInstance) {
-                        budgetInstance.updateSummaryCards();
-                        budgetInstance.showCategoryContent();
-                    }
+                    return await budgetInstance.optimizedExpenseManager.update(id, updates);
                 },
                 
-                async update(id, updatedExpense) {
-                    const index = window.AppState.expenses.findIndex(exp => exp.id === id);
-                    if (index === -1) {
-                        Logger.error('Expense not found for update', { id });
-                        return;
-                    }
-                    
-                    const oldExpense = window.AppState.expenses[index];
-                    const mergedExpense = { ...oldExpense, ...updatedExpense, updatedAt: new Date().toISOString() };
-                    
-                    Logger.crud('UPDATE', 'expense', { id, old: oldExpense, new: updatedExpense });
-                    
-                    console.log('🔍 DEBUG: Actualizando gasto:', {
-                        id: id,
-                        oldExpense: oldExpense,
-                        updatedExpense: updatedExpense,
-                        mergedExpense: mergedExpense
-                    });
-                    
-                    // 🔥 ACTUALIZAR EN FIREBASE PRIMERO
+                remove: async (id) => {
                     const budgetInstance = window.budgetInstance;
-                    if (budgetInstance && budgetInstance.firebaseManager && budgetInstance.firebaseManager.isConnected) {
-                        try {
-                            await budgetInstance.firebaseManager.updateExpense(id, updatedExpense);
-                            console.log('✅ Gasto actualizado en Firebase correctamente');
-                            return; // El listener actualizará la UI
-                        } catch (error) {
-                            console.error('❌ Firebase updateExpense failed, falling back to localStorage:', error);
-                        }
+                    if (!budgetInstance?.optimizedExpenseManager) {
+                        throw new Error('OptimizedExpenseManager not available');
                     }
-                    
-                    // Fallback a localStorage si Firebase no funciona
-                    console.warn('⚠️ Firebase no disponible, actualizando solo localStorage');
-                    window.AppState.expenses[index] = mergedExpense;
-                    window.AppState.saveAllData();
-                    
-                    // Actualizar UI manualmente
-                    if (budgetInstance) {
-                        budgetInstance.updateSummaryCards();
-                        budgetInstance.showCategoryContent();
+                    return await budgetInstance.optimizedExpenseManager.remove(id);
+                },
+                
+                // 🚀 MÉTODOS AVANZADOS EXCLUSIVOS
+                addMultiple: async (expenses) => {
+                    const budgetInstance = window.budgetInstance;
+                    if (!budgetInstance?.optimizedExpenseManager) {
+                        throw new Error('OptimizedExpenseManager not available');
                     }
+                    return await budgetInstance.optimizedExpenseManager.addMultiple(expenses);
+                },
+                
+                forceSync: async () => {
+                    const budgetInstance = window.budgetInstance;
+                    if (!budgetInstance?.optimizedExpenseManager) {
+                        throw new Error('OptimizedExpenseManager not available');
+                    }
+                    return await budgetInstance.optimizedExpenseManager.forceSync();
+                },
+                
+                getStats: () => {
+                    const budgetInstance = window.budgetInstance;
+                    if (!budgetInstance?.optimizedExpenseManager) {
+                        return { error: 'OptimizedExpenseManager not available' };
+                    }
+                    return budgetInstance.optimizedExpenseManager.getPerformanceStats();
                 }
             };
         }
@@ -641,9 +702,9 @@ export class BudgetManager {
                     </div>
                     
                     <div class="flex gap-3">
-                        <div class="flex-1 relative">
+                        <div class="flex-1 relative" style="overflow: visible;">
                             <!-- Desplegable personalizado con iconos -->
-                            <div id="custom-category-dropdown" class="relative">
+                            <div id="custom-category-dropdown" class="relative" style="overflow: visible;">
                                 <button type="button" id="category-dropdown-btn" 
                                         class="w-full px-4 py-3 pl-12 pr-10 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-slate-900 dark:text-white text-left cursor-pointer">
                                     <span id="selected-category-text">Seleccionar categoría</span>
@@ -656,7 +717,7 @@ export class BudgetManager {
                                 </span>
                                 
                                 <!-- Lista desplegable -->
-                                <div id="category-dropdown-list" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto hidden">
+                                <div id="category-dropdown-list" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl z-[9999] max-h-60 overflow-y-auto hidden" style="z-index: 9999 !important;">
                                     ${allCategories.map(cat => {
                                         const icon = this.getCategoryIcon(cat);
                                         return `
