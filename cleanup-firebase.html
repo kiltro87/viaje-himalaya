@@ -146,7 +146,15 @@
                 
                 const { collection, getDocs, orderBy, query } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                 
-                const q = query(collection(db, 'expenses'), orderBy('createdAt', 'desc'));
+                // Intentar sin orderBy primero por si hay problemas de índice
+                let q;
+                try {
+                    q = query(collection(db, 'expenses'), orderBy('createdAt', 'desc'));
+                } catch (indexError) {
+                    log('⚠️ Índice no disponible, cargando sin ordenar...');
+                    q = collection(db, 'expenses');
+                }
+                
                 const querySnapshot = await getDocs(q);
                 
                 expenses = [];
@@ -180,8 +188,17 @@
         }
 
         window.cleanupFirebase = async function() {
-            if (!db || expenses.length === 0) {
-                log('⚠️ No hay gastos para eliminar');
+            if (!db) {
+                log('❌ Firebase no está conectado');
+                return;
+            }
+            
+            // Recargar gastos antes de eliminar
+            await loadExpenses();
+            
+            if (expenses.length === 0) {
+                log('✅ No hay gastos para eliminar - Firebase ya está limpio');
+                document.getElementById('success-msg').style.display = 'block';
                 return;
             }
             
@@ -192,32 +209,40 @@
             try {
                 log(`🗑️ Eliminando ${expenses.length} gastos...`);
                 document.getElementById('cleanup-btn').disabled = true;
+                document.getElementById('cleanup-btn').textContent = '🗑️ Eliminando...';
                 
-                const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const { doc, deleteDoc, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                 
+                // Método alternativo: obtener todos los documentos y eliminarlos
+                const querySnapshot = await getDocs(collection(db, 'expenses'));
                 let deleted = 0;
-                for (const expense of expenses) {
-                    await deleteDoc(doc(db, 'expenses', expense.id));
-                    deleted++;
-                    
-                    if (deleted % 10 === 0) {
-                        log(`🗑️ Eliminados ${deleted}/${expenses.length} gastos...`);
-                    }
-                }
+                
+                const deletePromises = [];
+                querySnapshot.forEach((docSnapshot) => {
+                    deletePromises.push(deleteDoc(docSnapshot.ref));
+                });
+                
+                log(`🗑️ Eliminando ${deletePromises.length} documentos en paralelo...`);
+                await Promise.all(deletePromises);
+                deleted = deletePromises.length;
                 
                 log(`✅ Eliminados todos los ${deleted} gastos de Firebase`);
                 
                 // Limpiar localStorage también
                 localStorage.removeItem('tripExpensesV1');
                 localStorage.removeItem('tripPackingList');
+                localStorage.removeItem('tripExpenses'); // Por si acaso
                 log('🧹 localStorage limpiado también');
                 
                 document.getElementById('success-msg').style.display = 'block';
+                document.getElementById('cleanup-btn').textContent = '✅ Completado';
                 await loadExpenses();
                 
             } catch (error) {
                 log('❌ Error eliminando gastos: ' + error.message);
+                log('❌ Stack trace: ' + error.stack);
                 document.getElementById('cleanup-btn').disabled = false;
+                document.getElementById('cleanup-btn').textContent = '🗑️ Limpiar Todos los Gastos';
             }
         };
 
@@ -226,8 +251,5 @@
         // Inicializar al cargar la página
         initFirebase();
     </script>
-</body>
-</html>
-</script>
 </body>
 </html>
