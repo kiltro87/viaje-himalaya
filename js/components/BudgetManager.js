@@ -58,6 +58,9 @@ export class BudgetManager {
         this.firebaseManager = new FirebaseManager();
         this.setupFirebaseIntegration();
         
+        // Exponer FirebaseManager globalmente para otros componentes
+        window.FirebaseManager = this.firebaseManager;
+        
         // 🚀 SISTEMAS AVANZADOS DE OPTIMIZACIÓN
         this.optimisticUI = OptimisticUI;
         this.batchManager = new BatchManager(this.firebaseManager);

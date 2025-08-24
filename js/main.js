@@ -137,6 +137,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const daySimulator = getDaySimulator();
         if (Logger && Logger.info) Logger.info('🎯 Day Simulator initialized - Use showDaySimulator() to open panel');
         
+        // Inicializar PackingListManager cuando Firebase esté disponible
+        setTimeout(async () => {
+            if (window.FirebaseManager && !window.PackingListManager) {
+                const { getPackingListManager } = await import('./utils/PackingListManager.js');
+                window.PackingListManager = getPackingListManager();
+                await window.PackingListManager.initialize(window.FirebaseManager);
+                if (Logger && Logger.success) Logger.success('🎒 PackingListManager initialized with Firebase');
+            }
+        }, 2000); // Esperar a que Firebase se inicialice
+        
         // Añadir botón flotante del simulador (solo en desarrollo)
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') {
             setTimeout(() => {

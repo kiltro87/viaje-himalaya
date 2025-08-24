@@ -18,7 +18,7 @@
  * @since 2024
  */
 
-import { Logger } from './Logger.js';
+import Logger from './Logger.js';
 
 export class WeatherManager {
     constructor() {
@@ -238,7 +238,16 @@ export class WeatherManager {
     getCurrentItineraryDay() {
         try {
             const today = new Date();
-            const tripStart = new Date(window.tripConfig?.calendarData?.startDate || '2024-10-12');
+            
+            // Obtener fecha de inicio real del viaje
+            let tripStart;
+            if (window.uiRenderer && typeof window.uiRenderer.getTripStartDate === 'function') {
+                tripStart = window.uiRenderer.getTripStartDate();
+            } else {
+                // Fallback: calcular desde datos de vuelos
+                tripStart = this.calculateTripStartFromFlights();
+            }
+            
             const daysDiff = Math.floor((today - tripStart) / (1000 * 60 * 60 * 24));
             
             if (daysDiff < 0) {
@@ -269,6 +278,42 @@ export class WeatherManager {
             Logger.error('🌤️ Error getting current itinerary day:', error);
             return null;
         }
+    }
+
+    /**
+     * 📅 CALCULAR FECHA DE INICIO: Desde datos de vuelos
+     */
+    calculateTripStartFromFlights() {
+        try {
+            if (window.tripConfig?.flightsData && window.tripConfig.flightsData.length > 0) {
+                const firstFlight = window.tripConfig.flightsData[0];
+                if (firstFlight.segments && firstFlight.segments.length > 0) {
+                    const dateStr = firstFlight.segments[0].fromDateTime;
+                    const match = dateStr.match(/(\d+) de (\w+)/);
+                    if (match) {
+                        const day = parseInt(match[1]);
+                        const monthName = match[2];
+                        const months = {
+                            'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3, 'Mayo': 4, 'Junio': 5,
+                            'Julio': 6, 'Agosto': 7, 'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
+                        };
+                        const month = months[monthName];
+                        if (month !== undefined) {
+                            const currentYear = new Date().getFullYear();
+                            const currentMonth = new Date().getMonth();
+                            const year = (month < currentMonth) ? currentYear + 1 : currentYear;
+                            
+                            return new Date(year, month, day);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            Logger.error('🌤️ Error calculating trip start from flights:', error);
+        }
+        
+        // Fallback
+        return new Date(2025, 9, 9); // 9 de octubre 2025
     }
 
     /**

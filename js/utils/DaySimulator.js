@@ -17,16 +17,73 @@
  * @since 2024
  */
 
-import { Logger } from './Logger.js';
+import Logger from './Logger.js';
 
 export class DaySimulator {
     constructor() {
         this.originalDate = new Date();
         this.simulatedDay = null;
         this.isSimulating = false;
-        this.tripStartDate = new Date('2024-10-12'); // Fecha de inicio del viaje
+        this.tripStartDate = null; // Se calculará dinámicamente
         
         Logger.info('🎯 DaySimulator initialized');
+    }
+
+    /**
+     * 📅 OBTENER FECHA DE INICIO: Calcular fecha real del primer vuelo
+     */
+    getTripStartDate() {
+        if (this.tripStartDate) return this.tripStartDate;
+
+        try {
+            // Usar la función existente del UIRenderer si está disponible
+            if (window.uiRenderer && typeof window.uiRenderer.getTripStartDate === 'function') {
+                this.tripStartDate = window.uiRenderer.getTripStartDate();
+                Logger.info('🎯 Trip start date from UIRenderer:', this.tripStartDate);
+                return this.tripStartDate;
+            }
+
+            // Calcular desde los datos de vuelos directamente
+            if (window.tripConfig?.flightsData && window.tripConfig.flightsData.length > 0) {
+                const firstFlight = window.tripConfig.flightsData[0];
+                if (firstFlight.segments && firstFlight.segments.length > 0) {
+                    const dateStr = firstFlight.segments[0].fromDateTime;
+                    const match = dateStr.match(/(\d+) de (\w+)/);
+                    if (match) {
+                        const day = parseInt(match[1]);
+                        const monthName = match[2];
+                        const months = {
+                            'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3, 'Mayo': 4, 'Junio': 5,
+                            'Julio': 6, 'Agosto': 7, 'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
+                        };
+                        const month = months[monthName];
+                        if (month !== undefined) {
+                            // Usar el año actual o siguiente según la fecha
+                            const currentYear = new Date().getFullYear();
+                            const currentMonth = new Date().getMonth();
+                            const year = (month < currentMonth) ? currentYear + 1 : currentYear;
+                            
+                            this.tripStartDate = new Date(year, month, day);
+                            Logger.info('🎯 Trip start date calculated from flight data:', {
+                                original: dateStr,
+                                parsed: this.tripStartDate
+                            });
+                            return this.tripStartDate;
+                        }
+                    }
+                }
+            }
+
+            // Fallback: usar fecha por defecto
+            Logger.warn('🎯 Could not parse trip start date, using fallback');
+            this.tripStartDate = new Date(2025, 9, 9); // 9 de octubre 2025
+            return this.tripStartDate;
+
+        } catch (error) {
+            Logger.error('🎯 Error calculating trip start date:', error);
+            this.tripStartDate = new Date(2025, 9, 9);
+            return this.tripStartDate;
+        }
     }
 
     /**
@@ -41,8 +98,9 @@ export class DaySimulator {
             this.simulatedDay = dayNumber;
             this.isSimulating = true;
 
-            // Calcular fecha simulada
-            const simulatedDate = new Date(this.tripStartDate);
+            // Calcular fecha simulada basada en la fecha real del vuelo
+            const tripStart = this.getTripStartDate();
+            const simulatedDate = new Date(tripStart);
             simulatedDate.setDate(simulatedDate.getDate() + (dayNumber - 1));
 
             // Sobrescribir Date.now() temporalmente

@@ -17,7 +17,7 @@
  * @since 2024
  */
 
-import { Logger } from './Logger.js';
+import Logger from './Logger.js';
 
 export class PackingListManager {
     constructor() {
