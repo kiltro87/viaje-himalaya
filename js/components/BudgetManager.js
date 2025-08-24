@@ -323,6 +323,13 @@ export class BudgetManager {
                         expense: newExpense
                     });
                     
+                    // 🔍 DEBUG: Mostrar todos los gastos actuales
+                    console.log('🔍 DEBUG: Gastos actuales en AppState:', window.AppState.expenses.map(e => ({
+                        id: e.id,
+                        concept: e.concept,
+                        amount: e.amount
+                    })));
+                    
                     if (budgetInstance && budgetInstance.firebaseManager && budgetInstance.firebaseManager.isConnected) {
                         if (!Logger.isMobile) {
                             console.log('🔥 DEBUG: Calling Firebase addExpense...');
@@ -406,6 +413,13 @@ export class BudgetManager {
                     const mergedExpense = { ...oldExpense, ...updatedExpense, updatedAt: new Date().toISOString() };
                     
                     Logger.crud('UPDATE', 'expense', { id, old: oldExpense, new: updatedExpense });
+                    
+                    console.log('🔍 DEBUG: Actualizando gasto:', {
+                        id: id,
+                        oldExpense: oldExpense,
+                        updatedExpense: updatedExpense,
+                        mergedExpense: mergedExpense
+                    });
                     
                     // 🔥 ACTUALIZAR EN FIREBASE PRIMERO
                     const budgetInstance = window.budgetInstance;
@@ -527,7 +541,10 @@ export class BudgetManager {
         const budgetData = tripConfig.budgetData.budgetData;
         const allExpenses = Object.values(budgetData).flat();
         const allCategories = [...new Set(allExpenses.map(item => item.category))];
-        const categoryOptionsHTML = allCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        const categoryOptionsHTML = allCategories.map(cat => {
+            const icon = this.getCategoryIcon(cat);
+            return `<option value="${cat}" data-icon="${icon}">${cat}</option>`;
+        }).join('');
 
         container.innerHTML = `
             <!-- Encabezado Simplificado -->
@@ -616,11 +633,16 @@ export class BudgetManager {
                     </div>
                     
                     <div class="flex gap-3">
-                        <select id="expense-category" required 
-                                class="flex-1 px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-slate-900 dark:text-white appearance-none cursor-pointer">
-                            <option value="">Seleccionar categoría</option>
-                            ${categoryOptionsHTML}
-                        </select>
+                        <div class="flex-1 relative">
+                            <select id="expense-category" required 
+                                    class="w-full px-4 py-3 pl-12 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-slate-900 dark:text-white appearance-none cursor-pointer">
+                                <option value="">Seleccionar categoría</option>
+                                ${categoryOptionsHTML}
+                            </select>
+                            <span id="category-icon" class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none">
+                                category
+                            </span>
+                        </div>
                         <button type="submit" 
                                 class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 whitespace-nowrap">
                             <span class="material-symbols-outlined">add</span>
@@ -638,6 +660,26 @@ export class BudgetManager {
     }
 
     setupEventListeners() {
+        // Cambiar icono del desplegable de categorías
+        const categorySelect = document.getElementById('expense-category');
+        const categoryIcon = document.getElementById('category-icon');
+        
+        if (categorySelect && categoryIcon) {
+            categorySelect.addEventListener('change', (e) => {
+                const selectedCategory = e.target.value;
+                if (selectedCategory) {
+                    const icon = this.getCategoryIcon(selectedCategory);
+                    categoryIcon.textContent = icon;
+                    categoryIcon.classList.remove('text-slate-500');
+                    categoryIcon.classList.add('text-blue-600');
+                } else {
+                    categoryIcon.textContent = 'category';
+                    categoryIcon.classList.remove('text-blue-600');
+                    categoryIcon.classList.add('text-slate-500');
+                }
+            });
+        }
+        
         // Filtros de categoría
         document.getElementById('budget-category-filters').addEventListener('click', (e) => {
             const btn = e.target.closest('.budget-filter-btn');

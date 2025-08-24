@@ -366,6 +366,13 @@ export class FirebaseManager {
 
             await setDoc(docRef, upsertData, { merge: true });
             console.log('✅ UPSERT completado en Firebase:', expenseId);
+            console.log('🔍 DEBUG: Datos enviados a Firebase:', {
+                id: expenseId,
+                concept: upsertData.concept,
+                amount: upsertData.amount,
+                category: upsertData.category,
+                merge: true
+            });
             
             Logger.data('Expense updated in Firebase:', expenseId);
             
