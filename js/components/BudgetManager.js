@@ -205,18 +205,34 @@ export class BudgetManager {
         // Inicializar ExpenseManager si no existe
         if (!window.ExpenseManager) {
             window.ExpenseManager = {
-                add(expense) {
+                add: async (expense) => {
+                    console.log('🔥 DEBUG: ExpenseManager.add called', expense);
                     Logger.budget('Adding new expense', { concept: expense.concept, amount: expense.amount });
+                    
                     const newExpense = { ...expense, id: Date.now().toString() };
+                    
+                    // Añadir a localStorage (backup)
                     window.AppState.expenses.push(newExpense);
                     window.AppState.saveAllData();
                     Logger.crud('CREATE', 'expense', newExpense);
                     
-                    // Actualizar la lista de gastos y totales
+                    // 🔥 AÑADIR A FIREBASE
                     const budgetInstance = window.budgetInstance;
+                    if (budgetInstance && budgetInstance.firebaseManager) {
+                        console.log('🔥 DEBUG: Calling Firebase addExpense...');
+                        try {
+                            await budgetInstance.firebaseManager.addExpense(newExpense);
+                            console.log('🔥 DEBUG: Firebase addExpense completed');
+                        } catch (error) {
+                            console.error('🔥 DEBUG: Firebase addExpense failed:', error);
+                        }
+                    } else {
+                        console.warn('🔥 DEBUG: No Firebase manager available');
+                    }
+                    
+                    // Actualizar la lista de gastos y totales
                     if (budgetInstance) {
                         budgetInstance.updateSummaryCards();
-
                         budgetInstance.showCategoryContent();
                     }
                 },

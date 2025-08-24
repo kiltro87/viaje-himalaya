@@ -239,11 +239,15 @@ export class FirebaseManager {
      * @returns {Promise<string>} ID del documento creado
      */
     async addExpense(expense, triggerCallbacks = true) {
+        console.log('🔥 DEBUG: addExpense called', { expense, isConnected: this.isConnected });
+        
         if (!this.isConnected) {
+            console.log('🔥 DEBUG: Not connected, using localStorage');
             return this.addExpenseLocal(expense);
         }
 
         try {
+            console.log('🔥 DEBUG: Importing Firestore modules...');
             const { collection, addDoc, serverTimestamp } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
@@ -255,8 +259,13 @@ export class FirebaseManager {
                 deviceId: this.getDeviceId()
             };
 
+            console.log('🔥 DEBUG: Expense data prepared:', expenseData);
+            console.log('🔥 DEBUG: Database reference:', this.db);
+            console.log('🔥 DEBUG: Collection name:', firestoreConfig.collections.expenses);
+
             const docRef = await addDoc(collection(this.db, firestoreConfig.collections.expenses), expenseData);
             
+            console.log('🔥 DEBUG: Document added successfully:', docRef.id);
             Logger.data('Expense added to Firebase:', docRef.id);
             
             // Actualizar localStorage como backup
@@ -269,6 +278,8 @@ export class FirebaseManager {
             return docRef.id;
             
         } catch (error) {
+            console.error('🔥 DEBUG: Error adding expense to Firebase:', error);
+            console.error('🔥 DEBUG: Error details:', error.message, error.code);
             Logger.error('Error adding expense to Firebase:', error);
             
             // Fallback a localStorage
