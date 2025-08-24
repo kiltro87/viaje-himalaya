@@ -139,8 +139,15 @@ export class BatchManager {
      * Añade una operación individual al lote de Firestore
      */
     async addOperationToBatch(batch, operation) {
-        const { collection, doc, serverTimestamp } = 
-            await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        // Importar todas las funciones de Firestore de una vez
+        const { 
+            collection, 
+            doc, 
+            serverTimestamp, 
+            query, 
+            where, 
+            getDocs 
+        } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
         const collectionRef = collection(this.firebaseManager.db, 'expenses');
 
@@ -162,10 +169,7 @@ export class BatchManager {
                 
                 const expenseId = operation.data.id;
                 
-                // Buscar el documento por el campo 'id'
-                const { query, where, getDocs } = 
-                    await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-                
+                // Buscar el documento por el campo 'id' (usando imports ya disponibles)
                 const existingQuery = query(collectionRef, where('id', '==', expenseId));
                 const existingSnapshot = await getDocs(existingQuery);
                 
@@ -210,7 +214,7 @@ export class BatchManager {
                 // 🚨 PROBLEMA CRÍTICO: Buscar documento real para eliminar
                 const deleteExpenseId = operation.data.id;
                 
-                // Buscar el documento por el campo 'id'
+                // Buscar el documento por el campo 'id' (usando imports ya disponibles)
                 const deleteQuery = query(collectionRef, where('id', '==', deleteExpenseId));
                 const deleteSnapshot = await getDocs(deleteQuery);
                 
