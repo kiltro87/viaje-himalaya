@@ -81,6 +81,12 @@ export class BudgetManager {
         this.firebaseManager.onSyncStatusChanged = (status) => {
             Logger.budget('Sync status changed:', status);
             this.updateSyncStatus(status);
+            
+            // 🔥 CONFIGURAR LISTENER CUANDO SE CONECTE
+            if (status === 'connected' && !this.realtimeUnsubscribe) {
+                console.log('🔥 DEBUG: Firebase connected, setting up realtime listener...');
+                this.setupRealtimeSync();
+            }
         };
         
         // Configurar listener en tiempo real
@@ -97,19 +103,28 @@ export class BudgetManager {
      * 
      * @private
      */
-    setupRealtimeSync() {
-        if (!this.firebaseManager.isConnected) return;
+    async setupRealtimeSync() {
+        console.log('🔥 DEBUG: setupRealtimeSync called', { isConnected: this.firebaseManager.isConnected });
         
-        this.realtimeUnsubscribe = this.firebaseManager.setupRealtimeListener((expenses) => {
+        if (!this.firebaseManager.isConnected) {
+            console.log('🔥 DEBUG: Firebase not connected, skipping realtime sync');
+            return;
+        }
+        
+        console.log('🔥 DEBUG: Setting up Firebase realtime listener...');
+        this.realtimeUnsubscribe = await this.firebaseManager.setupRealtimeListener((expenses) => {
+            console.log('🔥 DEBUG: Realtime callback triggered with', expenses.length, 'expenses');
             Logger.budget(`Realtime update: ${expenses.length} expenses received`);
             
             // Actualizar AppState global
             if (window.AppState) {
                 window.AppState.expenses = expenses;
+                console.log('🔥 DEBUG: AppState.expenses updated');
             }
             
             // Actualizar UI si está visible
             if (document.getElementById('budget-container')) {
+                console.log('🔥 DEBUG: Updating budget UI...');
                 this.updateSummaryCards();
                 
                 // Actualizar contenido de categorías si está abierto
@@ -117,11 +132,14 @@ export class BudgetManager {
                 if (categoryContent && !categoryContent.classList.contains('hidden')) {
                     const activeCategory = document.querySelector('.category-btn.active')?.dataset.category;
                     if (activeCategory) {
+                        console.log('🔥 DEBUG: Updating category content for:', activeCategory);
                         this.showCategoryContent(activeCategory);
                     }
                 }
             }
         });
+        
+        console.log('🔥 DEBUG: Realtime sync setup completed');
     }
 
     /**
