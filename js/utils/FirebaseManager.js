@@ -31,6 +31,12 @@ export class FirebaseManager {
      * @constructor
      */
     constructor() {
+        // 🚨 PREVENIR MÚLTIPLES INSTANCIAS DE FIREBASE
+        if (window.firebaseManagerInstance) {
+            Logger.warning('FirebaseManager ya existe, retornando instancia existente');
+            return window.firebaseManagerInstance;
+        }
+        
         this.db = null;
         this.isConnected = false;
         this.isOffline = false;
@@ -45,6 +51,9 @@ export class FirebaseManager {
         
         this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         Logger.init('FirebaseManager initialized');
+        
+        // 🚨 ASIGNAR COMO INSTANCIA SINGLETON
+        window.firebaseManagerInstance = this;
         
         // Verificar configuración de Firebase
         try {
@@ -439,8 +448,23 @@ export class FirebaseManager {
      * @returns {Function} Función para desuscribirse
      */
     async setupRealtimeListener(callback) {
+        const listenerId = 'expenses-listener';
+        
         if (!this.isMobile) {
-            console.log('🔥 DEBUG: setupRealtimeListener called', { isConnected: this.isConnected });
+            console.log('🔥 DEBUG: setupRealtimeListener called', { 
+                isConnected: this.isConnected,
+                existingListeners: this.listeners.size 
+            });
+        }
+        
+        // 🚨 PREVENIR LISTENERS DUPLICADOS
+        if (this.listeners.has(listenerId)) {
+            if (!this.isMobile) {
+                console.log('🔥 DEBUG: Listener ya existe, desuscribiendo el anterior...');
+            }
+            const existingUnsubscribe = this.listeners.get(listenerId);
+            existingUnsubscribe();
+            this.listeners.delete(listenerId);
         }
         
         if (!this.isConnected) {
@@ -490,8 +514,18 @@ export class FirebaseManager {
                 Logger.error('Realtime listener error:', error);
             });
             
-            console.log('🔥 DEBUG: Realtime listener configured successfully');
-            return unsubscribe;
+            // 🚨 REGISTRAR LISTENER PARA EVITAR DUPLICADOS
+            this.listeners.set(listenerId, unsubscribe);
+            
+            if (!this.isMobile) {
+                console.log('🔥 DEBUG: Realtime listener configured successfully');
+            }
+            
+            // Retornar función que desuscribe Y elimina del registro
+            return () => {
+                unsubscribe();
+                this.listeners.delete(listenerId);
+            };
             
         } catch (error) {
             console.error('🔥 DEBUG: Error setting up realtime listener:', error);

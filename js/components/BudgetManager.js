@@ -38,6 +38,12 @@ export class BudgetManager {
      * @constructor
      */
     constructor() {
+        // 🚨 PREVENIR MÚLTIPLES INSTANCIAS (Singleton pattern)
+        if (window.budgetInstance) {
+            Logger.warning('BudgetManager ya existe, retornando instancia existente');
+            return window.budgetInstance;
+        }
+        
         Logger.init('BudgetManager constructor started');
         Logger.budget('Initializing budget management system');
         
@@ -47,6 +53,9 @@ export class BudgetManager {
         // Inicializar Firebase para almacenamiento en la nube
         this.firebaseManager = new FirebaseManager();
         this.setupFirebaseIntegration();
+        
+        // 🚨 ASIGNAR COMO INSTANCIA SINGLETON
+        window.budgetInstance = this;
         
         Logger.success('BudgetManager initialized successfully');
     }
@@ -106,22 +115,64 @@ export class BudgetManager {
      * @private
      */
     async setupRealtimeSync() {
-        console.log('🔥 DEBUG: setupRealtimeSync called', { isConnected: this.firebaseManager.isConnected });
+        if (!Logger.isMobile) {
+            console.log('🔥 DEBUG: setupRealtimeSync called', { 
+                isConnected: this.firebaseManager.isConnected,
+                hasExistingListener: !!this.realtimeUnsubscribe 
+            });
+        }
+        
+        // 🚨 PREVENIR MÚLTIPLES LISTENERS
+        if (this.realtimeUnsubscribe) {
+            if (!Logger.isMobile) {
+                console.log('🔥 DEBUG: Listener ya existe, desuscribiendo el anterior...');
+            }
+            this.realtimeUnsubscribe();
+            this.realtimeUnsubscribe = null;
+        }
         
         if (!this.firebaseManager.isConnected) {
-            console.log('🔥 DEBUG: Firebase not connected, skipping realtime sync');
+            if (!Logger.isMobile) {
+                console.log('🔥 DEBUG: Firebase not connected, skipping realtime sync');
+            }
             return;
         }
         
         if (!Logger.isMobile) {
-            console.log('🔥 DEBUG: Setting up Firebase realtime listener...');
+            console.log('🔥 DEBUG: Setting up NEW Firebase realtime listener...');
         }
+        
+        // 🚨 DEBOUNCE para evitar actualizaciones demasiado frecuentes
+        let updateTimeout = null;
+        
         this.realtimeUnsubscribe = await this.firebaseManager.setupRealtimeListener((expenses) => {
             if (!Logger.isMobile) {
                 console.log('🔥 DEBUG: Realtime callback triggered with', expenses.length, 'expenses');
             }
             Logger.budget(`Realtime update: ${expenses.length} expenses received`);
             
+            // Cancelar actualización anterior si existe
+            if (updateTimeout) {
+                clearTimeout(updateTimeout);
+            }
+            
+            // Debounce de 100ms para evitar actualizaciones excesivas
+            updateTimeout = setTimeout(() => {
+                this.processFirebaseUpdate(expenses);
+            }, 100);
+        });
+        
+        if (!Logger.isMobile) {
+            console.log('🔥 DEBUG: Realtime sync setup completed');
+        }
+    }
+    
+    /**
+     * Procesa una actualización de Firebase de forma segura
+     * @private
+     */
+    processFirebaseUpdate(expenses) {
+        try {
             // 🔥 REEMPLAZAR COMPLETAMENTE AppState.expenses (no añadir)
             if (window.AppState) {
                 // Convertir timestamps de Firebase a formato local
@@ -160,14 +211,17 @@ export class BudgetManager {
                 if (categoryContent && !categoryContent.classList.contains('hidden')) {
                     const activeCategory = document.querySelector('.category-btn.active')?.dataset.category;
                     if (activeCategory) {
-                        console.log('🔥 DEBUG: Updating category content for:', activeCategory);
+                        if (!Logger.isMobile) {
+                            console.log('🔥 DEBUG: Updating category content for:', activeCategory);
+                        }
                         this.showCategoryContent(activeCategory);
                     }
                 }
             }
-        });
-        
-        console.log('🔥 DEBUG: Realtime sync setup completed');
+        } catch (error) {
+            Logger.error('Error processing Firebase update:', error);
+            console.error('🔥 ERROR in processFirebaseUpdate:', error);
+        }
     }
 
     /**
