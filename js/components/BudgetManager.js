@@ -220,6 +220,7 @@ export class BudgetManager {
             }
         } catch (error) {
             Logger.error('Error processing Firebase update:', error);
+            this.updateSyncStatus('error');
             console.error('🔥 ERROR in processFirebaseUpdate:', error);
         }
     }
@@ -608,9 +609,16 @@ export class BudgetManager {
             
             <!-- Formulario de Nuevo Gasto -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-6">
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">add_circle</span>
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white">Nuevo Gasto</h3>
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">add_circle</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white">Nuevo Gasto</h3>
+                    </div>
+                    <!-- Indicador de sincronización -->
+                    <div id="sync-status" class="flex items-center gap-2 text-sm">
+                        <div id="sync-indicator" class="w-2 h-2 rounded-full bg-green-500"></div>
+                        <span id="sync-text" class="text-slate-600 dark:text-slate-400">Sincronizado</span>
+                    </div>
                 </div>
                 <form id="expense-form" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -634,19 +642,40 @@ export class BudgetManager {
                     
                     <div class="flex gap-3">
                         <div class="flex-1 relative">
-                            <select id="expense-category" required 
-                                    class="w-full px-4 py-3 pl-12 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-slate-900 dark:text-white appearance-none cursor-pointer">
-                                <option value="">Seleccionar categoría</option>
-                                ${categoryOptionsHTML}
-                            </select>
-                            <span id="category-icon" class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none">
-                                category
-                            </span>
+                            <!-- Desplegable personalizado con iconos -->
+                            <div id="custom-category-dropdown" class="relative">
+                                <button type="button" id="category-dropdown-btn" 
+                                        class="w-full px-4 py-3 pl-12 pr-10 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-slate-900 dark:text-white text-left cursor-pointer">
+                                    <span id="selected-category-text">Seleccionar categoría</span>
+                                </button>
+                                <span id="category-icon" class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none">
+                                    category
+                                </span>
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none">
+                                    expand_more
+                                </span>
+                                
+                                <!-- Lista desplegable -->
+                                <div id="category-dropdown-list" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto hidden">
+                                    ${allCategories.map(cat => {
+                                        const icon = this.getCategoryIcon(cat);
+                                        return `
+                                            <div class="category-option flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors" data-value="${cat}">
+                                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${icon}</span>
+                                                <span class="text-slate-900 dark:text-white">${cat}</span>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                            
+                            <!-- Input oculto para el formulario -->
+                            <input type="hidden" id="expense-category" name="category" required>
                         </div>
-                        <button type="submit" 
+                        <button type="submit" id="add-expense-btn"
                                 class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 whitespace-nowrap">
-                            <span class="material-symbols-outlined">add</span>
-                            Añadir
+                            <span class="material-symbols-outlined" id="add-btn-icon">add</span>
+                            <span id="add-btn-text">Añadir</span>
                         </button>
                     </div>
                 </form>
@@ -660,22 +689,43 @@ export class BudgetManager {
     }
 
     setupEventListeners() {
-        // Cambiar icono del desplegable de categorías
-        const categorySelect = document.getElementById('expense-category');
+        // Desplegable personalizado de categorías
+        const dropdownBtn = document.getElementById('category-dropdown-btn');
+        const dropdownList = document.getElementById('category-dropdown-list');
+        const categoryInput = document.getElementById('expense-category');
         const categoryIcon = document.getElementById('category-icon');
+        const selectedText = document.getElementById('selected-category-text');
         
-        if (categorySelect && categoryIcon) {
-            categorySelect.addEventListener('change', (e) => {
-                const selectedCategory = e.target.value;
-                if (selectedCategory) {
-                    const icon = this.getCategoryIcon(selectedCategory);
+        if (dropdownBtn && dropdownList && categoryInput) {
+            // Abrir/cerrar desplegable
+            dropdownBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                dropdownList.classList.toggle('hidden');
+            });
+            
+            // Seleccionar opción
+            dropdownList.addEventListener('click', (e) => {
+                const option = e.target.closest('.category-option');
+                if (option) {
+                    const value = option.dataset.value;
+                    const icon = this.getCategoryIcon(value);
+                    
+                    // Actualizar valores
+                    categoryInput.value = value;
+                    selectedText.textContent = value;
                     categoryIcon.textContent = icon;
                     categoryIcon.classList.remove('text-slate-500');
                     categoryIcon.classList.add('text-blue-600');
-                } else {
-                    categoryIcon.textContent = 'category';
-                    categoryIcon.classList.remove('text-blue-600');
-                    categoryIcon.classList.add('text-slate-500');
+                    
+                    // Cerrar desplegable
+                    dropdownList.classList.add('hidden');
+                }
+            });
+            
+            // Cerrar al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                if (!dropdownBtn.contains(e.target) && !dropdownList.contains(e.target)) {
+                    dropdownList.classList.add('hidden');
                 }
             });
         }
@@ -707,6 +757,9 @@ export class BudgetManager {
                 const submitBtn = e.target.querySelector('button[type="submit"]');
                 const editId = submitBtn.dataset.editId;
                 
+                // 🔄 Indicar que se está sincronizando
+                this.updateSyncStatus('syncing');
+                
                 if (editId) {
                     // Actualizar gasto existente
                     await window.ExpenseManager.update(editId, { concept, amount, category });
@@ -715,6 +768,9 @@ export class BudgetManager {
                     // Añadir nuevo gasto
                     await window.ExpenseManager.add({ concept, amount, category });
                 }
+                
+                // ✅ Sincronización completada (se actualizará con el listener de Firebase)
+                // this.updateSyncStatus('connected'); // Se actualiza automáticamente con el listener
                 
                 e.target.reset();
             }

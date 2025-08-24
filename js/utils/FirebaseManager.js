@@ -348,31 +348,54 @@ export class FirebaseManager {
                 throw new Error(`Expense ${expenseId} not found in localStorage`);
             }
             
-            const upsertData = {
-                // Datos base del gasto (para crear si no existe)
-                ...localExpense,
-                // Actualizaciones solicitadas
-                ...updates,
-                // Metadatos
-                id: expenseId,
-                updatedAt: serverTimestamp(),
-                deviceId: this.getDeviceId()
-            };
+            // 🚨 PROBLEMA: Necesitamos verificar si YA EXISTE un documento con este ID
+            // Firebase permite múltiples docs con mismo campo 'id' pero diferente docId
             
-            // Si no tiene createdAt, añadirlo (para documentos nuevos)
-            if (!localExpense.createdAt) {
-                upsertData.createdAt = serverTimestamp();
-            }
+            // 1️⃣ Buscar si ya existe un documento con este ID en el campo 'id'
+            const { collection, query, where, getDocs, updateDoc } = 
+                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            
+            const existingQuery = query(
+                collection(this.db, firestoreConfig.collections.expenses),
+                where('id', '==', expenseId)
+            );
+            
+            const existingSnapshot = await getDocs(existingQuery);
+            
+            if (!existingSnapshot.empty) {
+                // 🔄 YA EXISTE → Actualizar el documento existente
+                const existingDoc = existingSnapshot.docs[0];
+                console.log('🔄 Documento existente encontrado, actualizando:', existingDoc.id);
+                
+                const updateData = {
+                    ...updates,
+                    updatedAt: serverTimestamp(),
+                    deviceId: this.getDeviceId()
+                };
 
-            await setDoc(docRef, upsertData, { merge: true });
+                await updateDoc(existingDoc.ref, updateData);
+                console.log('✅ Documento existente actualizado:', existingDoc.id);
+                
+            } else {
+                // 🆕 NO EXISTE → Crear nuevo con el ID como docId
+                console.log('🆕 Creando nuevo documento con ID:', expenseId);
+                
+                const upsertData = {
+                    // Datos base del gasto (para crear si no existe)
+                    ...localExpense,
+                    // Actualizaciones solicitadas
+                    ...updates,
+                    // Metadatos
+                    id: expenseId,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                    deviceId: this.getDeviceId()
+                };
+
+                await setDoc(docRef, upsertData);
+                console.log('✅ Nuevo documento creado:', expenseId);
+            }
             console.log('✅ UPSERT completado en Firebase:', expenseId);
-            console.log('🔍 DEBUG: Datos enviados a Firebase:', {
-                id: expenseId,
-                concept: upsertData.concept,
-                amount: upsertData.amount,
-                category: upsertData.category,
-                merge: true
-            });
             
             Logger.data('Expense updated in Firebase:', expenseId);
             
