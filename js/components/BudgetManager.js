@@ -361,42 +361,72 @@ export class BudgetManager {
                     }
                 },
                 
-                remove(id) {
+                async remove(id) {
                     const expense = window.AppState.expenses.find(exp => exp.id === id);
                     if (!expense) {
                         Logger.error('Expense not found for deletion', { id });
                         return;
                     }
+                    
                     Logger.budget('Removing expense', { id, concept: expense.concept });
+                    
+                    // 🔥 ELIMINAR DE FIREBASE PRIMERO
+                    const budgetInstance = window.budgetInstance;
+                    if (budgetInstance && budgetInstance.firebaseManager && budgetInstance.firebaseManager.isConnected) {
+                        try {
+                            await budgetInstance.firebaseManager.deleteExpense(id);
+                            console.log('✅ Gasto eliminado de Firebase correctamente');
+                            return; // El listener actualizará la UI
+                        } catch (error) {
+                            console.error('❌ Firebase deleteExpense failed, falling back to localStorage:', error);
+                        }
+                    }
+                    
+                    // Fallback a localStorage si Firebase no funciona
+                    console.warn('⚠️ Firebase no disponible, eliminando solo de localStorage');
                     window.AppState.expenses = window.AppState.expenses.filter(exp => exp.id !== id);
                     window.AppState.saveAllData();
                     Logger.crud('DELETE', 'expense', { id, concept: expense.concept });
                     
-                    // Actualizar la lista de gastos y totales
-                    const budgetInstance = window.budgetInstance;
+                    // Actualizar UI manualmente
                     if (budgetInstance) {
                         budgetInstance.updateSummaryCards();
-
                         budgetInstance.showCategoryContent();
                     }
                 },
                 
-                update(id, updatedExpense) {
+                async update(id, updatedExpense) {
                     const index = window.AppState.expenses.findIndex(exp => exp.id === id);
                     if (index === -1) {
                         Logger.error('Expense not found for update', { id });
                         return;
                     }
+                    
                     const oldExpense = window.AppState.expenses[index];
-                    window.AppState.expenses[index] = { ...oldExpense, ...updatedExpense };
-                    window.AppState.saveAllData();
+                    const mergedExpense = { ...oldExpense, ...updatedExpense, updatedAt: new Date().toISOString() };
+                    
                     Logger.crud('UPDATE', 'expense', { id, old: oldExpense, new: updatedExpense });
                     
-                    // Actualizar la lista de gastos y totales
+                    // 🔥 ACTUALIZAR EN FIREBASE PRIMERO
                     const budgetInstance = window.budgetInstance;
+                    if (budgetInstance && budgetInstance.firebaseManager && budgetInstance.firebaseManager.isConnected) {
+                        try {
+                            await budgetInstance.firebaseManager.updateExpense(id, updatedExpense);
+                            console.log('✅ Gasto actualizado en Firebase correctamente');
+                            return; // El listener actualizará la UI
+                        } catch (error) {
+                            console.error('❌ Firebase updateExpense failed, falling back to localStorage:', error);
+                        }
+                    }
+                    
+                    // Fallback a localStorage si Firebase no funciona
+                    console.warn('⚠️ Firebase no disponible, actualizando solo localStorage');
+                    window.AppState.expenses[index] = mergedExpense;
+                    window.AppState.saveAllData();
+                    
+                    // Actualizar UI manualmente
                     if (budgetInstance) {
                         budgetInstance.updateSummaryCards();
-
                         budgetInstance.showCategoryContent();
                     }
                 }
@@ -625,7 +655,7 @@ export class BudgetManager {
         });
 
         // Formulario de gastos
-        document.getElementById('expense-form').addEventListener('submit', (e) => {
+        document.getElementById('expense-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const concept = document.getElementById('expense-concept').value;
             const amount = parseFloat(document.getElementById('expense-amount').value);
@@ -637,11 +667,11 @@ export class BudgetManager {
                 
                 if (editId) {
                     // Actualizar gasto existente
-                    window.ExpenseManager.update(editId, { concept, amount, category });
+                    await window.ExpenseManager.update(editId, { concept, amount, category });
                     this.cancelEditMode();
                 } else {
                     // Añadir nuevo gasto
-                    window.ExpenseManager.add({ concept, amount, category });
+                    await window.ExpenseManager.add({ concept, amount, category });
                 }
                 
                 e.target.reset();
@@ -792,12 +822,12 @@ export class BudgetManager {
                 });
                 
                 document.querySelectorAll('.delete-expense-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
+                    btn.addEventListener('click', async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         const expenseId = btn.dataset.expenseId;
                         if (confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
-                            window.ExpenseManager.remove(expenseId);
+                            await window.ExpenseManager.remove(expenseId);
                         }
                     });
                 });
