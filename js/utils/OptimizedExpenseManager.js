@@ -52,7 +52,7 @@ export class OptimizedExpenseManager {
      * Muestra el cambio inmediatamente, luego sincroniza en background
      */
     async add(expense) {
-        Logger.performance('ExpenseManager.add started');
+        Logger.data('ExpenseManager.add started');
         
         try {
             const result = await this.optimisticUI.addExpenseOptimistic(
@@ -73,7 +73,7 @@ export class OptimizedExpenseManager {
                 id: result
             });
 
-            Logger.performance('ExpenseManager.add completed');
+            Logger.success('ExpenseManager.add completed');
             return result;
 
         } catch (error) {
@@ -87,7 +87,7 @@ export class OptimizedExpenseManager {
      * 🔄 ACTUALIZAR GASTO CON OPTIMISTIC UI
      */
     async update(id, updates) {
-        Logger.performance('ExpenseManager.update started');
+        Logger.data('ExpenseManager.update started');
         
         try {
             await this.optimisticUI.updateExpenseOptimistic(
@@ -109,7 +109,7 @@ export class OptimizedExpenseManager {
                 ...updates
             });
 
-            Logger.performance('ExpenseManager.update completed');
+            Logger.success('ExpenseManager.update completed');
 
         } catch (error) {
             Logger.error('Failed to update expense:', error);
@@ -122,7 +122,7 @@ export class OptimizedExpenseManager {
      * 🗑️ ELIMINAR GASTO CON OPTIMISTIC UI
      */
     async remove(id) {
-        Logger.performance('ExpenseManager.remove started');
+        Logger.data('ExpenseManager.remove started');
         
         try {
             await this.optimisticUI.deleteExpenseOptimistic(
@@ -140,7 +140,7 @@ export class OptimizedExpenseManager {
             // Notificar a otros dispositivos
             this.realtimeSync.notifyExpenseChange('deleted', { id });
 
-            Logger.performance('ExpenseManager.remove completed');
+            Logger.success('ExpenseManager.remove completed');
 
         } catch (error) {
             Logger.error('Failed to remove expense:', error);
@@ -154,7 +154,7 @@ export class OptimizedExpenseManager {
      * Para múltiples cambios simultáneos
      */
     async addMultiple(expenses) {
-        Logger.performance(`Adding ${expenses.length} expenses in batch`);
+        Logger.data(`Adding ${expenses.length} expenses in batch`);
         
         const promises = expenses.map(expense => 
             this.batchManager.addToBatch('add', expense)

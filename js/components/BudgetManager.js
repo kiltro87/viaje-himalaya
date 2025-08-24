@@ -167,7 +167,7 @@ export class BudgetManager {
                     this.showCategoryContent(activeCategory);
                 }
                 
-                Logger.performance('UI updated successfully');
+                Logger.success('UI updated successfully');
             } catch (error) {
                 Logger.error('Error updating budget UI:', error);
             }
