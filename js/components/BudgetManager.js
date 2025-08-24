@@ -895,24 +895,79 @@ export class BudgetManager {
                 const submitBtn = e.target.querySelector('button[type="submit"]');
                 const editId = submitBtn.dataset.editId;
                 
+                // 🚀 OPTIMISTIC UI: Actualizar inmediatamente ANTES de Firebase
+                const newExpense = {
+                    id: editId || Date.now().toString(),
+                    concept,
+                    amount,
+                    category,
+                    date: new Date().toISOString(),
+                    deviceId: this.firebaseManager?.getDeviceId() || 'local'
+                };
+                
+                if (editId) {
+                    // 🔄 ACTUALIZACIÓN OPTIMISTA
+                    const existingIndex = window.AppState.expenses.findIndex(exp => exp.id === editId);
+                    if (existingIndex !== -1) {
+                        window.AppState.expenses[existingIndex] = { ...window.AppState.expenses[existingIndex], ...newExpense };
+                    }
+                    this.cancelEditMode();
+                } else {
+                    // ➕ ADICIÓN OPTIMISTA
+                    window.AppState.expenses.unshift(newExpense);
+                }
+                
+                // 🎯 ACTUALIZAR UI INMEDIATAMENTE (sin esperar Firebase)
+                this.updateSummaryCards();
+                this.showCategoryContent();
+                e.target.reset();
+                
                 // 🔄 Indicar que se está sincronizando
                 this.updateSyncStatus('syncing');
                 
-                if (editId) {
-                    // Actualizar gasto existente
-                    await window.ExpenseManager.update(editId, { concept, amount, category });
-                    this.cancelEditMode();
-                } else {
-                    // Añadir nuevo gasto
-                    await window.ExpenseManager.add({ concept, amount, category });
-                }
-                
-                // ✅ Indicar sincronización completada
-                setTimeout(() => {
+                try {
+                    // 🔥 FIREBASE EN BACKGROUND (no bloquea UI)
+                    if (editId) {
+                        await window.ExpenseManager.update(editId, { concept, amount, category });
+                    } else {
+                        const firebaseId = await window.ExpenseManager.add(newExpense);
+                        // Actualizar el ID local con el ID de Firebase si es diferente
+                        if (firebaseId && firebaseId !== newExpense.id) {
+                            const localIndex = window.AppState.expenses.findIndex(exp => exp.id === newExpense.id);
+                            if (localIndex !== -1) {
+                                window.AppState.expenses[localIndex].id = firebaseId;
+                            }
+                        }
+                    }
+                    
+                    // ✅ Sincronización completada
                     this.updateSyncStatus('connected');
-                }, 1000); // Dar tiempo para que se complete la operación
-                
-                e.target.reset();
+                    
+                } catch (error) {
+                    // ❌ ERROR: Revertir cambios optimistas
+                    Logger.error('Error syncing expense, reverting optimistic update:', error);
+                    
+                    if (editId) {
+                        // Revertir actualización
+                        const originalExpense = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]')
+                            .find(exp => exp.id === editId);
+                        if (originalExpense) {
+                            const index = window.AppState.expenses.findIndex(exp => exp.id === editId);
+                            if (index !== -1) {
+                                window.AppState.expenses[index] = originalExpense;
+                            }
+                        }
+                    } else {
+                        // Revertir adición
+                        window.AppState.expenses = window.AppState.expenses.filter(exp => exp.id !== newExpense.id);
+                    }
+                    
+                    // Actualizar UI para reflejar el rollback
+                    this.updateSummaryCards();
+                    this.showCategoryContent();
+                    this.updateSyncStatus('error');
+                    this.showNotification('❌ Error al sincronizar. Cambios revertidos.', 'error');
+                }
             }
         });
 
@@ -991,12 +1046,19 @@ export class BudgetManager {
                                                     </div>
                                                     <div class="space-y-1 ml-3">
                                                         ${item.subItems.map(subItem => `
-                                                            <div class="flex justify-between text-sm text-slate-600 dark:text-slate-400">
+                                                            <div class="budget-subitem-clickable flex justify-between text-sm text-slate-600 dark:text-slate-400 py-1 px-2 rounded hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer transition-all duration-200"
+                                                                 data-concept="${subItem.concept}" 
+                                                                 data-amount="${subItem.cost || 0}" 
+                                                                 data-category="${cat}"
+                                                                 title="Click para autorrellenar formulario de gasto">
                                                                 <span class="flex items-center gap-2">
                                                                     <span class="w-1 h-1 bg-slate-400 rounded-full"></span>
                                                                     ${subItem.concept}
                                                                 </span>
-                                                                <span>${window.Utils.formatCurrency(subItem.cost || 0, true)}</span>
+                                                                <div class="flex items-center gap-1">
+                                                                    <span>${window.Utils.formatCurrency(subItem.cost || 0, true)}</span>
+                                                                    <span class="material-symbols-outlined text-xs text-slate-400">add_circle</span>
+                                                                </div>
                                                             </div>
                                                         `).join('')}
                                                     </div>
@@ -1004,9 +1066,16 @@ export class BudgetManager {
                                             `;
                                         } else {
                                             return `
-                                                <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-600 last:border-b-0">
+                                                <div class="budget-item-clickable flex justify-between items-center py-2 px-3 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-all duration-200" 
+                                                     data-concept="${item.concept}" 
+                                                     data-amount="${item.cost || 0}" 
+                                                     data-category="${cat}"
+                                                     title="Click para autorrellenar formulario de gasto">
                                                     <span class="text-slate-700 dark:text-slate-300">${item.concept}</span>
-                                                    <span class="font-medium text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0, true)}</span>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="font-medium text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0, true)}</span>
+                                                        <span class="material-symbols-outlined text-sm text-slate-400">add_circle</span>
+                                                    </div>
                                                 </div>
                                             `;
                                         }
@@ -1023,13 +1092,44 @@ export class BudgetManager {
                                 </h5>
                                 <div class="space-y-2">
                                     ${catExpenses.map(exp => `
-                                        <div class="expense-item-category group flex justify-between items-center py-2 px-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-all duration-200" data-expense-id="${exp.id}">
-                                            <span class="text-slate-700 dark:text-slate-300">${exp.concept}</span>
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-medium text-green-700 dark:text-green-400">${window.Utils.formatCurrency(exp.amount, true)}</span>
-                                                <button class="delete-expense-btn opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-all duration-200" data-expense-id="${exp.id}" title="Eliminar gasto">
-                                                    <span class="material-symbols-outlined text-xs">delete</span>
-                                                </button>
+                                        <div class="expense-item-wrapper" data-expense-id="${exp.id}">
+                                            <!-- Vista Normal del Gasto -->
+                                            <div class="expense-item-category group flex justify-between items-center py-2 px-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-all duration-200" data-expense-id="${exp.id}">
+                                                <span class="text-slate-700 dark:text-slate-300">${exp.concept}</span>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-medium text-green-700 dark:text-green-400">${window.Utils.formatCurrency(exp.amount, true)}</span>
+                                                    <button class="delete-expense-btn opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-all duration-200" data-expense-id="${exp.id}" title="Eliminar gasto">
+                                                        <span class="material-symbols-outlined text-xs">delete</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Formulario Inline de Edición (Oculto por defecto) -->
+                                            <div class="inline-edit-form hidden mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800" data-expense-id="${exp.id}">
+                                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Concepto</label>
+                                                        <input type="text" class="inline-concept w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" value="${exp.concept}">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Cantidad (€)</label>
+                                                        <input type="number" step="0.01" class="inline-amount w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" value="${exp.amount}">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Categoría</label>
+                                                        <select class="inline-category w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
+                                                            ${allCategories.map(cat => `<option value="${cat}" ${cat === exp.category ? 'selected' : ''}>${cat}</option>`).join('')}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="flex gap-2 justify-end">
+                                                    <button class="cancel-inline-edit px-3 py-1 text-xs bg-slate-500 hover:bg-slate-600 text-white rounded transition-colors" data-expense-id="${exp.id}">
+                                                        <span class="material-symbols-outlined text-xs mr-1">close</span>Cancelar
+                                                    </button>
+                                                    <button class="save-inline-edit px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors" data-expense-id="${exp.id}">
+                                                        <span class="material-symbols-outlined text-xs mr-1">save</span>Guardar
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     `).join('')}
@@ -1047,18 +1147,38 @@ export class BudgetManager {
                 </div>
             `;
             
-            // Agregar event listeners para editar y eliminar gastos desde las categorías
+            // Agregar event listeners para edición inline y eliminación
             setTimeout(() => {
+                // 📝 EDICIÓN INLINE: Click en gasto para mostrar formulario
                 document.querySelectorAll('.expense-item-category').forEach(item => {
                     item.addEventListener('click', (e) => {
                         // Si se hizo clic en el botón de eliminar, no editar
                         if (e.target.closest('.delete-expense-btn')) return;
                         
                         const expenseId = item.dataset.expenseId;
-                        this.editExpense(expenseId);
+                        this.toggleInlineEdit(expenseId);
                     });
                 });
                 
+                // 💾 GUARDAR EDICIÓN INLINE
+                document.querySelectorAll('.save-inline-edit').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        const expenseId = btn.dataset.expenseId;
+                        await this.saveInlineEdit(expenseId);
+                    });
+                });
+                
+                // ❌ CANCELAR EDICIÓN INLINE
+                document.querySelectorAll('.cancel-inline-edit').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const expenseId = btn.dataset.expenseId;
+                        this.hideInlineEdit(expenseId);
+                    });
+                });
+                
+                // 🗑️ ELIMINAR GASTO
                 document.querySelectorAll('.delete-expense-btn').forEach(btn => {
                     btn.addEventListener('click', async (e) => {
                         e.preventDefault();
@@ -1083,6 +1203,18 @@ export class BudgetManager {
                         }
                     });
                 });
+
+                // 🎯 AUTORRELLENAR FORMULARIO: Items presupuestados
+                document.querySelectorAll('.budget-item-clickable, .budget-subitem-clickable').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const concept = item.dataset.concept;
+                        const amount = parseFloat(item.dataset.amount);
+                        const category = item.dataset.category;
+                        
+                        this.autofillExpenseForm(concept, amount, category);
+                    });
+                });
             }, 100);
             
         } catch (error) {
@@ -1103,6 +1235,145 @@ export class BudgetManager {
         
         // Actualizar el contenido de categorías para reflejar cambios
         this.showCategoryContent();
+    }
+
+    /**
+     * 📝 EDICIÓN INLINE: Mostrar/ocultar formulario de edición
+     */
+    toggleInlineEdit(expenseId) {
+        // Ocultar todos los otros formularios inline abiertos
+        document.querySelectorAll('.inline-edit-form').forEach(form => {
+            if (form.dataset.expenseId !== expenseId) {
+                form.classList.add('hidden');
+            }
+        });
+        
+        // Toggle del formulario específico
+        const form = document.querySelector(`.inline-edit-form[data-expense-id="${expenseId}"]`);
+        if (form) {
+            form.classList.toggle('hidden');
+        }
+    }
+
+    /**
+     * ❌ EDICIÓN INLINE: Ocultar formulario
+     */
+    hideInlineEdit(expenseId) {
+        const form = document.querySelector(`.inline-edit-form[data-expense-id="${expenseId}"]`);
+        if (form) {
+            form.classList.add('hidden');
+        }
+    }
+
+    /**
+     * 💾 EDICIÓN INLINE: Guardar cambios
+     */
+    async saveInlineEdit(expenseId) {
+        const form = document.querySelector(`.inline-edit-form[data-expense-id="${expenseId}"]`);
+        if (!form) return;
+
+        const concept = form.querySelector('.inline-concept').value;
+        const amount = parseFloat(form.querySelector('.inline-amount').value);
+        const category = form.querySelector('.inline-category').value;
+
+        if (concept && amount > 0 && category) {
+            try {
+                // 🚀 ACTUALIZACIÓN OPTIMISTA INMEDIATA
+                const existingIndex = window.AppState.expenses.findIndex(exp => exp.id === expenseId);
+                if (existingIndex !== -1) {
+                    window.AppState.expenses[existingIndex] = {
+                        ...window.AppState.expenses[existingIndex],
+                        concept,
+                        amount,
+                        category
+                    };
+                }
+
+                // 🎯 ACTUALIZAR UI INMEDIATAMENTE
+                this.updateSummaryCards();
+                this.showCategoryContent();
+                this.hideInlineEdit(expenseId);
+
+                // 🔄 Indicar sincronización
+                this.updateSyncStatus('syncing');
+
+                // 🔥 FIREBASE EN BACKGROUND
+                await window.ExpenseManager.update(expenseId, { concept, amount, category });
+                
+                // ✅ Sincronización completada
+                this.updateSyncStatus('connected');
+                this.showNotification('✅ Gasto actualizado correctamente', 'success');
+
+            } catch (error) {
+                Logger.error('Error updating expense inline:', error);
+                
+                // ❌ REVERTIR CAMBIOS OPTIMISTAS
+                const originalExpense = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]')
+                    .find(exp => exp.id === expenseId);
+                if (originalExpense) {
+                    const index = window.AppState.expenses.findIndex(exp => exp.id === expenseId);
+                    if (index !== -1) {
+                        window.AppState.expenses[index] = originalExpense;
+                    }
+                }
+                
+                this.updateSummaryCards();
+                this.showCategoryContent();
+                this.updateSyncStatus('error');
+                this.showNotification('❌ Error al actualizar. Cambios revertidos.', 'error');
+            }
+        }
+    }
+
+    /**
+     * 🎯 AUTORRELLENAR FORMULARIO: Rellenar formulario con datos del item presupuestado
+     */
+    autofillExpenseForm(concept, amount, category) {
+        // Rellenar campos del formulario
+        const conceptInput = document.getElementById('expense-concept');
+        const amountInput = document.getElementById('expense-amount');
+        const categoryInput = document.getElementById('expense-category');
+        const categoryBtn = document.getElementById('category-dropdown-btn');
+        const categoryText = document.getElementById('selected-category-text');
+        const categoryIcon = document.getElementById('category-icon');
+
+        if (conceptInput) conceptInput.value = concept;
+        if (amountInput) amountInput.value = amount;
+        
+        // Actualizar dropdown personalizado de categoría
+        if (categoryInput) categoryInput.value = category;
+        if (categoryText) categoryText.textContent = category;
+        if (categoryIcon) categoryIcon.textContent = this.getCategoryIcon(category);
+        if (categoryBtn) {
+            categoryBtn.classList.remove('text-slate-500');
+            categoryBtn.classList.add('text-slate-900', 'dark:text-white');
+        }
+
+        // Hacer scroll suave al formulario
+        const form = document.getElementById('expense-form');
+        if (form) {
+            form.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // Destacar brevemente el formulario
+            form.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+            setTimeout(() => {
+                form.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
+            }, 2000);
+        }
+
+        // Mostrar notificación
+        this.showNotification(`📝 Formulario rellenado: ${concept}`, 'info');
+
+        // Enfocar el primer campo para que el usuario pueda modificar si quiere
+        if (conceptInput) {
+            setTimeout(() => {
+                conceptInput.focus();
+                conceptInput.select();
+            }, 500);
+        }
     }
 
     editExpense(id) {
