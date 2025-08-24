@@ -1540,9 +1540,9 @@ export class UIRenderer {
         `;
         
         // Renderizar cada sección inmediatamente
-        setTimeout(() => {
-            this.renderPackingList();
-            this.renderWeather();
+        setTimeout(async () => {
+            await this.renderPackingList();
+            await this.renderWeather();
             this.renderAgencies();
         }, 100);
     }
@@ -1784,7 +1784,7 @@ export class UIRenderer {
     }
 
     // Renderizar lista de equipaje
-    renderPackingList() {
+    async renderPackingList() {
         console.log('🎒 Renderizando lista de equipaje');
         const container = document.getElementById('packing-list');
         if (!container) {
@@ -1794,7 +1794,18 @@ export class UIRenderer {
         }
         console.log('✅ Contenedor #packing-list encontrado');
 
-        const saved = JSON.parse(localStorage.getItem('packingListV2')) || {};
+        // Inicializar PackingListManager si no existe
+        if (!window.PackingListManager) {
+            const { getPackingListManager } = await import('../utils/PackingListManager.js');
+            window.PackingListManager = getPackingListManager();
+            
+            // Inicializar con FirebaseManager si está disponible
+            if (window.FirebaseManager) {
+                await window.PackingListManager.initialize(window.FirebaseManager);
+            }
+        }
+
+        const saved = window.PackingListManager.getItems();
         
         const listHTML = Object.entries(tripConfig.packingListData).map(([category, items]) => {
             const categoryIcon = this.getCategoryIcon(category);
@@ -1832,23 +1843,42 @@ export class UIRenderer {
                     <span class="material-symbols-outlined text-2xl text-teal-600 dark:text-teal-400">luggage</span>
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Lista de Equipaje</h2>
                 </div>
+                
+                <!-- Estadísticas de empacado -->
+                <div id="packing-stats" class="mb-6"></div>
+                
                 <div class="grid gap-6 md:grid-cols-2">
                     ${listHTML}
                 </div>
             </div>
         `;
         
+        // Actualizar estadísticas
+        if (window.PackingListManager) {
+            window.PackingListManager.updatePackingStats();
+        }
+        
         // Asegurar que el contenedor sea visible
         container.style.opacity = '1 !important';
         
-        // Configurar event listeners para los checkboxes
-        container.addEventListener('change', e => {
+        // Configurar event listeners para los checkboxes con Firebase
+        container.addEventListener('change', async e => {
             if (e.target.matches('input[type="checkbox"]')) {
-                const saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
                 const itemKey = e.target.getAttribute('data-item-key');
                 if (itemKey) {
-                    saved[itemKey] = e.target.checked;
-                    localStorage.setItem('packingListV2', JSON.stringify(saved));
+                    // Inicializar PackingListManager si no existe
+                    if (!window.PackingListManager) {
+                        const { getPackingListManager } = await import('../utils/PackingListManager.js');
+                        window.PackingListManager = getPackingListManager();
+                        
+                        // Inicializar con FirebaseManager si está disponible
+                        if (window.FirebaseManager) {
+                            await window.PackingListManager.initialize(window.FirebaseManager);
+                        }
+                    }
+                    
+                    // Actualizar estado del item
+                    await window.PackingListManager.toggleItem(itemKey, e.target.checked);
                 }
             }
         });

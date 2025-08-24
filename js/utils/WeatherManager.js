@@ -490,6 +490,12 @@ export class WeatherManager {
                 </div>
             `;
 
+            // Si no hay API key, mostrar demo mejorada
+            if (!this.isRealTimeEnabled) {
+                this.renderEnhancedStaticWeather();
+                return;
+            }
+
             // Obtener clima contextual (ubicación actual)
             const contextualWeather = await this.getContextualWeather();
             
@@ -514,13 +520,113 @@ export class WeatherManager {
             
         } catch (error) {
             Logger.error('🌤️ Error rendering enhanced weather:', error);
-            container.innerHTML = `
-                <div class="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
-                    <h3 class="font-semibold">Error al cargar clima en tiempo real</h3>
-                    <p class="text-sm">Mostrando datos estáticos. ${error.message}</p>
-                </div>
-            `;
+            this.renderEnhancedStaticWeather();
         }
+    }
+
+    /**
+     * 🎨 RENDER DEMO: Renderizar versión mejorada con datos estáticos
+     */
+    renderEnhancedStaticWeather() {
+        const container = document.getElementById('weather');
+        if (!container) return;
+
+        // Simular clima contextual para demo
+        const demoContextualWeather = {
+            city: 'Katmandú',
+            temperature: 23,
+            feelsLike: 25,
+            condition: 'Parcialmente nublado',
+            humidity: 68,
+            windSpeed: 12,
+            icon: '⛅',
+            context: {
+                day: 3,
+                location: 'Katmandú',
+                activities: ['Visita al Templo de Swayambhunath', 'Explorar Thamel'],
+                recommendations: [
+                    '🌲 Actividades de naturaleza detectadas',
+                    '🏛️ Actividades de cultura detectadas',
+                    '👕 Vístete por capas',
+                    '🧴 Protector solar recomendado',
+                    '🥾 Botas de trekking obligatorias',
+                    '📷 Perfecto para visitas a templos'
+                ]
+            }
+        };
+
+        // Simular datos de todas las ciudades
+        const demoAllWeatherData = Object.keys(this.cityCoordinates).map(city => {
+            const baseTemp = city === 'Katmandú' ? 23 : 
+                           city === 'Pokhara' ? 21 : 
+                           city === 'Chitwan' ? 28 : 
+                           city === 'Thimphu' ? 15 : 
+                           city === 'Paro' ? 12 : 18;
+            
+            return {
+                city,
+                current: {
+                    city,
+                    temperature: baseTemp,
+                    feelsLike: baseTemp + 2,
+                    condition: city === 'Paro' ? 'Frío de montaña' : 'Clima templado',
+                    humidity: 65,
+                    windSpeed: 10,
+                    icon: city === 'Paro' ? '❄️' : city === 'Chitwan' ? '☀️' : '⛅',
+                    isRealTime: false
+                },
+                forecast: [
+                    { date: 'Mañana', maxTemp: baseTemp + 2, minTemp: baseTemp - 5, condition: 'Soleado', icon: '☀️' },
+                    { date: 'Pasado', maxTemp: baseTemp + 1, minTemp: baseTemp - 4, condition: 'Nublado', icon: '☁️' },
+                    { date: 'Viernes', maxTemp: baseTemp - 1, minTemp: baseTemp - 6, condition: 'Despejado', icon: '🌤️' }
+                ]
+            };
+        });
+
+        // Renderizar con datos demo
+        container.innerHTML = `
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-lg">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-2xl text-yellow-600 dark:text-yellow-400">wb_sunny</span>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información Climática</h2>
+                    <span class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">Demo mejorada</span>
+                </div>
+                
+                <div class="mb-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl border border-blue-200 dark:border-blue-700">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">api</span>
+                        <h3 class="font-semibold text-blue-800 dark:text-blue-300">🌤️ Clima en Tiempo Real Disponible</h3>
+                    </div>
+                    <p class="text-sm text-blue-700 dark:text-blue-300 mb-3">
+                        Esta es una <strong>demo mejorada</strong> con recomendaciones inteligentes por actividad.
+                        Para habilitar datos reales:
+                    </p>
+                    <div class="bg-slate-800 text-green-400 p-3 rounded-lg text-sm font-mono">
+                        localStorage.setItem('weatherApiKey', 'TU_API_KEY_DE_OPENWEATHERMAP')
+                    </div>
+                    <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                        💡 API gratuita: 1000 llamadas/día en <a href="https://openweathermap.org/api" target="_blank" class="underline">openweathermap.org</a>
+                    </p>
+                </div>
+
+                ${this.renderCurrentLocationWeather(demoContextualWeather)}
+                ${this.renderWeatherGrid(demoAllWeatherData)}
+                
+                <div class="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-700">
+                    <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">✨ Funcionalidades del Clima en Tiempo Real:</h4>
+                    <ul class="text-sm text-green-700 dark:text-green-300 space-y-1">
+                        <li>🌡️ Temperatura actual y sensación térmica</li>
+                        <li>📅 Pronóstico de 5 días con intervalos de 3 horas</li>
+                        <li>🎯 Recomendaciones automáticas por actividad del itinerario</li>
+                        <li>⚠️ Alertas meteorológicas para actividades de aventura</li>
+                        <li>🔄 Actualización automática cada 30 minutos</li>
+                        <li>📍 Clima contextual según tu día actual del viaje</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        Logger.info('🌤️ Enhanced static weather demo rendered');
     }
 
     /**
