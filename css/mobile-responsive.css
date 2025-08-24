@@ -239,6 +239,64 @@ body {
         min-height: 44px; /* Tamaño mínimo táctil */
         padding: 0.75rem 1rem !important;
     }
+    
+    /* ========================================================================
+       DROPDOWN DE CATEGORÍAS - RESPONSIVE
+       ======================================================================== */
+    
+    /* Botón del dropdown más grande en móvil */
+    #category-dropdown-btn {
+        min-height: 48px !important;
+        font-size: 14px !important;
+        padding: 0.75rem 2.5rem 0.75rem 2.5rem !important;
+    }
+    
+    /* Iconos del dropdown */
+    #category-icon,
+    #category-dropdown-btn + span {
+        font-size: 1.25rem !important;
+    }
+    
+    /* Lista desplegable responsive */
+    #category-dropdown-list {
+        /* Usar viewport width en móvil para mejor visibilidad */
+        min-width: calc(100vw - 2rem) !important;
+        max-width: calc(100vw - 2rem) !important;
+        left: 1rem !important;
+        right: 1rem !important;
+        margin: 0 !important;
+        
+        /* Altura máxima adaptativa */
+        max-height: 50vh !important;
+        
+        /* Mejor posicionamiento */
+        position: fixed !important;
+        z-index: 99999 !important;
+        
+        /* Sombra más pronunciada en móvil */
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+                    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+                    0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    /* Opciones del dropdown más grandes en móvil */
+    .category-option {
+        padding: 1rem !important;
+        min-height: 48px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Iconos de las opciones */
+    .category-option .material-symbols-outlined {
+        font-size: 1.25rem !important;
+        min-width: 1.5rem !important;
+    }
+    
+    /* Texto seleccionado más visible */
+    #selected-category-text {
+        font-size: 14px !important;
+        font-weight: 500 !important;
+    }
 }
 
 /* ============================================================================

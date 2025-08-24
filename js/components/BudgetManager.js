@@ -797,19 +797,42 @@ export class BudgetManager {
                 e.preventDefault();
                 
                 if (dropdownList.classList.contains('hidden')) {
-                    // Posicionar el desplegable correctamente
                     const rect = dropdownBtn.getBoundingClientRect();
-                    dropdownList.style.top = `${rect.bottom + 4}px`;
-                    dropdownList.style.left = `${rect.left}px`;
-                    dropdownList.style.width = `${rect.width}px`;
-                    
-                    // Verificar si se sale de la pantalla
-                    const dropdownHeight = 240; // max-h-60 = 240px aprox
+                    const viewportWidth = window.innerWidth;
                     const viewportHeight = window.innerHeight;
+                    const dropdownHeight = 240; // max-h-60 = 240px aprox
                     
-                    if (rect.bottom + dropdownHeight > viewportHeight) {
-                        // Mostrar arriba del botón
-                        dropdownList.style.top = `${rect.top - dropdownHeight - 4}px`;
+                    // 📱 RESPONSIVE: Diferentes posicionamientos según el tamaño de pantalla
+                    if (viewportWidth <= 640) {
+                        // 📱 MÓVIL: Dropdown centrado y ancho completo
+                        dropdownList.style.top = `${rect.bottom + 8}px`;
+                        dropdownList.style.left = '1rem';
+                        dropdownList.style.right = '1rem';
+                        dropdownList.style.width = 'calc(100vw - 2rem)';
+                        dropdownList.style.maxWidth = 'calc(100vw - 2rem)';
+                        dropdownList.style.minWidth = 'calc(100vw - 2rem)';
+                        
+                        // Verificar si se sale por abajo en móvil
+                        if (rect.bottom + dropdownHeight > viewportHeight - 20) {
+                            dropdownList.style.top = `${rect.top - dropdownHeight - 8}px`;
+                        }
+                    } else {
+                        // 🖥️ DESKTOP: Dropdown alineado con el botón
+                        dropdownList.style.top = `${rect.bottom + 4}px`;
+                        dropdownList.style.left = `${rect.left}px`;
+                        dropdownList.style.width = `${Math.max(rect.width, 250)}px`;
+                        dropdownList.style.maxWidth = `${Math.max(rect.width, 250)}px`;
+                        dropdownList.style.minWidth = `${Math.max(rect.width, 250)}px`;
+                        
+                        // Verificar si se sale por la derecha
+                        if (rect.left + 250 > viewportWidth - 20) {
+                            dropdownList.style.left = `${viewportWidth - 270}px`;
+                        }
+                        
+                        // Verificar si se sale por abajo
+                        if (rect.bottom + dropdownHeight > viewportHeight - 20) {
+                            dropdownList.style.top = `${rect.top - dropdownHeight - 4}px`;
+                        }
                     }
                     
                     dropdownList.classList.remove('hidden');
@@ -1042,7 +1065,21 @@ export class BudgetManager {
                         e.stopPropagation();
                         const expenseId = btn.dataset.expenseId;
                         if (confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
-                            await window.ExpenseManager.remove(expenseId);
+                            try {
+                                await window.ExpenseManager.remove(expenseId);
+                                // 🔄 FORZAR ACTUALIZACIÓN DE UI DESPUÉS DE ELIMINAR
+                                setTimeout(() => {
+                                    this.updateBudgetUI();
+                                    // Actualizar también el contenido de la categoría activa
+                                    const activeCategory = document.querySelector('.category-btn.active')?.dataset.category;
+                                    if (activeCategory) {
+                                        this.showCategoryContent(activeCategory);
+                                    }
+                                }, 100);
+                            } catch (error) {
+                                console.error('Error al eliminar gasto:', error);
+                                this.showNotification('❌ Error al eliminar gasto', 'error');
+                            }
                         }
                     });
                 });

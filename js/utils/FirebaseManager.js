@@ -85,16 +85,31 @@ export class FirebaseManager {
         try {
             // Importar Firebase dinámicamente
             const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-            const { getFirestore, connectFirestoreEmulator, enableNetwork, disableNetwork } = 
+            const { getFirestore, initializeFirestore, connectFirestoreEmulator, enableNetwork, disableNetwork } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
             // Inicializar app
             const app = initializeApp(firebaseConfig);
             
-            // Inicializar Firestore
-            this.db = getFirestore(app);
+            // ✅ NUEVA API: Configurar Firestore con cache settings
+            try {
+                this.db = initializeFirestore(app, {
+                    cache: {
+                        // Usar cache persistente con configuración mejorada
+                        kind: 'persistent',
+                        sizeBytes: firestoreConfig.settings.cacheSizeBytes,
+                        // Permitir múltiples tabs con sincronización
+                        synchronizeTabs: true
+                    }
+                });
+                Logger.data('Firestore initialized with new cache API');
+            } catch (error) {
+                // Fallback a getFirestore si initializeFirestore falla
+                Logger.warning('Failed to initialize with cache settings, using default Firestore');
+                this.db = getFirestore(app);
+            }
             
-            // Configurar cache offline
+            // Configurar cache offline (ahora simplificado)
             await this.configureOfflineSupport();
             
             // Configurar listeners de conexión
@@ -124,22 +139,25 @@ export class FirebaseManager {
      */
     async configureOfflineSupport() {
         try {
-            const { enableIndexedDbPersistence } = 
+            // ✅ NUEVA API: Usar FirestoreSettings.cache en lugar de enableIndexedDbPersistence
+            const { connectFirestoreEmulator, enableNetwork } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
-            await enableIndexedDbPersistence(this.db, {
-                cacheSizeBytes: firestoreConfig.settings.cacheSizeBytes
-            });
+            // La persistencia se configura ahora en initializeFirestore con cache settings
+            // No necesitamos enableIndexedDbPersistence que está deprecado
             
-            Logger.data('Offline persistence enabled');
+            // Asegurar que la red esté habilitada
+            await enableNetwork(this.db);
+            
+            Logger.data('Offline persistence configured with new cache API');
             
         } catch (error) {
             if (error.code === 'failed-precondition') {
-                Logger.warning('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+                Logger.warning('Multiple tabs detected, using memory cache for this tab');
             } else if (error.code === 'unimplemented') {
-                Logger.warning('The current browser does not support offline persistence');
+                Logger.warning('Browser does not support offline persistence, using memory cache');
             } else {
-                Logger.error('Error enabling offline persistence:', error);
+                Logger.error('Error configuring offline support:', error);
             }
         }
     }
