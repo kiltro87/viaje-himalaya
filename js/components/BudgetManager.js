@@ -116,10 +116,28 @@ export class BudgetManager {
             console.log('🔥 DEBUG: Realtime callback triggered with', expenses.length, 'expenses');
             Logger.budget(`Realtime update: ${expenses.length} expenses received`);
             
-            // Actualizar AppState global
+            // 🔥 REEMPLAZAR COMPLETAMENTE AppState.expenses (no añadir)
             if (window.AppState) {
-                window.AppState.expenses = expenses;
-                console.log('🔥 DEBUG: AppState.expenses updated');
+                // Convertir timestamps de Firebase a formato local
+                const processedExpenses = expenses.map(expense => {
+                    const processed = { ...expense };
+                    
+                    // Convertir Firestore Timestamp a string si es necesario
+                    if (processed.createdAt && processed.createdAt.toDate) {
+                        processed.createdAt = processed.createdAt.toDate().toISOString();
+                    }
+                    if (processed.updatedAt && processed.updatedAt.toDate) {
+                        processed.updatedAt = processed.updatedAt.toDate().toISOString();
+                    }
+                    
+                    return processed;
+                });
+                
+                window.AppState.expenses = processedExpenses;
+                console.log('🔥 DEBUG: AppState.expenses REPLACED with', processedExpenses.length, 'expenses');
+                
+                // Actualizar localStorage como backup
+                window.AppState.saveAllData();
             }
             
             // Actualizar UI si está visible
@@ -229,29 +247,38 @@ export class BudgetManager {
                     
                     const newExpense = { ...expense, id: Date.now().toString() };
                     
-                    // Añadir a localStorage (backup)
-                    window.AppState.expenses.push(newExpense);
-                    window.AppState.saveAllData();
-                    Logger.crud('CREATE', 'expense', newExpense);
-                    
-                    // 🔥 AÑADIR A FIREBASE
+                    // 🔥 SOLO AÑADIR A FIREBASE - El listener actualizará la UI
                     const budgetInstance = window.budgetInstance;
                     if (budgetInstance && budgetInstance.firebaseManager) {
                         console.log('🔥 DEBUG: Calling Firebase addExpense...');
                         try {
                             await budgetInstance.firebaseManager.addExpense(newExpense);
-                            console.log('🔥 DEBUG: Firebase addExpense completed');
+                            console.log('🔥 DEBUG: Firebase addExpense completed - UI will update via listener');
                         } catch (error) {
-                            console.error('🔥 DEBUG: Firebase addExpense failed:', error);
+                            console.error('🔥 DEBUG: Firebase addExpense failed, falling back to localStorage:', error);
+                            // Solo si Firebase falla, añadir a localStorage
+                            window.AppState.expenses.push(newExpense);
+                            window.AppState.saveAllData();
+                            Logger.crud('CREATE', 'expense', newExpense);
+                            
+                            // Actualizar UI manualmente solo si Firebase falló
+                            if (budgetInstance) {
+                                budgetInstance.updateSummaryCards();
+                                budgetInstance.showCategoryContent();
+                            }
                         }
                     } else {
-                        console.warn('🔥 DEBUG: No Firebase manager available');
-                    }
-                    
-                    // Actualizar la lista de gastos y totales
-                    if (budgetInstance) {
-                        budgetInstance.updateSummaryCards();
-                        budgetInstance.showCategoryContent();
+                        console.warn('🔥 DEBUG: No Firebase manager available, using localStorage');
+                        // Fallback a localStorage si no hay Firebase
+                        window.AppState.expenses.push(newExpense);
+                        window.AppState.saveAllData();
+                        Logger.crud('CREATE', 'expense', newExpense);
+                        
+                        // Actualizar UI manualmente
+                        if (budgetInstance) {
+                            budgetInstance.updateSummaryCards();
+                            budgetInstance.showCategoryContent();
+                        }
                     }
                 },
                 
