@@ -18,8 +18,10 @@
 
 class Logger {
     constructor() {
+        // Detectar si estamos en móvil para reducir logging
+        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         this.isEnabled = true;
-        this.logLevel = 'DEBUG'; // DEBUG, INFO, WARNING, ERROR
+        this.logLevel = this.isMobile ? 'ERROR' : 'DEBUG'; // Menos logging en móvil
         this.categories = {
             INIT: { emoji: '🚀', color: '#3B82F6', enabled: true },
             DATA: { emoji: '📊', color: '#10B981', enabled: true },

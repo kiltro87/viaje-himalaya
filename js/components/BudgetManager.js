@@ -84,7 +84,9 @@ export class BudgetManager {
             
             // 🔥 CONFIGURAR LISTENER CUANDO SE CONECTE
             if (status === 'connected' && !this.realtimeUnsubscribe) {
-                console.log('🔥 DEBUG: Firebase connected, setting up realtime listener...');
+                if (!Logger.isMobile) {
+                    console.log('🔥 DEBUG: Firebase connected, setting up realtime listener...');
+                }
                 this.setupRealtimeSync();
             }
         };
@@ -111,9 +113,13 @@ export class BudgetManager {
             return;
         }
         
-        console.log('🔥 DEBUG: Setting up Firebase realtime listener...');
+        if (!Logger.isMobile) {
+            console.log('🔥 DEBUG: Setting up Firebase realtime listener...');
+        }
         this.realtimeUnsubscribe = await this.firebaseManager.setupRealtimeListener((expenses) => {
-            console.log('🔥 DEBUG: Realtime callback triggered with', expenses.length, 'expenses');
+            if (!Logger.isMobile) {
+                console.log('🔥 DEBUG: Realtime callback triggered with', expenses.length, 'expenses');
+            }
             Logger.budget(`Realtime update: ${expenses.length} expenses received`);
             
             // 🔥 REEMPLAZAR COMPLETAMENTE AppState.expenses (no añadir)
@@ -134,15 +140,19 @@ export class BudgetManager {
                 });
                 
                 window.AppState.expenses = processedExpenses;
-                console.log('🔥 DEBUG: AppState.expenses REPLACED with', processedExpenses.length, 'expenses');
+                if (!Logger.isMobile) {
+                    console.log('🔥 DEBUG: AppState.expenses REPLACED with', processedExpenses.length, 'expenses');
+                }
                 
-                // Actualizar localStorage como backup
-                window.AppState.saveAllData();
+                // 🚨 NO GUARDAR EN LOCALSTORAGE - Firebase es la fuente de verdad
+                // window.AppState.saveAllData(); // COMENTADO para evitar bucle infinito
             }
             
             // Actualizar UI si está visible
             if (document.getElementById('budget-container')) {
-                console.log('🔥 DEBUG: Updating budget UI...');
+                if (!Logger.isMobile) {
+                    console.log('🔥 DEBUG: Updating budget UI...');
+                }
                 this.updateSummaryCards();
                 
                 // Actualizar contenido de categorías si está abierto
@@ -242,7 +252,10 @@ export class BudgetManager {
         if (!window.ExpenseManager) {
             window.ExpenseManager = {
                 add: async (expense) => {
-                    console.log('🔥 DEBUG: ExpenseManager.add called', expense);
+                    // Solo log en desktop para evitar crashes en móvil
+                    if (!Logger.isMobile) {
+                        console.log('🔥 DEBUG: ExpenseManager.add called', expense);
+                    }
                     Logger.budget('Adding new expense', { concept: expense.concept, amount: expense.amount });
                     
                     const newExpense = { ...expense, id: Date.now().toString() };
@@ -250,10 +263,14 @@ export class BudgetManager {
                     // 🔥 SOLO AÑADIR A FIREBASE - El listener actualizará la UI
                     const budgetInstance = window.budgetInstance;
                     if (budgetInstance && budgetInstance.firebaseManager) {
-                        console.log('🔥 DEBUG: Calling Firebase addExpense...');
+                        if (!Logger.isMobile) {
+                            console.log('🔥 DEBUG: Calling Firebase addExpense...');
+                        }
                         try {
                             await budgetInstance.firebaseManager.addExpense(newExpense);
-                            console.log('🔥 DEBUG: Firebase addExpense completed - UI will update via listener');
+                            if (!Logger.isMobile) {
+                                console.log('🔥 DEBUG: Firebase addExpense completed - UI will update via listener');
+                            }
                         } catch (error) {
                             console.error('🔥 DEBUG: Firebase addExpense failed, falling back to localStorage:', error);
                             // Solo si Firebase falla, añadir a localStorage

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧹 Limpiar Firebase - Eliminar Gastos Duplicados</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { color: #dc2626; margin-bottom: 20px; }
+        .warning {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #991b1b;
+        }
+        .success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #166534;
+        }
+        button {
+            background: #dc2626;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background: #b91c1c; }
+        button:disabled { 
+            background: #9ca3af; 
+            cursor: not-allowed; 
+        }
+        .expense-item {
+            background: #f9fafb;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 6px;
+            border-left: 4px solid #ef4444;
+        }
+        #log {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpiar Firebase - Eliminar Gastos Duplicados</h1>
+        
+        <div class="warning">
+            <strong>⚠️ ATENCIÓN:</strong> Esta herramienta eliminará TODOS los gastos de Firebase para solucionar el bucle infinito.
+            Los gastos se están duplicando automáticamente y causando crashes en móvil.
+        </div>
+
+        <div id="status">
+            <p><strong>Estado:</strong> <span id="connection-status">Conectando...</span></p>
+            <p><strong>Gastos en Firebase:</strong> <span id="expense-count">Cargando...</span></p>
+        </div>
+
+        <div id="expenses-list"></div>
+
+        <button id="cleanup-btn" onclick="cleanupFirebase()" disabled>
+            🗑️ Limpiar Todos los Gastos
+        </button>
+        
+        <button id="refresh-btn" onclick="loadExpenses()">
+            🔄 Actualizar Lista
+        </button>
+
+        <div id="log"></div>
+
+        <div class="success" id="success-msg" style="display: none;">
+            ✅ <strong>Limpieza completada.</strong> Ahora puedes cerrar esta página y probar la app.
+            Los gastos ya no se duplicarán automáticamente.
+        </div>
+    </div>
+
+    <script type="module">
+        import { firebaseConfig } from './js/config/firebaseConfig.js';
+        
+        let db = null;
+        let expenses = [];
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        async function initFirebase() {
+            try {
+                log('🔥 Inicializando Firebase...');
+                
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+                const { getFirestore, connectFirestoreEmulator } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                
+                document.getElementById('connection-status').textContent = 'Conectado ✅';
+                log('✅ Firebase conectado correctamente');
+                
+                await loadExpenses();
+                document.getElementById('cleanup-btn').disabled = false;
+                
+            } catch (error) {
+                log('❌ Error conectando Firebase: ' + error.message);
+                document.getElementById('connection-status').textContent = 'Error ❌';
+            }
+        }
+
+        async function loadExpenses() {
+            if (!db) return;
+            
+            try {
+                log('📊 Cargando gastos de Firebase...');
+                
+                const { collection, getDocs, orderBy, query } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                
+                const q = query(collection(db, 'expenses'), orderBy('createdAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                
+                expenses = [];
+                querySnapshot.forEach((doc) => {
+                    expenses.push({ id: doc.id, ...doc.data() });
+                });
+                
+                document.getElementById('expense-count').textContent = expenses.length;
+                log(`📊 Encontrados ${expenses.length} gastos en Firebase`);
+                
+                // Mostrar lista de gastos
+                const expensesList = document.getElementById('expenses-list');
+                if (expenses.length > 0) {
+                    expensesList.innerHTML = '<h3>Gastos encontrados:</h3>' + 
+                        expenses.slice(0, 10).map(expense => 
+                            `<div class="expense-item">
+                                <strong>${expense.concept || 'Sin concepto'}</strong> - 
+                                ${expense.amount || 0}€ - 
+                                ${expense.category || 'Sin categoría'} - 
+                                ID: ${expense.id}
+                            </div>`
+                        ).join('') +
+                        (expenses.length > 10 ? `<p><em>... y ${expenses.length - 10} más</em></p>` : '');
+                } else {
+                    expensesList.innerHTML = '<p>No hay gastos en Firebase.</p>';
+                }
+                
+            } catch (error) {
+                log('❌ Error cargando gastos: ' + error.message);
+            }
+        }
+
+        window.cleanupFirebase = async function() {
+            if (!db || expenses.length === 0) {
+                log('⚠️ No hay gastos para eliminar');
+                return;
+            }
+            
+            if (!confirm(`¿Estás seguro de que quieres eliminar TODOS los ${expenses.length} gastos de Firebase?\n\nEsto solucionará el bucle infinito pero perderás todos los datos.`)) {
+                return;
+            }
+            
+            try {
+                log(`🗑️ Eliminando ${expenses.length} gastos...`);
+                document.getElementById('cleanup-btn').disabled = true;
+                
+                const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                
+                let deleted = 0;
+                for (const expense of expenses) {
+                    await deleteDoc(doc(db, 'expenses', expense.id));
+                    deleted++;
+                    
+                    if (deleted % 10 === 0) {
+                        log(`🗑️ Eliminados ${deleted}/${expenses.length} gastos...`);
+                    }
+                }
+                
+                log(`✅ Eliminados todos los ${deleted} gastos de Firebase`);
+                
+                // Limpiar localStorage también
+                localStorage.removeItem('tripExpensesV1');
+                localStorage.removeItem('tripPackingList');
+                log('🧹 localStorage limpiado también');
+                
+                document.getElementById('success-msg').style.display = 'block';
+                await loadExpenses();
+                
+            } catch (error) {
+                log('❌ Error eliminando gastos: ' + error.message);
+                document.getElementById('cleanup-btn').disabled = false;
+            }
+        };
+
+        window.loadExpenses = loadExpenses;
+
+        // Inicializar al cargar la página
+        initFirebase();
+    </script>
+</body>
+</html>
+</script>
+</body>
+</html>

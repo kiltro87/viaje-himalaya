@@ -43,6 +43,7 @@ export class FirebaseManager {
         this.onExpenseDeleted = null;
         this.onSyncStatusChanged = null;
         
+        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         Logger.init('FirebaseManager initialized');
         
         // Verificar configuración de Firebase
@@ -250,15 +251,21 @@ export class FirebaseManager {
      * @returns {Promise<string>} ID del documento creado
      */
     async addExpense(expense, triggerCallbacks = true) {
-        console.log('🔥 DEBUG: addExpense called', { expense, isConnected: this.isConnected });
+        if (!this.isMobile) {
+            console.log('🔥 DEBUG: addExpense called', { expense, isConnected: this.isConnected });
+        }
         
         if (!this.isConnected) {
-            console.log('🔥 DEBUG: Not connected, using localStorage');
+            if (!this.isMobile) {
+                console.log('🔥 DEBUG: Not connected, using localStorage');
+            }
             return this.addExpenseLocal(expense);
         }
 
         try {
-            console.log('🔥 DEBUG: Importing Firestore modules...');
+            if (!this.isMobile) {
+                console.log('🔥 DEBUG: Importing Firestore modules...');
+            }
             const { collection, addDoc, serverTimestamp } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
@@ -270,13 +277,17 @@ export class FirebaseManager {
                 deviceId: this.getDeviceId()
             };
 
-            console.log('🔥 DEBUG: Expense data prepared:', expenseData);
-            console.log('🔥 DEBUG: Database reference:', this.db);
-            console.log('🔥 DEBUG: Collection name:', firestoreConfig.collections.expenses);
+            if (!this.isMobile) {
+                console.log('🔥 DEBUG: Expense data prepared:', expenseData);
+                console.log('🔥 DEBUG: Database reference:', this.db);
+                console.log('🔥 DEBUG: Collection name:', firestoreConfig.collections.expenses);
+            }
 
             const docRef = await addDoc(collection(this.db, firestoreConfig.collections.expenses), expenseData);
             
-            console.log('🔥 DEBUG: Document added successfully:', docRef.id);
+            if (!this.isMobile) {
+                console.log('🔥 DEBUG: Document added successfully:', docRef.id);
+            }
             Logger.data('Expense added to Firebase:', docRef.id);
             
             // Actualizar localStorage como backup
@@ -428,7 +439,9 @@ export class FirebaseManager {
      * @returns {Function} Función para desuscribirse
      */
     async setupRealtimeListener(callback) {
-        console.log('🔥 DEBUG: setupRealtimeListener called', { isConnected: this.isConnected });
+        if (!this.isMobile) {
+            console.log('🔥 DEBUG: setupRealtimeListener called', { isConnected: this.isConnected });
+        }
         
         if (!this.isConnected) {
             Logger.warning('Firebase not connected, realtime listener not available');
@@ -436,17 +449,23 @@ export class FirebaseManager {
         }
 
         try {
-            console.log('🔥 DEBUG: Importing Firestore modules for listener...');
+            if (!this.isMobile) {
+                console.log('🔥 DEBUG: Importing Firestore modules for listener...');
+            }
             const { collection, onSnapshot, orderBy, query } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
-            console.log('🔥 DEBUG: Creating Firestore query...');
+            if (!this.isMobile) {
+                console.log('🔥 DEBUG: Creating Firestore query...');
+            }
             const q = query(
                 collection(this.db, firestoreConfig.collections.expenses),
                 orderBy('createdAt', 'desc')
             );
             
-            console.log('🔥 DEBUG: Setting up onSnapshot listener...');
+            if (!this.isMobile) {
+                console.log('🔥 DEBUG: Setting up onSnapshot listener...');
+            }
             const unsubscribe = onSnapshot(q, (querySnapshot) => {
                 const expenses = [];
                 
@@ -457,7 +476,9 @@ export class FirebaseManager {
                     });
                 });
                 
-                console.log('🔥 DEBUG: Realtime update received:', expenses.length, 'expenses');
+                if (!this.isMobile) {
+                    console.log('🔥 DEBUG: Realtime update received:', expenses.length, 'expenses');
+                }
                 Logger.data(`Realtime update: ${expenses.length} expenses`);
                 
                 // Actualizar localStorage como backup
