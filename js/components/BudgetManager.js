@@ -996,6 +996,10 @@ export class BudgetManager {
             const allCategoryItems = Object.values(budgetData).flat().filter(item => selectedCategories.includes(item.category));
             const allCategoryExpenses = window.AppState.expenses.filter(exp => selectedCategories.includes(exp.category));
             
+            // 🔧 DEFINIR allCategories para el formulario inline (mismo código que en render())
+            const allExpenses = Object.values(budgetData).flat();
+            const allCategories = [...new Set(allExpenses.map(item => item.category))];
+            
             // Crear tarjetas de comparativa como en la imagen
             const categoryCards = selectedCategories.map(cat => {
                 const catItems = allCategoryItems.filter(item => item.category === cat);

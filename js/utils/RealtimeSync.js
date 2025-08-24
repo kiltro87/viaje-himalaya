@@ -134,40 +134,19 @@ export class RealtimeSync {
 
     /**
      * Configura Firebase Realtime como fallback
+     * 
+     * NOTA: Deshabilitado - Solo usamos Firestore, no Realtime Database
      */
     async setupFirebaseRealtime() {
-        if (!this.firebaseManager.isConnected) {
-            Logger.warning('Firebase not connected, cannot setup realtime');
-            return;
+        Logger.info('Firebase Realtime Database disabled - Using Firestore only');
+        
+        // Simular conexión exitosa para mantener compatibilidad
+        if (this.onConnectionStatusChanged) {
+            this.onConnectionStatusChanged('firestore_only');
         }
-
-        try {
-            // Usar Firebase Realtime Database para notificaciones instantáneas
-            const { getDatabase, ref, onValue, push, serverTimestamp } = 
-                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
-
-            const db = getDatabase();
-            const changesRef = ref(db, 'expense_changes');
-
-            // Escuchar cambios en tiempo real
-            onValue(changesRef, (snapshot) => {
-                const changes = snapshot.val();
-                if (changes) {
-                    Object.values(changes).forEach(change => {
-                        this.handleRealtimeChange(change);
-                    });
-                }
-            });
-
-            Logger.success('Firebase Realtime Database connected');
-            
-            if (this.onConnectionStatusChanged) {
-                this.onConnectionStatusChanged('firebase_realtime_connected');
-            }
-
-        } catch (error) {
-            Logger.error('Failed to setup Firebase Realtime:', error);
-        }
+        
+        // No configurar Realtime Database para evitar warnings
+        // Solo usamos Firestore para almacenamiento y sincronización
     }
 
     /**
