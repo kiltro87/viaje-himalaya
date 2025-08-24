@@ -9,8 +9,8 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v2.2.3';
-const DATA_CACHE = 'viaje-data-v2.2.3';
+const CACHE_NAME = 'viaje-himalaya-v3.0.1';
+const DATA_CACHE = 'viaje-data-v3.0.1';
 
 // Base path para GitHub Pages
 const BASE_PATH = '/viaje-himalaya';
@@ -60,7 +60,7 @@ const EXTERNAL_RESOURCES = [
 // ============================================================================
 
 self.addEventListener('install', event => {
-  console.log('🔧 Service Worker: Instalando v2.2.1...');
+  console.log('🔧 Service Worker: Instalando v3.0.1 - Firebase Sync Fixed...');
   
   event.waitUntil(
     Promise.all([
@@ -104,7 +104,7 @@ self.addEventListener('install', event => {
       })
       
     ]).then(() => {
-      console.log('✅ Service Worker: Instalación completada v2.2.1');
+      console.log('✅ Service Worker: Instalación completada v3.0.1');
       return self.skipWaiting();
     }).catch(error => {
       console.error('❌ Error en instalación SW:', error);
@@ -113,7 +113,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  console.log('🚀 Service Worker: Activando v2.2.1...');
+  console.log('🚀 Service Worker: Activando v3.0.1...');
   
   event.waitUntil(
     Promise.all([
@@ -133,7 +133,7 @@ self.addEventListener('activate', event => {
       self.clients.claim()
       
     ]).then(() => {
-      console.log('✅ Service Worker: Activado y listo v2.2.1');
+      console.log('✅ Service Worker: Activado y listo v3.0.1');
     })
   );
 });
@@ -216,4 +216,4 @@ self.addEventListener('sync', event => {
   }
 });
 
-console.log('📱 Service Worker v2.2.3 cargado y listo para GitHub Pages');
+console.log('📱 Service Worker v3.0.1 cargado y listo - Firebase Sync Fixed');
