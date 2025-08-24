@@ -9,8 +9,8 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v4.5.1-logger-fix';
-const DATA_CACHE = 'viaje-data-v4.5.1-logger-fix';
+const CACHE_NAME = 'viaje-himalaya-v4.5.3-inline-subitem-fix';
+const DATA_CACHE = 'viaje-data-v4.5.3-inline-subitem-fix';
 
 // Base path para GitHub Pages
 const BASE_PATH = '/viaje-himalaya';

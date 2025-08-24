@@ -1326,15 +1326,12 @@ export class BudgetManager {
                     });
                 });
 
-                // 🎯 SUBITEMS (mantener funcionalidad original)
+                // 🎯 SUBITEMS (usar inline forms como los items principales)
                 document.querySelectorAll('.budget-subitem-clickable').forEach(item => {
                     item.addEventListener('click', (e) => {
                         e.preventDefault();
-                        const concept = item.dataset.concept;
-                        const amount = parseFloat(item.dataset.amount);
-                        const category = item.dataset.category;
-                        
-                        this.autofillExpenseForm(concept, amount, category);
+                        const itemId = item.closest('.budget-subitem-wrapper').dataset.itemId;
+                        this.toggleBudgetInlineForm(itemId);
                     });
                 });
             }, 100);

@@ -31,7 +31,7 @@ export class PackingListManager {
         // Cache local para optimistic UI
         this.localCache = this.loadFromLocalStorage();
         
-        Logger.info('🎒 PackingListManager initialized');
+        if (Logger && Logger.init) Logger.init('🎒 PackingListManager initialized');
     }
 
     /**
@@ -43,15 +43,15 @@ export class PackingListManager {
             
             if (this.firebaseManager && this.firebaseManager.isInitialized()) {
                 await this.setupFirebaseSync();
-                Logger.success('🎒 PackingListManager initialized with Firebase');
+                if (Logger && Logger.success) Logger.success('🎒 PackingListManager initialized with Firebase');
             } else {
-                Logger.warn('🎒 PackingListManager initialized without Firebase (localStorage only)');
+                if (Logger && Logger.warning) Logger.warning('🎒 PackingListManager initialized without Firebase (localStorage only)');
             }
             
             this.isInitialized = true;
             return true;
         } catch (error) {
-            Logger.error('🎒 Error initializing PackingListManager:', error);
+            if (Logger && Logger.error) Logger.error('🎒 Error initializing PackingListManager:', error);
             this.isInitialized = true; // Continuar con localStorage
             return false;
         }
@@ -85,9 +85,9 @@ export class PackingListManager {
             // Sincronizar datos existentes
             await this.syncToFirebase();
             
-            Logger.success('🎒 Firebase sync configured');
+            if (Logger && Logger.success) Logger.success('🎒 Firebase sync configured');
         } catch (error) {
-            Logger.error('🎒 Error setting up Firebase sync:', error);
+            if (Logger && Logger.error) Logger.error('🎒 Error setting up Firebase sync:', error);
         }
     }
 
@@ -107,11 +107,11 @@ export class PackingListManager {
                 this.syncInProgress = false;
             }
             
-            Logger.data(`🎒 Item ${itemKey} ${isChecked ? 'packed' : 'unpacked'}`);
+            if (Logger && Logger.data) Logger.data(`🎒 Item ${itemKey} ${isChecked ? 'packed' : 'unpacked'}`);
             return true;
             
         } catch (error) {
-            Logger.error('🎒 Error toggling item:', error);
+            if (Logger && Logger.error) Logger.error('🎒 Error toggling item:', error);
             
             // ❌ ROLLBACK: Revertir cambio optimista
             this.localCache[itemKey] = !isChecked;
@@ -170,9 +170,9 @@ export class PackingListManager {
                 version: '1.0.0'
             }, { merge: true });
             
-            Logger.success('🎒 Synced to Firebase');
+            if (Logger && Logger.success) Logger.success('🎒 Synced to Firebase');
         } catch (error) {
-            Logger.error('🎒 Error syncing to Firebase:', error);
+            if (Logger && Logger.error) Logger.error('🎒 Error syncing to Firebase:', error);
             throw error;
         }
     }
@@ -188,7 +188,7 @@ export class PackingListManager {
             );
 
             if (hasChanges) {
-                Logger.info('🎒 Received Firebase update');
+                if (Logger && Logger.init) Logger.init('🎒 Received Firebase update');
                 
                 // Actualizar cache local
                 this.localCache = { ...this.localCache, ...firebaseItems };
@@ -198,7 +198,7 @@ export class PackingListManager {
                 this.updateUI();
             }
         } catch (error) {
-            Logger.error('🎒 Error handling Firebase update:', error);
+            if (Logger && Logger.error) Logger.error('🎒 Error handling Firebase update:', error);
         }
     }
 
@@ -228,7 +228,7 @@ export class PackingListManager {
             this.updatePackingStats();
             
         } catch (error) {
-            Logger.error('🎒 Error updating UI:', error);
+            if (Logger && Logger.error) Logger.error('🎒 Error updating UI:', error);
         }
     }
 
@@ -269,7 +269,7 @@ export class PackingListManager {
                 </div>
             `;
         } catch (error) {
-            Logger.error('🎒 Error updating packing stats:', error);
+            if (Logger && Logger.error) Logger.error('🎒 Error updating packing stats:', error);
         }
     }
 
