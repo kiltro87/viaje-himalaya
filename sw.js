@@ -9,8 +9,8 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v4.0.2-logger-fix';
-const DATA_CACHE = 'viaje-data-v4.0.2-logger-fix';
+const CACHE_NAME = 'viaje-himalaya-v4.0.3-id-mapping-fix';
+const DATA_CACHE = 'viaje-data-v4.0.3-id-mapping-fix';
 
 // Base path para GitHub Pages
 const BASE_PATH = '/viaje-himalaya';
@@ -421,4 +421,4 @@ async function getOfflineActions() { return []; }
 async function processOfflineAction(action) { console.log('Processing action:', action.type); }
 async function removeOfflineAction(id) { console.log('Removing action:', id); }
 
-console.log('🐛 Service Worker v4.0.2 cargado - LOGGER FIX: Logger.performance → Logger.data/success');
+console.log('🔧 Service Worker v4.0.3 cargado - ID MAPPING FIX: Firebase DocID vs Campo ID resuelto');

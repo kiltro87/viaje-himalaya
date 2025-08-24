@@ -157,19 +157,74 @@ export class BatchManager {
                 return addDocRef.id;
 
             case 'update':
-                const updateDocRef = doc(collectionRef, operation.data.id);
-                const updateData = {
-                    ...operation.data.updates,
-                    updatedAt: serverTimestamp(),
-                    deviceId: this.firebaseManager.getDeviceId()
-                };
-                batch.update(updateDocRef, updateData);
-                return operation.data.id;
+                // 🚨 PROBLEMA CRÍTICO: Necesitamos encontrar el documento real por el campo 'id'
+                // No podemos usar operation.data.id como docId directamente
+                
+                const expenseId = operation.data.id;
+                
+                // Buscar el documento por el campo 'id'
+                const { query, where, getDocs } = 
+                    await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                
+                const existingQuery = query(collectionRef, where('id', '==', expenseId));
+                const existingSnapshot = await getDocs(existingQuery);
+                
+                if (!existingSnapshot.empty) {
+                    // Documento encontrado → usar su docId real
+                    const existingDoc = existingSnapshot.docs[0];
+                    const realDocRef = existingDoc.ref;
+                    
+                    const updateData = {
+                        ...operation.data.updates,
+                        updatedAt: serverTimestamp(),
+                        deviceId: this.firebaseManager.getDeviceId()
+                    };
+                    
+                    batch.update(realDocRef, updateData);
+                    return expenseId;
+                } else {
+                    // Documento no encontrado → crear nuevo con el ID como docId
+                    const newDocRef = doc(collectionRef, expenseId);
+                    
+                    // Obtener datos completos del localStorage
+                    const localExpenses = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]');
+                    const localExpense = localExpenses.find(exp => exp.id === expenseId);
+                    
+                    if (!localExpense) {
+                        throw new Error(`Local expense ${expenseId} not found for batch update`);
+                    }
+                    
+                    const newExpenseData = {
+                        ...localExpense,
+                        ...operation.data.updates,
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp(),
+                        deviceId: this.firebaseManager.getDeviceId()
+                    };
+                    
+                    batch.set(newDocRef, newExpenseData);
+                    return expenseId;
+                }
 
             case 'delete':
-                const deleteDocRef = doc(collectionRef, operation.data.id);
-                batch.delete(deleteDocRef);
-                return operation.data.id;
+                // 🚨 PROBLEMA CRÍTICO: Buscar documento real para eliminar
+                const deleteExpenseId = operation.data.id;
+                
+                // Buscar el documento por el campo 'id'
+                const deleteQuery = query(collectionRef, where('id', '==', deleteExpenseId));
+                const deleteSnapshot = await getDocs(deleteQuery);
+                
+                if (!deleteSnapshot.empty) {
+                    // Documento encontrado → eliminar usando su docId real
+                    const docToDelete = deleteSnapshot.docs[0];
+                    batch.delete(docToDelete.ref);
+                    return deleteExpenseId;
+                } else {
+                    // Documento no encontrado → intentar con el ID como docId (fallback)
+                    const fallbackDocRef = doc(collectionRef, deleteExpenseId);
+                    batch.delete(fallbackDocRef);
+                    return deleteExpenseId;
+                }
 
             default:
                 throw new Error(`Unknown batch operation type: ${operation.type}`);

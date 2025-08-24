@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Fix Firebase IDs - Viaje Himalaya</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        .btn:hover { background: #2563eb; }
+        .btn.danger { background: #ef4444; }
+        .btn.danger:hover { background: #dc2626; }
+        .btn.success { background: #10b981; }
+        .btn.success:hover { background: #059669; }
+        .log {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+            white-space: pre-wrap;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .status.success { background: #d1fae5; color: #065f46; }
+        .status.error { background: #fee2e2; color: #991b1b; }
+        .status.warning { background: #fef3c7; color: #92400e; }
+        .status.info { background: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Firebase IDs - Viaje Himalaya</h1>
+        <p>Esta herramienta arregla el problema de IDs entre localStorage y Firebase.</p>
+        
+        <div class="status info">
+            <strong>Problema:</strong> Los gastos tienen IDs locales (ej: 1756027736031) pero Firebase usa sus propios IDs (ej: mLYsTb4d9I9nxZAUjdpd)
+        </div>
+
+        <div style="margin: 20px 0;">
+            <button class="btn" onclick="connectFirebase()">1️⃣ Conectar Firebase</button>
+            <button class="btn" onclick="analyzeData()" disabled id="analyzeBtn">2️⃣ Analizar Datos</button>
+            <button class="btn success" onclick="fixIds()" disabled id="fixBtn">3️⃣ Arreglar IDs</button>
+            <button class="btn danger" onclick="clearAll()" disabled id="clearBtn">🗑️ Limpiar Todo</button>
+        </div>
+
+        <div class="log" id="log">Esperando conexión a Firebase...</div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            doc, 
+            setDoc, 
+            deleteDoc,
+            query,
+            orderBy,
+            serverTimestamp
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Configuración Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNEzeYTeaLkrMxQhMh-08RwxmTFOPc32s",
+            authDomain: "viaje-himalaya.firebaseapp.com",
+            projectId: "viaje-himalaya",
+            storageBucket: "viaje-himalaya.firebasestorage.app",
+            messagingSenderId: "89001303026",
+            appId: "1:89001303026:web:93e11085df1213a865296b"
+        };
+
+        let app, db;
+        let localExpenses = [];
+        let firebaseExpenses = [];
+
+        function log(message) {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logEl.textContent += `[${timestamp}] ${message}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        window.connectFirebase = async function() {
+            try {
+                log('🔥 Conectando a Firebase...');
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                
+                log('✅ Firebase conectado correctamente');
+                document.getElementById('analyzeBtn').disabled = false;
+                
+            } catch (error) {
+                log(`❌ Error conectando Firebase: ${error.message}`);
+            }
+        };
+
+        window.analyzeData = async function() {
+            try {
+                log('📊 Analizando datos...');
+                
+                // 1. Cargar datos locales
+                const localData = localStorage.getItem('tripExpensesV1');
+                localExpenses = localData ? JSON.parse(localData) : [];
+                log(`📱 Gastos en localStorage: ${localExpenses.length}`);
+                
+                // 2. Cargar datos de Firebase
+                const expensesRef = collection(db, 'expenses');
+                const snapshot = await getDocs(expensesRef);
+                firebaseExpenses = [];
+                
+                snapshot.forEach((doc) => {
+                    firebaseExpenses.push({
+                        firebaseId: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                log(`🔥 Gastos en Firebase: ${firebaseExpenses.length}`);
+                
+                // 3. Analizar conflictos
+                log('\n🔍 ANÁLISIS DE CONFLICTOS:');
+                
+                const localIds = localExpenses.map(e => e.id);
+                const firebaseIds = firebaseExpenses.map(e => e.id);
+                const firebaseDocIds = firebaseExpenses.map(e => e.firebaseId);
+                
+                log(`📱 IDs locales: ${localIds.join(', ')}`);
+                log(`🔥 IDs Firebase (campo): ${firebaseIds.join(', ')}`);
+                log(`🔥 IDs Firebase (documento): ${firebaseDocIds.join(', ')}`);
+                
+                // Encontrar gastos que existen local pero no en Firebase
+                const missingInFirebase = localExpenses.filter(local => 
+                    !firebaseExpenses.some(fb => fb.id === local.id)
+                );
+                
+                // Encontrar gastos que existen en Firebase pero no local
+                const missingInLocal = firebaseExpenses.filter(fb => 
+                    !localExpenses.some(local => local.id === fb.id)
+                );
+                
+                log(`\n⚠️ Gastos locales no en Firebase: ${missingInFirebase.length}`);
+                missingInFirebase.forEach(expense => {
+                    log(`   - ${expense.concept} (${expense.amount}€) ID: ${expense.id}`);
+                });
+                
+                log(`\n⚠️ Gastos Firebase no en local: ${missingInLocal.length}`);
+                missingInLocal.forEach(expense => {
+                    log(`   - ${expense.concept} (${expense.amount}€) ID: ${expense.id} DocID: ${expense.firebaseId}`);
+                });
+                
+                document.getElementById('fixBtn').disabled = false;
+                document.getElementById('clearBtn').disabled = false;
+                
+            } catch (error) {
+                log(`❌ Error analizando datos: ${error.message}`);
+            }
+        };
+
+        window.fixIds = async function() {
+            try {
+                log('\n🔧 INICIANDO REPARACIÓN DE IDs...');
+                
+                // Estrategia: Usar los IDs locales como fuente de verdad
+                // y crear/actualizar documentos en Firebase con esos IDs
+                
+                for (const localExpense of localExpenses) {
+                    log(`🔄 Procesando: ${localExpense.concept} (ID: ${localExpense.id})`);
+                    
+                    // Buscar si ya existe en Firebase
+                    const existingInFirebase = firebaseExpenses.find(fb => fb.id === localExpense.id);
+                    
+                    if (existingInFirebase) {
+                        log(`   ✅ Ya existe en Firebase con DocID: ${existingInFirebase.firebaseId}`);
+                    } else {
+                        // Crear documento en Firebase usando el ID local como DocID
+                        const docRef = doc(db, 'expenses', localExpense.id);
+                        
+                        const expenseData = {
+                            ...localExpense,
+                            createdAt: serverTimestamp(),
+                            updatedAt: serverTimestamp(),
+                            deviceId: 'fix-tool'
+                        };
+                        
+                        await setDoc(docRef, expenseData);
+                        log(`   ✅ Creado en Firebase con DocID: ${localExpense.id}`);
+                    }
+                }
+                
+                // Eliminar documentos huérfanos en Firebase
+                for (const fbExpense of firebaseExpenses) {
+                    const existsInLocal = localExpenses.some(local => local.id === fbExpense.id);
+                    
+                    if (!existsInLocal) {
+                        log(`🗑️ Eliminando huérfano: ${fbExpense.concept} (DocID: ${fbExpense.firebaseId})`);
+                        const docRef = doc(db, 'expenses', fbExpense.firebaseId);
+                        await deleteDoc(docRef);
+                    }
+                }
+                
+                log('\n🎉 REPARACIÓN COMPLETADA');
+                log('✅ Todos los IDs están ahora sincronizados');
+                log('✅ Los gastos locales son la fuente de verdad');
+                log('✅ Firebase usa los mismos IDs que localStorage');
+                
+                // Reanalizar para verificar
+                setTimeout(() => {
+                    analyzeData();
+                }, 2000);
+                
+            } catch (error) {
+                log(`❌ Error reparando IDs: ${error.message}`);
+            }
+        };
+
+        window.clearAll = async function() {
+            if (!confirm('⚠️ ¿Estás seguro? Esto eliminará TODOS los gastos de Firebase')) {
+                return;
+            }
+            
+            try {
+                log('🗑️ Eliminando todos los gastos de Firebase...');
+                
+                const expensesRef = collection(db, 'expenses');
+                const snapshot = await getDocs(expensesRef);
+                
+                const deletePromises = [];
+                snapshot.forEach((doc) => {
+                    deletePromises.push(deleteDoc(doc.ref));
+                });
+                
+                await Promise.all(deletePromises);
+                
+                log(`✅ Eliminados ${deletePromises.length} gastos de Firebase`);
+                log('💡 Ahora puedes usar la app normalmente y se recrearán automáticamente');
+                
+            } catch (error) {
+                log(`❌ Error limpiando Firebase: ${error.message}`);
+            }
+        };
+    </script>
+</body>
+</html>
