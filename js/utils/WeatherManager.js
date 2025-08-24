@@ -210,7 +210,7 @@ export class WeatherManager {
         try {
             const currentDay = this.getCurrentItineraryDay();
             if (!currentDay) {
-                Logger.info('🌤️ No current itinerary day found');
+                if (Logger && Logger.info) Logger.info('🌤️ No current itinerary day found');
                 return null;
             }
 
@@ -227,7 +227,7 @@ export class WeatherManager {
             };
             
         } catch (error) {
-            Logger.error('🌤️ Error getting contextual weather:', error);
+            if (Logger && Logger.error) Logger.error('🌤️ Error getting contextual weather:', error);
             return null;
         }
     }
@@ -275,7 +275,7 @@ export class WeatherManager {
             return null;
             
         } catch (error) {
-            Logger.error('🌤️ Error getting current itinerary day:', error);
+            if (Logger && Logger.error) Logger.error('🌤️ Error getting current itinerary day:', error);
             return null;
         }
     }
@@ -309,7 +309,7 @@ export class WeatherManager {
                 }
             }
         } catch (error) {
-            Logger.error('🌤️ Error calculating trip start from flights:', error);
+            if (Logger && Logger.error) Logger.error('🌤️ Error calculating trip start from flights:', error);
         }
         
         // Fallback
@@ -489,10 +489,10 @@ export class WeatherManager {
 
         this.updateInterval = setInterval(async () => {
             try {
-                Logger.info('🌤️ Auto-updating weather data');
+                if (Logger && Logger.info) Logger.info('🌤️ Auto-updating weather data');
                 await this.updateAllWeatherData();
             } catch (error) {
-                Logger.error('🌤️ Error in auto-update:', error);
+                if (Logger && Logger.error) Logger.error('🌤️ Error in auto-update:', error);
             }
         }, this.cacheExpiry);
     }
@@ -513,9 +513,9 @@ export class WeatherManager {
                 this.renderEnhancedWeather();
             }
             
-            Logger.success('🌤️ All weather data updated');
+            if (Logger && Logger.success) Logger.success('🌤️ All weather data updated');
         } catch (error) {
-            Logger.error('🌤️ Error updating weather data:', error);
+            if (Logger && Logger.error) Logger.error('🌤️ Error updating weather data:', error);
         }
     }
 
@@ -561,10 +561,10 @@ export class WeatherManager {
                 ${this.renderWeatherAlerts(allWeatherData)}
             `;
 
-            Logger.success('🌤️ Enhanced weather rendered');
+            if (Logger && Logger.success) Logger.success('🌤️ Enhanced weather rendered');
             
         } catch (error) {
-            Logger.error('🌤️ Error rendering enhanced weather:', error);
+            if (Logger && Logger.error) Logger.error('🌤️ Error rendering enhanced weather:', error);
             this.renderEnhancedStaticWeather();
         }
     }
@@ -669,7 +669,7 @@ export class WeatherManager {
             </div>
         `;
 
-        Logger.info('🌤️ Enhanced static weather demo rendered');
+        if (Logger && Logger.info) Logger.info('🌤️ Enhanced static weather demo rendered');
     }
 
     /**
@@ -972,7 +972,7 @@ export class WeatherManager {
             this.updateInterval = null;
         }
         this.cache.clear();
-        Logger.info('🌤️ WeatherManager cleaned up');
+        if (Logger && Logger.info) Logger.info('🌤️ WeatherManager cleaned up');
     }
 
     /**

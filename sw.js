@@ -9,8 +9,8 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v4.5.5-FORCE-CACHE-CLEAR';
-const DATA_CACHE = 'viaje-data-v4.5.5-FORCE-CACHE-CLEAR';
+const CACHE_NAME = 'viaje-himalaya-v4.5.6-COMPLETE-LOGGER-FIX';
+const DATA_CACHE = 'viaje-data-v4.5.6-COMPLETE-LOGGER-FIX';
 
 // Base path para GitHub Pages
 const BASE_PATH = '/viaje-himalaya';
