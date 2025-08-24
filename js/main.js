@@ -184,4 +184,23 @@ window.changeView = changeView;
 window.renderInitial = renderInitial;
 window.uiRenderer = uiRenderer;
 
+// Función para limpiar cache (debugging)
+window.clearAppCache = async () => {
+    try {
+        // Limpiar cache del Service Worker
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(
+                cacheNames.map(cacheName => caches.delete(cacheName))
+            );
+            console.log('✅ Service Worker cache cleared');
+        }
+        
+        // Recargar página
+        window.location.reload(true);
+    } catch (error) {
+        console.error('❌ Error clearing cache:', error);
+    }
+};
+
 if (Logger && Logger.init) Logger.init('Global functions exposed to window object');

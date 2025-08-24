@@ -9,8 +9,8 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v4.4.0-realtime-weather';
-const DATA_CACHE = 'viaje-data-v4.4.0-realtime-weather';
+const CACHE_NAME = 'viaje-himalaya-v4.5.1-logger-fix';
+const DATA_CACHE = 'viaje-data-v4.5.1-logger-fix';
 
 // Base path para GitHub Pages
 const BASE_PATH = '/viaje-himalaya';
@@ -421,4 +421,4 @@ async function getOfflineActions() { return []; }
 async function processOfflineAction(action) { console.log('Processing action:', action.type); }
 async function removeOfflineAction(id) { console.log('Removing action:', id); }
 
-console.log('🌤️ Service Worker v4.4.0 cargado - REALTIME WEATHER: Clima en tiempo real + Recomendaciones inteligentes por actividad');
+console.log('🔧 Service Worker v4.5.1 cargado - LOGGER FIX: Corregidas importaciones + Firebase equipaje + Fechas dinámicas');
