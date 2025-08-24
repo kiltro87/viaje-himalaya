@@ -26,6 +26,7 @@
 import { UIRenderer } from './components/UIRenderer.js';
 import Logger from './utils/Logger.js';
 import { weatherConfig, checkWeatherConfig } from './config/weatherConfig.js';
+import { getDaySimulator } from './utils/DaySimulator.js';
 
 // Verificar que Logger está disponible y iniciar logging
 if (Logger && typeof Logger.init === 'function') {
@@ -131,6 +132,27 @@ document.addEventListener('DOMContentLoaded', () => {
         // Verificar configuración del clima
         const weatherStatus = checkWeatherConfig();
         if (Logger && Logger.info) Logger.info(weatherStatus.message);
+        
+        // Inicializar Day Simulator para desarrollo
+        const daySimulator = getDaySimulator();
+        if (Logger && Logger.info) Logger.info('🎯 Day Simulator initialized - Use showDaySimulator() to open panel');
+        
+        // Añadir botón flotante del simulador (solo en desarrollo)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') {
+            setTimeout(() => {
+                const simulatorBtn = document.createElement('button');
+                simulatorBtn.innerHTML = `
+                    <span class="material-symbols-outlined">science</span>
+                `;
+                simulatorBtn.className = 'fixed bottom-4 right-4 z-40 w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110';
+                simulatorBtn.title = 'Day Simulator (Development)';
+                simulatorBtn.onclick = () => window.showDaySimulator();
+                
+                document.body.appendChild(simulatorBtn);
+                
+                if (Logger && Logger.info) Logger.info('🎯 Day Simulator button added (development mode)');
+            }, 1000);
+        }
         
         if (Logger && Logger.endPerformance) Logger.endPerformance('app-initialization');
         if (Logger && Logger.success) {

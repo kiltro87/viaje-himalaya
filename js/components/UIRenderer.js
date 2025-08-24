@@ -555,6 +555,9 @@ export class UIRenderer {
 
                 </div>
                 
+                <!-- Análisis de Estilo de Viaje -->
+                ${this.renderTripStyleAnalysis()}
+                
                 <!-- Información de Vuelos -->
                 ${this.renderFlightsSection()}
             </div>
@@ -1968,6 +1971,126 @@ export class UIRenderer {
                 </div>
             </div>
         `;
+    }
+
+    // Renderizar análisis de estilo de viaje
+    renderTripStyleAnalysis() {
+        try {
+            const tripStyles = this.calculateTripStyles();
+            
+            return `
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-lg">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-symbols-outlined text-2xl text-purple-600 dark:text-purple-400">analytics</span>
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Estilo de Viaje</h3>
+                    </div>
+                    
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        ${tripStyles.map(style => `
+                            <div class="relative bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-600">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-2xl">${style.emoji}</span>
+                                        <h4 class="font-semibold text-slate-900 dark:text-white">${style.title}</h4>
+                                    </div>
+                                    <span class="text-2xl font-bold ${style.color}">${style.percentage}%</span>
+                                </div>
+                                
+                                <!-- Barra de progreso -->
+                                <div class="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-3 mb-2">
+                                    <div class="h-3 rounded-full transition-all duration-1000 ease-out ${style.color.replace('text-', 'bg-')}" 
+                                         style="width: ${style.percentage}%"></div>
+                                </div>
+                                
+                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                    ${style.percentage > 0 ? `${Math.round((style.percentage / 100) * tripConfig.itineraryData.length)} días` : 'No incluido'}
+                                </p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <!-- Resumen del estilo predominante -->
+                    ${tripStyles.length > 0 && tripStyles[0].percentage > 0 ? `
+                        <div class="mt-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl border border-purple-200 dark:border-purple-700">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xl">${tripStyles[0].emoji}</span>
+                                <h5 class="font-semibold text-purple-800 dark:text-purple-200">Estilo Predominante: ${tripStyles[0].title}</h5>
+                            </div>
+                            <p class="text-sm text-purple-700 dark:text-purple-300">
+                                Tu viaje tiene un ${tripStyles[0].percentage}% de actividades de ${tripStyles[0].title.toLowerCase()}, 
+                                lo que lo convierte en un viaje ${this.getStyleDescription(tripStyles[0].title.toLowerCase())}.
+                            </p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error al renderizar análisis de estilo de viaje:', error);
+            return '';
+        }
+    }
+
+    // Calcular estilos de viaje basado en actividades del itinerario
+    calculateTripStyles() {
+        // Definir categorías de actividades exactamente como las pasó el usuario
+        const activityCategories = {
+            'naturaleza': { keywords: ['trekking', 'rafting', 'parque', 'montaña', 'selva', 'río', 'lago'], emoji: '🌲', color: 'text-green-500' },
+            'cultura': { keywords: ['templo', 'monasterio', 'museo', 'plaza', 'durbar', 'dzong', 'estupa'], emoji: '🏛️', color: 'text-amber-500' },
+            'ciudad': { keywords: ['thamel', 'pokhara', 'thimphu', 'paro', 'katmandú', 'mercado', 'restaurante'], emoji: '🏙️', color: 'text-red-500' },
+            'aventura': { keywords: ['parapente', 'rafting', 'trekking', 'safari'], emoji: '🏔️', color: 'text-purple-500' },
+            'relax': { keywords: ['aguas termales', 'spa', 'descanso', 'tarde libre'], emoji: '🏖️', color: 'text-sky-500' }
+        };
+        
+        // Contar actividades por categoría
+        const categoryCounts = {};
+        const totalDays = tripConfig.itineraryData.length;
+        
+        // Inicializar contadores
+        Object.keys(activityCategories).forEach(category => {
+            categoryCounts[category] = 0;
+        });
+        
+        // Analizar cada día del itinerario
+        tripConfig.itineraryData.forEach(day => {
+            const dayText = `${day.title} ${day.description} ${day.planA || ''} ${day.planB || ''}`.toLowerCase();
+            
+            Object.entries(activityCategories).forEach(([category, config]) => {
+                if (config.keywords.some(keyword => dayText.includes(keyword))) {
+                    categoryCounts[category]++;
+                }
+            });
+        });
+        
+        // Calcular porcentajes y generar estilos
+        return Object.entries(categoryCounts)
+            .map(([category, count]) => {
+                const config = activityCategories[category];
+                return {
+                    title: this.capitalizeFirst(category),
+                    percentage: Math.round((count / totalDays) * 100),
+                    color: config.color,
+                    emoji: config.emoji,
+                    count: count
+                };
+            })
+            .sort((a, b) => b.percentage - a.percentage);
+    }
+
+    // Capitalizar primera letra
+    capitalizeFirst(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // Obtener descripción del estilo
+    getStyleDescription(style) {
+        const descriptions = {
+            'naturaleza': 'enfocado en la conexión con la naturaleza y actividades al aire libre',
+            'cultura': 'rico en experiencias culturales y patrimonio histórico',
+            'ciudad': 'urbano con exploración de mercados y vida local',
+            'aventura': 'lleno de emociones fuertes y actividades extremas',
+            'relax': 'orientado al descanso y bienestar personal'
+        };
+        return descriptions[style] || 'equilibrado y variado';
     }
 
     // Renderizar sección de vuelos para incluir en resumen

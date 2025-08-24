@@ -40,7 +40,7 @@ export class WeatherManager {
             'Punakha': { lat: 27.5934, lon: 89.8774, country: 'BT' }
         };
 
-        // Categorías de actividades para recomendaciones inteligentes
+        // Categorías de actividades para recomendaciones inteligentes (del usuario)
         this.activityCategories = {
             'naturaleza': { 
                 keywords: ['trekking', 'rafting', 'parque', 'montaña', 'selva', 'río', 'lago'], 
@@ -531,27 +531,25 @@ export class WeatherManager {
         const container = document.getElementById('weather');
         if (!container) return;
 
-        // Simular clima contextual para demo
-        const demoContextualWeather = {
-            city: 'Katmandú',
+        // Simular clima contextual para demo usando categorías reales
+        const demoActivities = ['Visita al Templo de Swayambhunath', 'Explorar Thamel', 'Trekking por la ciudad'];
+        const demoWeather = {
             temperature: 23,
             feelsLike: 25,
             condition: 'Parcialmente nublado',
             humidity: 68,
             windSpeed: 12,
-            icon: '⛅',
+            icon: '⛅'
+        };
+        
+        const demoContextualWeather = {
+            city: 'Katmandú',
+            ...demoWeather,
             context: {
                 day: 3,
                 location: 'Katmandú',
-                activities: ['Visita al Templo de Swayambhunath', 'Explorar Thamel'],
-                recommendations: [
-                    '🌲 Actividades de naturaleza detectadas',
-                    '🏛️ Actividades de cultura detectadas',
-                    '👕 Vístete por capas',
-                    '🧴 Protector solar recomendado',
-                    '🥾 Botas de trekking obligatorias',
-                    '📷 Perfecto para visitas a templos'
-                ]
+                activities: demoActivities,
+                recommendations: this.getActivityRecommendations(demoWeather, demoActivities)
             }
         };
 
