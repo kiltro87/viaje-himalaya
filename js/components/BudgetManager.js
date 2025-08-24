@@ -677,9 +677,7 @@ export class BudgetManager {
                         <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">filter_list</span>
                         <h3 class="font-bold text-lg text-slate-900 dark:text-white">Análisis por Categorías</h3>
                     </div>
-                    <div class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full">
-                        Selecciona múltiples categorías
-                    </div>
+
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3" id="budget-category-filters">
                     ${allCategories.map(cat => {
@@ -697,8 +695,7 @@ export class BudgetManager {
             <div id="budget-content" class="mb-6" style="display: none;">
                 <div class="text-center text-slate-500 dark:text-slate-400 py-8 bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600">
                     <span class="material-symbols-outlined text-4xl mb-2 opacity-50">analytics</span>
-                    <p class="text-lg font-medium">Selecciona categorías para ver el análisis</p>
-                    <p class="text-sm">Puedes seleccionar múltiples categorías para comparar</p>
+                    <p class="text-lg font-medium">Haz clic en las categorías para ver el análisis</p>
                 </div>
             </div>
             
