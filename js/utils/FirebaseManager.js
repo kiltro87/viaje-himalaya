@@ -214,16 +214,27 @@ export class FirebaseManager {
             const localExpenses = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]');
             
             if (localExpenses.length > 0) {
-                Logger.data(`Migrating ${localExpenses.length} expenses from localStorage to Firebase`);
+                console.log('🔥 DEBUG: Checking if migration is needed...');
                 
-                for (const expense of localExpenses) {
-                    await this.addExpense(expense, false); // No trigger callbacks durante migración
+                // Verificar si ya hay datos en Firebase para evitar duplicación
+                const existingExpenses = await this.getAllExpenses();
+                
+                if (existingExpenses.length === 0) {
+                    console.log('🔥 DEBUG: No existing Firebase data, proceeding with migration...');
+                    Logger.data(`Migrating ${localExpenses.length} expenses from localStorage to Firebase`);
+                    
+                    for (const expense of localExpenses) {
+                        await this.addExpense(expense, false); // No trigger callbacks durante migración
+                    }
+                    
+                    // Crear backup de datos locales
+                    localStorage.setItem('tripExpensesV1_backup', JSON.stringify(localExpenses));
+                    
+                    Logger.success(`Successfully migrated ${localExpenses.length} expenses to Firebase`);
+                } else {
+                    console.log('🔥 DEBUG: Firebase already has data, skipping migration to avoid duplicates');
+                    Logger.data(`Skipping migration - Firebase already has ${existingExpenses.length} expenses`);
                 }
-                
-                // Crear backup de datos locales
-                localStorage.setItem('tripExpensesV1_backup', JSON.stringify(localExpenses));
-                
-                Logger.success(`Successfully migrated ${localExpenses.length} expenses to Firebase`);
             }
             
         } catch (error) {
