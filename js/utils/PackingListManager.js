@@ -31,7 +31,7 @@ export class PackingListManager {
         // Cache local para optimistic UI
         this.localCache = this.loadFromLocalStorage();
         
-        if (Logger && Logger.init) Logger.init('🎒 PackingListManager initialized');
+        if (Logger && Logger.info) Logger.info('🎒 PackingListManager initialized');
     }
 
     /**

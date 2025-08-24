@@ -94,7 +94,7 @@ export class WeatherManager {
             }
         };
         
-        Logger.info('🌤️ WeatherManager initialized');
+        if (Logger && Logger.info) Logger.info('🌤️ WeatherManager initialized');
     }
 
     /**
@@ -105,10 +105,10 @@ export class WeatherManager {
         this.isRealTimeEnabled = !!this.apiKey;
         
         if (this.isRealTimeEnabled) {
-            Logger.success('🌤️ Real-time weather enabled');
+            if (Logger && Logger.success) Logger.success('🌤️ Real-time weather enabled');
             this.startAutoUpdate();
         } else {
-            Logger.warn('🌤️ Using static weather data (no API key)');
+            if (Logger && Logger.warn) Logger.warn('🌤️ Using static weather data (no API key)');
         }
     }
 
@@ -139,7 +139,7 @@ export class WeatherManager {
 
             const coords = this.cityCoordinates[cityName];
             if (!coords) {
-                Logger.warn(`🌤️ No coordinates for ${cityName}, using static data`);
+                if (Logger && Logger.warn) Logger.warn(`🌤️ No coordinates for ${cityName}, using static data`);
                 return this.getStaticWeather(cityName);
             }
 
@@ -154,12 +154,12 @@ export class WeatherManager {
             const weatherData = this.parseCurrentWeather(data, cityName);
             
             this.setCache(cacheKey, weatherData);
-            Logger.success(`🌤️ Current weather loaded for ${cityName}`);
+            if (Logger && Logger.success) Logger.success(`🌤️ Current weather loaded for ${cityName}`);
             
             return weatherData;
             
         } catch (error) {
-            Logger.error(`🌤️ Error getting current weather for ${cityName}:`, error);
+            if (Logger && Logger.error) Logger.error(`🌤️ Error getting current weather for ${cityName}:`, error);
             return this.getStaticWeather(cityName);
         }
     }
@@ -193,12 +193,12 @@ export class WeatherManager {
             const forecastData = this.parseForecast(data, cityName, days);
             
             this.setCache(cacheKey, forecastData);
-            Logger.success(`🌤️ Forecast loaded for ${cityName} (${days} days)`);
+            if (Logger && Logger.success) Logger.success(`🌤️ Forecast loaded for ${cityName} (${days} days)`);
             
             return forecastData;
             
         } catch (error) {
-            Logger.error(`🌤️ Error getting forecast for ${cityName}:`, error);
+            if (Logger && Logger.error) Logger.error(`🌤️ Error getting forecast for ${cityName}:`, error);
             return this.getStaticForecast(cityName, days);
         }
     }

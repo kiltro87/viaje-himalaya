@@ -26,7 +26,7 @@ export class DaySimulator {
         this.isSimulating = false;
         this.tripStartDate = null; // Se calculará dinámicamente
         
-        Logger.info('🎯 DaySimulator initialized');
+        if (Logger && Logger.info) Logger.info('🎯 DaySimulator initialized');
     }
 
     /**

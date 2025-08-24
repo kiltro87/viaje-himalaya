@@ -35,7 +35,7 @@ export class RealtimeSync {
         this.onExpenseDeleted = null;
         this.onConnectionStatusChanged = null;
         
-        Logger.init('RealtimeSync initialized');
+        if (Logger && Logger.init) Logger.init('RealtimeSync initialized');
         this.initializeConnection();
     }
 
@@ -47,7 +47,7 @@ export class RealtimeSync {
         await this.tryWebSocketConnection();
         
         if (!this.isWebSocketConnected) {
-            Logger.warning('WebSocket failed, falling back to Firebase Realtime');
+            if (Logger && Logger.warning) Logger.warning('WebSocket failed, falling back to Firebase Realtime');
             await this.setupFirebaseRealtime();
         }
     }
@@ -60,17 +60,17 @@ export class RealtimeSync {
         const wsUrl = this.getWebSocketUrl();
         
         if (!wsUrl) {
-            Logger.data('No WebSocket server available, skipping');
+            if (Logger && Logger.data) Logger.data('No WebSocket server available, skipping');
             return;
         }
 
         try {
-            Logger.data(`Attempting WebSocket connection to: ${wsUrl}`);
+            if (Logger && Logger.data) Logger.data(`Attempting WebSocket connection to: ${wsUrl}`);
             
             this.websocket = new WebSocket(wsUrl);
             
             this.websocket.onopen = () => {
-                Logger.success('WebSocket connected successfully');
+                if (Logger && Logger.success) Logger.success('WebSocket connected successfully');
                 this.isWebSocketConnected = true;
                 this.reconnectAttempts = 0;
                 this.startHeartbeat();
@@ -93,7 +93,7 @@ export class RealtimeSync {
             };
 
             this.websocket.onclose = () => {
-                Logger.warning('WebSocket connection closed');
+                if (Logger && Logger.warning) Logger.warning('WebSocket connection closed');
                 this.isWebSocketConnected = false;
                 this.stopHeartbeat();
                 this.scheduleReconnect();
@@ -104,12 +104,12 @@ export class RealtimeSync {
             };
 
             this.websocket.onerror = (error) => {
-                Logger.error('WebSocket error:', error);
+                if (Logger && Logger.error) Logger.error('WebSocket error:', error);
                 this.isWebSocketConnected = false;
             };
 
         } catch (error) {
-            Logger.error('Failed to create WebSocket connection:', error);
+            if (Logger && Logger.error) Logger.error('Failed to create WebSocket connection:', error);
             this.isWebSocketConnected = false;
         }
     }
@@ -138,7 +138,7 @@ export class RealtimeSync {
      * NOTA: Deshabilitado - Solo usamos Firestore, no Realtime Database
      */
     async setupFirebaseRealtime() {
-        Logger.info('Firebase Realtime Database disabled - Using Firestore only');
+        if (Logger && Logger.info) Logger.info('Firebase Realtime Database disabled - Using Firestore only');
         
         // Simular conexión exitosa para mantener compatibilidad
         if (this.onConnectionStatusChanged) {
@@ -155,7 +155,7 @@ export class RealtimeSync {
     handleWebSocketMessage(event) {
         try {
             const message = JSON.parse(event.data);
-            Logger.data('WebSocket message received:', message.type);
+            if (Logger && Logger.data) Logger.data('WebSocket message received:', message.type);
 
             switch (message.type) {
                 case 'expense_added':
@@ -181,11 +181,11 @@ export class RealtimeSync {
                     break;
                 
                 default:
-                    Logger.warning('Unknown WebSocket message type:', message.type);
+                    if (Logger && Logger.warning) Logger.warning('Unknown WebSocket message type:', message.type);
             }
 
         } catch (error) {
-            Logger.error('Error parsing WebSocket message:', error);
+            if (Logger && Logger.error) Logger.error('Error parsing WebSocket message:', error);
         }
     }
 
@@ -198,7 +198,7 @@ export class RealtimeSync {
             return;
         }
 
-        Logger.data('Firebase Realtime change received:', change.type);
+        if (Logger && Logger.data) Logger.data('Firebase Realtime change received:', change.type);
 
         switch (change.type) {
             case 'expense_added':
@@ -227,11 +227,11 @@ export class RealtimeSync {
     sendMessage(message) {
         if (this.isWebSocketConnected && this.websocket.readyState === WebSocket.OPEN) {
             this.websocket.send(JSON.stringify(message));
-            Logger.data('WebSocket message sent:', message.type);
+            if (Logger && Logger.data) Logger.data('WebSocket message sent:', message.type);
         } else {
             // Añadir a cola para enviar cuando se reconecte
             this.messageQueue.push(message);
-            Logger.data('Message queued (WebSocket not available):', message.type);
+            if (Logger && Logger.data) Logger.data('Message queued (WebSocket not available):', message.type);
         }
     }
 
@@ -269,10 +269,10 @@ export class RealtimeSync {
                 timestamp: Date.now()
             });
 
-            Logger.data('Firebase Realtime notification sent:', message.type);
+            if (Logger && Logger.data) Logger.data('Firebase Realtime notification sent:', message.type);
 
         } catch (error) {
-            Logger.error('Failed to send Firebase Realtime notification:', error);
+            if (Logger && Logger.error) Logger.error('Failed to send Firebase Realtime notification:', error);
         }
     }
 
@@ -306,11 +306,11 @@ export class RealtimeSync {
             
             setTimeout(() => {
                 this.reconnectAttempts++;
-                Logger.data(`Reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
+                if (Logger && Logger.data) Logger.data(`Reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
                 this.tryWebSocketConnection();
             }, delay);
         } else {
-            Logger.warning('Max reconnect attempts reached, falling back to Firebase only');
+            if (Logger && Logger.warning) Logger.warning('Max reconnect attempts reached, falling back to Firebase only');
         }
     }
 
@@ -349,7 +349,7 @@ export class RealtimeSync {
         this.isWebSocketConnected = false;
         this.messageQueue = [];
         
-        Logger.data('RealtimeSync disconnected');
+        if (Logger && Logger.data) Logger.data('RealtimeSync disconnected');
     }
 }
 
