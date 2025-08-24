@@ -331,49 +331,41 @@ export class FirebaseManager {
         }
 
         try {
-            const { doc, updateDoc, setDoc, getDoc, serverTimestamp } = 
+            const { doc, setDoc, serverTimestamp } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
             const docRef = doc(this.db, firestoreConfig.collections.expenses, expenseId);
             
-            // 🔍 VERIFICAR SI EL DOCUMENTO EXISTE
-            const docSnap = await getDoc(docRef);
+            // 🚀 UPSERT SIMPLE: setDoc con merge:true
+            // Si existe → actualiza solo los campos proporcionados
+            // Si no existe → crea el documento completo
             
-            if (docSnap.exists()) {
-                // ✅ DOCUMENTO EXISTE → ACTUALIZAR
-                const updateData = {
-                    ...updates,
-                    updatedAt: serverTimestamp(),
-                    deviceId: this.getDeviceId()
-                };
-
-                await updateDoc(docRef, updateData);
-                console.log('✅ Documento actualizado en Firebase:', expenseId);
-                
-            } else {
-                // 🆕 DOCUMENTO NO EXISTE → CREAR (UPSERT)
-                console.log('⚠️ Documento no existe, creando nuevo:', expenseId);
-                
-                // Obtener datos completos del localStorage para crear el documento
-                const localExpenses = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]');
-                const localExpense = localExpenses.find(exp => exp.id === expenseId);
-                
-                if (!localExpense) {
-                    throw new Error(`Expense ${expenseId} not found in localStorage`);
-                }
-                
-                const newDocData = {
-                    ...localExpense,
-                    ...updates,
-                    id: expenseId,
-                    createdAt: serverTimestamp(),
-                    updatedAt: serverTimestamp(),
-                    deviceId: this.getDeviceId()
-                };
-
-                await setDoc(docRef, newDocData);
-                console.log('✅ Documento creado en Firebase:', expenseId);
+            // Obtener datos completos del localStorage por si necesitamos crear
+            const localExpenses = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]');
+            const localExpense = localExpenses.find(exp => exp.id === expenseId);
+            
+            if (!localExpense) {
+                throw new Error(`Expense ${expenseId} not found in localStorage`);
             }
+            
+            const upsertData = {
+                // Datos base del gasto (para crear si no existe)
+                ...localExpense,
+                // Actualizaciones solicitadas
+                ...updates,
+                // Metadatos
+                id: expenseId,
+                updatedAt: serverTimestamp(),
+                deviceId: this.getDeviceId()
+            };
+            
+            // Si no tiene createdAt, añadirlo (para documentos nuevos)
+            if (!localExpense.createdAt) {
+                upsertData.createdAt = serverTimestamp();
+            }
+
+            await setDoc(docRef, upsertData, { merge: true });
+            console.log('✅ UPSERT completado en Firebase:', expenseId);
             
             Logger.data('Expense updated in Firebase:', expenseId);
             
