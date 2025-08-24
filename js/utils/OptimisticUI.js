@@ -54,9 +54,11 @@ export class OptimisticUI {
         // Añadir a AppState inmediatamente
         window.AppState.expenses.unshift(optimisticExpense);
         
-        // Actualizar UI inmediatamente
+        // Actualizar UI inmediatamente con mejor rendimiento
         if (uiUpdateCallback) {
-            uiUpdateCallback();
+            requestAnimationFrame(() => {
+                uiUpdateCallback();
+            });
         }
 
         // Guardar operación pendiente
@@ -85,7 +87,12 @@ export class OptimisticUI {
 
             // Limpiar operación pendiente
             this.pendingOperations.delete(operationId);
-            this.hideOptimisticIndicator(operationId);
+            
+            // Mostrar éxito brevemente antes de ocultar
+            this.showOptimisticIndicator(operationId, 'success');
+            setTimeout(() => {
+                this.hideOptimisticIndicator(operationId);
+            }, 1000);
             
             Logger.success(`Optimistic add confirmed: ${operationId} → ${realId}`);
             
@@ -265,6 +272,10 @@ export class OptimisticUI {
             case 'sending':
                 indicator.className += ' bg-blue-500 text-white animate-pulse';
                 indicator.innerHTML = '📤 Enviando...';
+                break;
+            case 'success':
+                indicator.className += ' bg-green-500 text-white';
+                indicator.innerHTML = '✅ Guardado';
                 break;
             case 'error':
                 indicator.className += ' bg-red-500 text-white';

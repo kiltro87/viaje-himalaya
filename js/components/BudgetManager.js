@@ -151,6 +151,30 @@ export class BudgetManager {
     }
 
     /**
+     * Actualiza la UI del presupuesto de forma optimizada
+     * @private
+     */
+    updateBudgetUI() {
+        // Usar requestAnimationFrame para mejor rendimiento
+        requestAnimationFrame(() => {
+            try {
+                // Actualizar tarjetas de resumen
+                this.updateSummaryCards();
+                
+                // Si hay una categoría activa, actualizar su contenido
+                const activeCategory = document.querySelector('.category-btn.active')?.dataset.category;
+                if (activeCategory) {
+                    this.showCategoryContent(activeCategory);
+                }
+                
+                Logger.performance('UI updated successfully');
+            } catch (error) {
+                Logger.error('Error updating budget UI:', error);
+            }
+        });
+    }
+
+    /**
      * Maneja cambios de gastos desde otros dispositivos
      * @private
      */
@@ -307,10 +331,20 @@ export class BudgetManager {
                 clearTimeout(updateTimeout);
             }
             
-            // Debounce de 100ms para evitar actualizaciones excesivas
+            // Debounce más agresivo para mejor rendimiento
             updateTimeout = setTimeout(() => {
-                this.processFirebaseUpdate(expenses);
-            }, 100);
+                // Solo actualizar si realmente hay cambios
+                const currentExpenseIds = window.AppState.expenses.map(e => e.id).sort();
+                const newExpenseIds = expenses.map(e => e.id).sort();
+                
+                if (JSON.stringify(currentExpenseIds) !== JSON.stringify(newExpenseIds)) {
+                    this.processFirebaseUpdate(expenses);
+                } else {
+                    if (!Logger.isMobile) {
+                        console.log('🔥 DEBUG: No changes detected, skipping UI update');
+                    }
+                }
+            }, 300); // Aumentado a 300ms para mejor rendimiento
         });
         
         if (!Logger.isMobile) {
@@ -717,7 +751,7 @@ export class BudgetManager {
                                 </span>
                                 
                                 <!-- Lista desplegable -->
-                                <div id="category-dropdown-list" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl z-[9999] max-h-60 overflow-y-auto hidden" style="z-index: 9999 !important;">
+                                <div id="category-dropdown-list" class="fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-y-auto hidden" style="z-index: 99999 !important; min-width: 200px;">
                                     ${allCategories.map(cat => {
                                         const icon = this.getCategoryIcon(cat);
                                         return `
@@ -761,7 +795,27 @@ export class BudgetManager {
             // Abrir/cerrar desplegable
             dropdownBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                dropdownList.classList.toggle('hidden');
+                
+                if (dropdownList.classList.contains('hidden')) {
+                    // Posicionar el desplegable correctamente
+                    const rect = dropdownBtn.getBoundingClientRect();
+                    dropdownList.style.top = `${rect.bottom + 4}px`;
+                    dropdownList.style.left = `${rect.left}px`;
+                    dropdownList.style.width = `${rect.width}px`;
+                    
+                    // Verificar si se sale de la pantalla
+                    const dropdownHeight = 240; // max-h-60 = 240px aprox
+                    const viewportHeight = window.innerHeight;
+                    
+                    if (rect.bottom + dropdownHeight > viewportHeight) {
+                        // Mostrar arriba del botón
+                        dropdownList.style.top = `${rect.top - dropdownHeight - 4}px`;
+                    }
+                    
+                    dropdownList.classList.remove('hidden');
+                } else {
+                    dropdownList.classList.add('hidden');
+                }
             });
             
             // Seleccionar opción
@@ -830,8 +884,10 @@ export class BudgetManager {
                     await window.ExpenseManager.add({ concept, amount, category });
                 }
                 
-                // ✅ Sincronización completada (se actualizará con el listener de Firebase)
-                // this.updateSyncStatus('connected'); // Se actualiza automáticamente con el listener
+                // ✅ Indicar sincronización completada
+                setTimeout(() => {
+                    this.updateSyncStatus('connected');
+                }, 1000); // Dar tiempo para que se complete la operación
                 
                 e.target.reset();
             }
