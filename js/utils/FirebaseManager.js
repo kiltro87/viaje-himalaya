@@ -331,16 +331,49 @@ export class FirebaseManager {
         }
 
         try {
-            const { doc, updateDoc, serverTimestamp } = 
+            const { doc, updateDoc, setDoc, getDoc, serverTimestamp } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
-            const updateData = {
-                ...updates,
-                updatedAt: serverTimestamp(),
-                deviceId: this.getDeviceId()
-            };
+            const docRef = doc(this.db, firestoreConfig.collections.expenses, expenseId);
+            
+            // 🔍 VERIFICAR SI EL DOCUMENTO EXISTE
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                // ✅ DOCUMENTO EXISTE → ACTUALIZAR
+                const updateData = {
+                    ...updates,
+                    updatedAt: serverTimestamp(),
+                    deviceId: this.getDeviceId()
+                };
 
-            await updateDoc(doc(this.db, firestoreConfig.collections.expenses, expenseId), updateData);
+                await updateDoc(docRef, updateData);
+                console.log('✅ Documento actualizado en Firebase:', expenseId);
+                
+            } else {
+                // 🆕 DOCUMENTO NO EXISTE → CREAR (UPSERT)
+                console.log('⚠️ Documento no existe, creando nuevo:', expenseId);
+                
+                // Obtener datos completos del localStorage para crear el documento
+                const localExpenses = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]');
+                const localExpense = localExpenses.find(exp => exp.id === expenseId);
+                
+                if (!localExpense) {
+                    throw new Error(`Expense ${expenseId} not found in localStorage`);
+                }
+                
+                const newDocData = {
+                    ...localExpense,
+                    ...updates,
+                    id: expenseId,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                    deviceId: this.getDeviceId()
+                };
+
+                await setDoc(docRef, newDocData);
+                console.log('✅ Documento creado en Firebase:', expenseId);
+            }
             
             Logger.data('Expense updated in Firebase:', expenseId);
             
@@ -348,7 +381,7 @@ export class FirebaseManager {
             this.updateLocalStorage();
             
             if (this.onExpenseUpdated) {
-                this.onExpenseUpdated(expenseId, updateData);
+                this.onExpenseUpdated(expenseId, updates);
             }
             
             return true;
