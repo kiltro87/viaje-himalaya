@@ -9,8 +9,8 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v4.3.0-inline-budget-forms';
-const DATA_CACHE = 'viaje-data-v4.3.0-inline-budget-forms';
+const CACHE_NAME = 'viaje-himalaya-v4.4.0-realtime-weather';
+const DATA_CACHE = 'viaje-data-v4.4.0-realtime-weather';
 
 // Base path para GitHub Pages
 const BASE_PATH = '/viaje-himalaya';
@@ -421,4 +421,4 @@ async function getOfflineActions() { return []; }
 async function processOfflineAction(action) { console.log('Processing action:', action.type); }
 async function removeOfflineAction(id) { console.log('Removing action:', id); }
 
-console.log('🎯 Service Worker v4.3.0 cargado - INLINE BUDGET FORMS: Formularios inline en items presupuestados + Eliminación en tiempo real');
+console.log('🌤️ Service Worker v4.4.0 cargado - REALTIME WEATHER: Clima en tiempo real + Recomendaciones inteligentes por actividad');

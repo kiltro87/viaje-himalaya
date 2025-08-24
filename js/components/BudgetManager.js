@@ -1049,22 +1049,64 @@ export class BudgetManager {
                                                         <span class="font-bold text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0, true)}</span>
                                                     </div>
                                                     <div class="space-y-1 ml-3">
-                                                        ${item.subItems.map(subItem => `
-                                                            <div class="budget-subitem-clickable flex justify-between text-sm text-slate-600 dark:text-slate-400 py-1 px-2 rounded hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer transition-all duration-200"
-                                                                 data-concept="${subItem.concept}" 
-                                                                 data-amount="${subItem.cost || 0}" 
-                                                                 data-category="${cat}"
-                                                                 title="Click para autorrellenar formulario de gasto">
-                                                                <span class="flex items-center gap-2">
-                                                                    <span class="w-1 h-1 bg-slate-400 rounded-full"></span>
-                                                                    ${subItem.concept}
-                                                                </span>
-                                                                <div class="flex items-center gap-1">
-                                                                    <span>${window.Utils.formatCurrency(subItem.cost || 0, true)}</span>
-                                                                    <span class="material-symbols-outlined text-xs text-slate-400">add_circle</span>
+                                                        ${item.subItems.map(subItem => {
+                                                            const subItemId = `budget-${cat}-${item.concept}-${subItem.concept}`.replace(/[^a-zA-Z0-9-]/g, '-');
+                                                            return `
+                                                                <div class="budget-subitem-wrapper" data-item-id="${subItemId}">
+                                                                    <!-- SubItem Presupuestado -->
+                                                                    <div class="budget-subitem-clickable flex justify-between text-sm text-slate-600 dark:text-slate-400 py-1 px-2 rounded hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer transition-all duration-200"
+                                                                         data-concept="${subItem.concept}" 
+                                                                         data-amount="${subItem.cost || 0}" 
+                                                                         data-category="${cat}"
+                                                                         data-item-id="${subItemId}"
+                                                                         title="Click para crear gasto basado en este subitem">
+                                                                        <span class="flex items-center gap-2">
+                                                                            <span class="w-1 h-1 bg-slate-400 rounded-full"></span>
+                                                                            ${subItem.concept}
+                                                                        </span>
+                                                                        <div class="flex items-center gap-1">
+                                                                            <span>${window.Utils.formatCurrency(subItem.cost || 0, true)}</span>
+                                                                            <span class="material-symbols-outlined text-xs text-slate-400">add_circle</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Formulario Inline para SubItem (Oculto por defecto) -->
+                                                                    <div class="budget-inline-form hidden mt-2 ml-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg border-2 border-green-300 dark:border-green-700 shadow-sm" data-item-id="${subItemId}">
+                                                                        <div class="flex items-center gap-2 mb-2">
+                                                                            <span class="material-symbols-outlined text-green-600 text-sm">add_circle</span>
+                                                                            <h5 class="text-xs font-medium text-green-800 dark:text-green-200">Crear gasto: ${subItem.concept}</h5>
+                                                                        </div>
+                                                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
+                                                                            <div>
+                                                                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Concepto</label>
+                                                                                <input type="text" class="budget-inline-concept w-full px-2 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" value="${subItem.concept}">
+                                                                            </div>
+                                                                            <div>
+                                                                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Cantidad</label>
+                                                                                <div class="relative">
+                                                                                    <input type="number" step="0.01" class="budget-inline-amount w-full px-2 py-1 pr-6 text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" value="${subItem.cost || 0}">
+                                                                                    <span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-slate-500 dark:text-slate-400">€</span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div>
+                                                                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Categoría</label>
+                                                                                <select class="budget-inline-category w-full px-2 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
+                                                                                    ${allCategories.map(category => `<option value="${category}" ${category === cat ? 'selected' : ''}>${this.getCategoryIcon(category)} ${category}</option>`).join('')}
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="flex gap-2 justify-end">
+                                                                            <button class="cancel-budget-inline px-2 py-1 text-xs bg-slate-500 hover:bg-slate-600 text-white rounded transition-colors" data-item-id="${subItemId}">
+                                                                                <span class="material-symbols-outlined text-xs mr-1">close</span>Cancelar
+                                                                            </button>
+                                                                            <button class="create-budget-expense px-2 py-1 text-xs bg-green-500 hover:bg-green-600 text-white rounded transition-colors" data-item-id="${subItemId}">
+                                                                                <span class="material-symbols-outlined text-xs mr-1">add</span>Crear
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        `).join('')}
+                                                            `;
+                                                        }).join('')}
                                                     </div>
                                                 </div>
                                             `;
@@ -1098,13 +1140,16 @@ export class BudgetManager {
                                                                 <input type="text" class="budget-inline-concept w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" value="${item.concept}">
                                                             </div>
                                                             <div>
-                                                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Cantidad (€)</label>
-                                                                <input type="number" step="0.01" class="budget-inline-amount w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" value="${item.cost || 0}">
+                                                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Cantidad</label>
+                                                                <div class="relative">
+                                                                    <input type="number" step="0.01" class="budget-inline-amount w-full px-2 py-1 pr-6 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" value="${item.cost || 0}">
+                                                                    <span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-slate-500 dark:text-slate-400">€</span>
+                                                                </div>
                                                             </div>
                                                             <div>
                                                                 <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Categoría</label>
                                                                 <select class="budget-inline-category w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
-                                                                    ${allCategories.map(category => `<option value="${category}" ${category === cat ? 'selected' : ''}>${category}</option>`).join('')}
+                                                                    ${allCategories.map(category => `<option value="${category}" ${category === cat ? 'selected' : ''}>${this.getCategoryIcon(category)} ${category}</option>`).join('')}
                                                                 </select>
                                                             </div>
                                                         </div>

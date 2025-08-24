@@ -25,6 +25,7 @@
 
 import { UIRenderer } from './components/UIRenderer.js';
 import Logger from './utils/Logger.js';
+import { weatherConfig, checkWeatherConfig } from './config/weatherConfig.js';
 
 // Verificar que Logger está disponible y iniciar logging
 if (Logger && typeof Logger.init === 'function') {
@@ -126,6 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Configurar navegación
         setupNavigation();
+        
+        // Verificar configuración del clima
+        const weatherStatus = checkWeatherConfig();
+        if (Logger && Logger.info) Logger.info(weatherStatus.message);
         
         if (Logger && Logger.endPerformance) Logger.endPerformance('app-initialization');
         if (Logger && Logger.success) {

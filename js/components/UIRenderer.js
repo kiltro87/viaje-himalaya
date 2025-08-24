@@ -1857,8 +1857,43 @@ export class UIRenderer {
     }
 
     // Renderizar información climática
-    renderWeather() {
-        console.log('🌤️ Renderizando información climática');
+    // Renderizar información climática con WeatherManager
+    async renderWeather() {
+        console.log('🌤️ Renderizando información climática en tiempo real');
+        const container = document.getElementById('weather');
+        if (!container) return;
+
+        try {
+            // Inicializar WeatherManager si no existe
+            if (!window.WeatherManager) {
+                const { getWeatherManager } = await import('../utils/WeatherManager.js');
+                window.WeatherManager = getWeatherManager();
+                
+                // Configurar con API key si está disponible
+                window.WeatherManager.configure({
+                    apiKey: window.WEATHER_API_KEY || localStorage.getItem('weatherApiKey')
+                });
+            }
+
+            // Usar el renderizado mejorado del WeatherManager
+            await window.WeatherManager.renderEnhancedWeather();
+            
+            console.log('✅ Información climática en tiempo real renderizada');
+            
+        } catch (error) {
+            console.error('❌ Error al renderizar clima en tiempo real:', error);
+            
+            // Fallback al método estático original
+            this.renderStaticWeather();
+        }
+        
+        // Asegurar que el contenedor sea visible
+        container.style.opacity = '1 !important';
+    }
+
+    // Fallback: Renderizar información climática estática
+    renderStaticWeather() {
+        console.log('🌤️ Renderizando información climática estática (fallback)');
         const container = document.getElementById('weather');
         if (!container) return;
 
@@ -1886,6 +1921,7 @@ export class UIRenderer {
                 <div class="flex items-center gap-3 mb-6">
                     <span class="material-symbols-outlined text-2xl text-yellow-600 dark:text-yellow-400">wb_sunny</span>
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información Climática</h2>
+                    <span class="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded">Datos estáticos</span>
                 </div>
                 <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
                     <div class="flex items-center gap-2 mb-2">
@@ -1894,6 +1930,7 @@ export class UIRenderer {
                     </div>
                     <p class="text-sm text-blue-700 dark:text-blue-300">
                         Octubre es ideal: días soleados y secos, noches frescas. Perfecto para trekking y actividades al aire libre.
+                        <br><strong>💡 Tip:</strong> Configura una API key de OpenWeatherMap para clima en tiempo real.
                     </p>
                 </div>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -1901,9 +1938,6 @@ export class UIRenderer {
                 </div>
             </div>
         `;
-        
-        // Asegurar que el contenedor sea visible
-        container.style.opacity = '1 !important';
     }
 
     // Renderizar sección de vuelos para incluir en resumen
