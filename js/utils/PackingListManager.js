@@ -331,17 +331,28 @@ export class PackingListManager {
         if (!statsContainer) return;
 
         try {
-            // Contar total de items desde tripConfig
-            const totalItems = Object.values(window.tripConfig?.packingListData || {})
-                .flat().length;
+            // Contar total de items generando las mismas claves que UIRenderer
+            const packingData = window.tripConfig?.packingListData || {};
+            const allExpectedKeys = [];
             
-            console.log('🔥 PACKING STATS DEBUG:');
-            console.log('Total items in tripConfig:', totalItems);
-            console.log('LocalCache keys:', Object.keys(this.localCache));
-            console.log('LocalCache values:', Object.values(this.localCache));
-            console.log('Packed items count:', Object.values(this.localCache).filter(Boolean).length);
+            Object.entries(packingData).forEach(([category, items]) => {
+                items.forEach(item => {
+                    allExpectedKeys.push(`${category}-${item}`);
+                });
+            });
             
-            const stats = this.getPackingStats(totalItems);
+            const totalItems = allExpectedKeys.length;
+            const packedItems = allExpectedKeys.filter(key => this.localCache[key]).length;
+            
+            // Debug (remover en producción)
+            // console.log('🔥 PACKING STATS:', { totalItems, packedItems, percentage: stats.percentage });
+            
+            const stats = {
+                packed: packedItems,
+                total: totalItems,
+                percentage: totalItems > 0 ? Math.round((packedItems / totalItems) * 100) : 0,
+                remaining: totalItems - packedItems
+            };
             
             statsContainer.innerHTML = `
                 <div class="flex items-center justify-between p-4 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30 rounded-xl border border-teal-200 dark:border-teal-700">

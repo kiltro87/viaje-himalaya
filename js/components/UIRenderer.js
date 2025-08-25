@@ -1462,8 +1462,10 @@ export class UIRenderer {
             const monthIndex = months[monthName];
             if (monthIndex === undefined) return null;
             
-            // Usar el año del viaje (2025)
-            const date = new Date(2025, monthIndex, day);
+            // Usar el año del viaje calculado dinámicamente
+            const tripStartDate = this.getTripStartDate();
+            const tripYear = tripStartDate.getFullYear();
+            const date = new Date(tripYear, monthIndex, day);
             
             // Agregar hora si está disponible
             if (timePart) {
