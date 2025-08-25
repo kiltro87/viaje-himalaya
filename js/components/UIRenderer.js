@@ -419,8 +419,8 @@ export class UIRenderer {
                                 <span id="trip-dates" class="text-sm font-medium">Cargando fechas...</span>
                             </div>
                         </div>
-                        <h1 class="text-4xl md:text-6xl font-black leading-tight mb-3">${this.getTripTitle()}</h1>
-                        <p class="text-lg md:text-xl max-w-2xl opacity-90">${this.getTripSubtitle()}</p>
+                        <h1 class="text-4xl md:text-6xl font-black leading-tight mb-3">Mi Aventura en el Himalaya</h1>
+                        <p class="text-lg md:text-xl max-w-2xl opacity-90">Un recorrido para descubrir Nepal y Bután</p>
                     </div>
                 </header>
 
@@ -547,52 +547,7 @@ export class UIRenderer {
         }
     }
 
-    /**
-     * 🏷️ TÍTULO DEL VIAJE: Calculado dinámicamente desde destinos
-     */
-    getTripTitle() {
-        try {
-            const destinations = this.getUniqueDestinations();
-            if (destinations.length === 2 && destinations.includes('Nepal') && destinations.includes('Bután')) {
-                return 'Mi Aventura en el Himalaya';
-            } else if (destinations.length > 0) {
-                return `Mi Aventura en ${destinations.join(' y ')}`;
-            }
-            return 'Mi Aventura de Viaje';
-        } catch (error) {
-            return 'Mi Aventura en el Himalaya';
-        }
-    }
 
-    /**
-     * 📝 SUBTÍTULO DEL VIAJE: Calculado dinámicamente desde duración y destinos
-     */
-    getTripSubtitle() {
-        try {
-            const totalDays = tripConfig.itineraryData.length;
-            const destinations = this.getUniqueDestinations();
-            const destinationsText = destinations.join(' y ');
-            
-            return `Un recorrido de ${totalDays} días para descubrir ${destinationsText}`;
-        } catch (error) {
-            return 'Un recorrido para descubrir Nepal y Bután';
-        }
-    }
-
-    /**
-     * 🌍 DESTINOS ÚNICOS: Extraer países únicos del itinerario
-     */
-    getUniqueDestinations() {
-        try {
-            const countries = tripConfig.itineraryData
-                .map(day => day.country)
-                .filter(country => country);
-            
-            return [...new Set(countries)];
-        } catch (error) {
-            return ['Nepal', 'Bután'];
-        }
-    }
 
     updateTodayInfo() {
         console.log('📅 Actualizando información de hoy...');
