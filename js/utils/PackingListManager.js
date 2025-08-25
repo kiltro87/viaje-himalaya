@@ -18,12 +18,13 @@
  */
 
 import Logger from './Logger.js';
+import { firestoreConfig } from '../config/firebaseConfig.js';
 
 export class PackingListManager {
     constructor() {
         this.firebaseManager = null;
         this.localStorageKey = 'packingListV2';
-        this.firestoreCollection = 'packingList';
+        this.firestoreCollection = firestoreConfig.collections.packingList;
         this.deviceId = this.generateDeviceId();
         this.isInitialized = false;
         this.syncInProgress = false;
@@ -56,7 +57,7 @@ export class PackingListManager {
                     if (status === 'connected' && !this.firebaseSetupComplete) {
                         this.setupFirebaseSync();
                         this.firebaseSetupComplete = true;
-                        if (Logger && Logger.success) Logger.success('🎒 PackingListManager Firebase sync configured');
+
                     }
                 };
                 
@@ -109,7 +110,7 @@ export class PackingListManager {
             // Sincronizar datos existentes
             await this.syncToFirebase();
             
-            if (Logger && Logger.success) Logger.success('🎒 Firebase sync configured');
+
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🎒 Error setting up Firebase sync:', error);
         }

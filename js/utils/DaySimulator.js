@@ -409,19 +409,26 @@ export class DaySimulator {
      */
     refreshSummaryView() {
         try {
-            // Actualizar información de "hoy en tu viaje"
-            if (typeof window.uiRenderer.updateTodayInfo === 'function') {
-                window.uiRenderer.updateTodayInfo();
+            if (window.uiRenderer && typeof window.uiRenderer.renderSummary === 'function') {
+                window.uiRenderer.renderSummary();
+                if (Logger && Logger.info) Logger.info('📊 Summary view refreshed');
             }
-
-            // Actualizar análisis de estilo de viaje
-            if (typeof window.uiRenderer.renderTripStyleAnalysis === 'function') {
-                window.uiRenderer.renderTripStyleAnalysis();
-            }
-
-            if (Logger && Logger.info) Logger.info('📊 Summary view refreshed');
         } catch (error) {
             if (Logger && Logger.error) Logger.error('📊 Error refreshing summary view:', error);
+        }
+    }
+
+    /**
+     * 📅 REFRESCAR VISTA HOY: Actualizar información del día actual
+     */
+    refreshTodayView() {
+        try {
+            if (window.uiRenderer && typeof window.uiRenderer.renderToday === 'function') {
+                window.uiRenderer.renderToday();
+                if (Logger && Logger.info) Logger.info('📅 Today view refreshed');
+            }
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('📅 Error refreshing today view:', error);
         }
     }
 

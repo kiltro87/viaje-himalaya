@@ -91,17 +91,14 @@ export class BudgetManager {
         
         // Configurar callbacks para eventos de Firebase
         this.firebaseManager.onExpenseAdded = (expense) => {
-            Logger.budget('Expense synced to cloud:', expense.id);
             this.updateSummaryCards();
         };
         
         this.firebaseManager.onExpenseUpdated = (expenseId, updates) => {
-            Logger.budget('Expense updated in cloud:', expenseId);
             this.updateSummaryCards();
         };
         
         this.firebaseManager.onExpenseDeleted = (expenseId) => {
-            Logger.budget('Expense deleted from cloud:', expenseId);
             this.updateSummaryCards();
         };
         
@@ -150,7 +147,7 @@ export class BudgetManager {
             this.updateConnectionIndicator(status);
         };
 
-        Logger.success('Advanced sync callbacks configured');
+
     }
 
     /**

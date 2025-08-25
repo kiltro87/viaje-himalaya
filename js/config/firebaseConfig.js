@@ -45,6 +45,7 @@ export const firestoreConfig = {
     // Colecciones de la base de datos
     collections: {
         expenses: 'expenses',
+        packingList: 'packingList',
         trips: 'trips',
         users: 'users'
     },
@@ -80,6 +81,11 @@ service cloud.firestore {
     // Permitir lectura/escritura de gastos para todos (modo público)
     // NOTA: Para producción, considera añadir autenticación
     match /expenses/{expenseId} {
+      allow read, write: if true;
+    }
+    
+    // Permitir lectura/escritura de lista de equipaje para todos
+    match /packingList/{deviceId} {
       allow read, write: if true;
     }
     
