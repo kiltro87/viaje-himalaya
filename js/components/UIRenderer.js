@@ -1204,78 +1204,7 @@ export class UIRenderer {
                     <!-- El contenido se generará dinámicamente -->
                 </div>
 
-                <!-- Información del día -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">location_on</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Origen</h3>
-                        <p class="text-slate-600 dark:text-slate-400">Madrid, España</p>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">flight_land</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Destino</h3>
-                        <p class="text-slate-600 dark:text-slate-400">Katmandú, Nepal</p>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">schedule</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Duración</h3>
-                        <p class="text-slate-600 dark:text-slate-400">8h 45m</p>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">airplane_ticket</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Aerolínea</h3>
-                        <p class="text-slate-600 dark:text-slate-400">Qatar Airways</p>
-                    </div>
-                </div>
-
-                <!-- Preparativos para el viaje -->
-                <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
-                    <div class="flex items-center gap-4 mb-6">
-                        <span class="material-symbols-outlined text-3xl text-emerald-600 dark:text-emerald-400">checklist</span>
-                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Preparativos para el Viaje</h2>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                            <h3 class="font-semibold text-slate-900 dark:text-white">Documentos necesarios</h3>
-                            <div class="space-y-2">
-                                <div class="flex items-center gap-2 text-green-600">
-                                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                                    <span class="text-sm">Pasaporte válido</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-green-600">
-                                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                                    <span class="text-sm">Visa de Nepal (on arrival)</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-orange-600">
-                                    <span class="material-symbols-outlined text-sm">pending</span>
-                                    <span class="text-sm">Tarjeta de embarque</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-4">
-                            <h3 class="font-semibold text-slate-900 dark:text-white">Equipaje de mano</h3>
-                            <div class="space-y-2">
-                                <div class="flex items-center gap-2 text-green-600">
-                                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                                    <span class="text-sm">Documentos importantes</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-green-600">
-                                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                                    <span class="text-sm">Medicamentos básicos</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-green-600">
-                                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                                    <span class="text-sm">Cargador de móvil</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Toda la información adicional se genera dinámicamente en updateTodayMainContent() -->
 
 
             </div>
@@ -1334,51 +1263,93 @@ export class UIRenderer {
                 </h2>
                 <p class="text-slate-600 dark:text-slate-400">¡La aventura está a punto de comenzar!</p>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-green-600">verified</span>
-                        Preparativos completados
-                    </h3>
-                    <div class="space-y-2">
-                        <div class="flex items-center gap-2 text-green-600">
-                            <span class="material-symbols-outlined text-sm">check_circle</span>
-                            <span class="text-sm">Pasaporte válido</span>
-                        </div>
-                        <div class="flex items-center gap-2 text-green-600">
-                            <span class="material-symbols-outlined text-sm">check_circle</span>
-                            <span class="text-sm">Visa de Nepal</span>
-                        </div>
-                        <div class="flex items-center gap-2 text-green-600">
-                            <span class="material-symbols-outlined text-sm">check_circle</span>
-                            <span class="text-sm">Seguro de viaje</span>
-                        </div>
-                    </div>
+        `;
+        
+        // Agregar información de vuelos como tarjetas separadas fuera del container principal
+        const parentContainer = container.parentElement;
+        
+        // Información del vuelo
+        const flightInfoHtml = `
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">location_on</span>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Origen</h3>
+                    <p class="text-slate-600 dark:text-slate-400">Madrid, España</p>
                 </div>
                 
-                <div class="space-y-4">
-                    <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-orange-600">pending_actions</span>
-                        Últimos preparativos
-                    </h3>
-                    <div class="space-y-2">
-                        <div class="flex items-center gap-2 text-orange-600">
-                            <span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
-                            <span class="text-sm">Revisar equipaje</span>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">flight_land</span>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Destino</h3>
+                    <p class="text-slate-600 dark:text-slate-400">Katmandú, Nepal</p>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">schedule</span>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Duración</h3>
+                    <p class="text-slate-600 dark:text-slate-400">8h 45m</p>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">airplane_ticket</span>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Aerolínea</h3>
+                    <p class="text-slate-600 dark:text-slate-400">Qatar Airways</p>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="material-symbols-outlined text-3xl text-emerald-600 dark:text-emerald-400">checklist</span>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Preparativos para el Viaje</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-green-600">verified</span>
+                            Preparativos completados
+                        </h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 text-green-600">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span class="text-sm">Pasaporte válido</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-green-600">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span class="text-sm">Visa de Nepal</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-green-600">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span class="text-sm">Seguro de viaje</span>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2 text-orange-600">
-                            <span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
-                            <span class="text-sm">Comprobar vuelos</span>
-                        </div>
-                        <div class="flex items-center gap-2 text-orange-600">
-                            <span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
-                            <span class="text-sm">Descargar mapas offline</span>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-orange-600">pending_actions</span>
+                            Últimos preparativos
+                        </h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 text-orange-600">
+                                <span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                                <span class="text-sm">Revisar equipaje</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-orange-600">
+                                <span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                                <span class="text-sm">Comprobar vuelos</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-orange-600">
+                                <span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                                <span class="text-sm">Descargar mapas offline</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         `;
+        
+        // Insertar después del container principal
+        container.insertAdjacentHTML('afterend', flightInfoHtml);
     }
 
     /**
@@ -1392,42 +1363,65 @@ export class UIRenderer {
         }
 
         const dayNumber = dayIndex + 1;
-        const activities = currentDay.activities || [];
         
         container.innerHTML = `
             <div class="text-center mb-8">
                 <div class="text-4xl font-black text-orange-600 dark:text-orange-400 mb-2">Día ${dayNumber}</div>
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">${currentDay.destination}</h2>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">${currentDay.title}</h2>
                 <p class="text-slate-600 dark:text-slate-400">${currentDay.description || 'Disfruta tu día de aventura'}</p>
             </div>
             
-            ${activities.length > 0 ? `
-                <div class="space-y-6">
-                    <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                        <span class="material-symbols-outlined text-blue-600">schedule</span>
-                        Actividades de hoy
-                    </h3>
-                    <div class="grid gap-4">
-                        ${activities.map((activity, index) => `
-                            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                                <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
-                                    ${index + 1}
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="font-medium text-slate-900 dark:text-white">${activity.name || activity}</h4>
-                                    ${activity.time ? `<p class="text-sm text-slate-600 dark:text-slate-400">${activity.time}</p>` : ''}
-                                    ${activity.description ? `<p class="text-sm text-slate-600 dark:text-slate-400 mt-1">${activity.description}</p>` : ''}
-                                </div>
-                            </div>
-                        `).join('')}
+            <div class="space-y-6">
+                ${currentDay.planA ? `
+                    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                        <h3 class="font-semibold text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined">schedule</span>
+                            Plan principal
+                        </h3>
+                        <p class="text-blue-700 dark:text-blue-300">${currentDay.planA}</p>
                     </div>
-                </div>
-            ` : `
-                <div class="text-center py-8">
-                    <span class="material-symbols-outlined text-6xl text-slate-400 mb-4">explore</span>
-                    <p class="text-slate-600 dark:text-slate-400">Día libre para explorar ${currentDay.destination}</p>
-                </div>
-            `}
+                ` : ''}
+                
+                ${currentDay.planB ? `
+                    <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+                        <h3 class="font-semibold text-green-800 dark:text-green-200 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined">alt_route</span>
+                            Plan alternativo
+                        </h3>
+                        <p class="text-green-700 dark:text-green-300">${currentDay.planB}</p>
+                    </div>
+                ` : ''}
+                
+                ${currentDay.consejo ? `
+                    <div class="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-700">
+                        <h3 class="font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined">lightbulb</span>
+                            Consejo del día
+                        </h3>
+                        <p class="text-amber-700 dark:text-amber-300">${currentDay.consejo}</p>
+                    </div>
+                ` : ''}
+                
+                ${currentDay.bocado ? `
+                    <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
+                        <h3 class="font-semibold text-purple-800 dark:text-purple-200 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined">restaurant</span>
+                            Recomendación gastronómica
+                        </h3>
+                        <p class="text-purple-700 dark:text-purple-300">${currentDay.bocado}</p>
+                    </div>
+                ` : ''}
+                
+                ${currentDay.accommodation ? `
+                    <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
+                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined">hotel</span>
+                            Alojamiento
+                        </h3>
+                        <p class="text-slate-700 dark:text-slate-300">${currentDay.accommodation}</p>
+                    </div>
+                ` : ''}
+            </div>
         `;
     }
 
