@@ -25,7 +25,8 @@ export class PackingListManager {
         this.firebaseManager = null;
         this.localStorageKey = 'packingListV2';
         this.firestoreCollection = firestoreConfig.collections.packingList;
-        this.deviceId = this.generateDeviceId();
+        this.documentId = 'global'; // Documento global único para todos los dispositivos
+        this.deviceId = this.generateDeviceId(); // Mantenido para tracking
         this.isInitialized = false;
         this.syncInProgress = false;
         this.firebaseSetupComplete = false;
@@ -93,7 +94,7 @@ export class PackingListManager {
             const { collection, doc, onSnapshot, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
             const db = this.firebaseManager.db;
-            const docRef = doc(db, this.firestoreCollection, this.deviceId);
+            const docRef = doc(db, this.firestoreCollection, this.documentId);
             
             // Cargar datos iniciales de Firebase
             await this.loadInitialData(docRef);
@@ -132,14 +133,26 @@ export class PackingListManager {
                 
                 if (firebaseData.items) {
                     const itemCount = Object.keys(firebaseData.items).length;
-                    if (Logger && Logger.info) Logger.info(`🎒 Found ${itemCount} items in Firebase`);
+                    const localCount = Object.keys(this.localCache).length;
+                    if (Logger && Logger.info) Logger.info(`🎒 Found ${itemCount} items in Firebase, ${localCount} items locally`);
                     
-                    // Fusionar datos de Firebase con localStorage, priorizando Firebase
-                    this.localCache = { ...this.localCache, ...firebaseData.items };
-                    this.saveToLocalStorage();
+                    // MERGE INTELIGENTE: Combinar datos locales y remotos
+                    const mergedItems = { ...firebaseData.items, ...this.localCache };
+                    
+                    // Si hay cambios locales, enviarlos a Firebase
+                    if (localCount > 0) {
+                        this.localCache = mergedItems;
+                        this.saveToLocalStorage();
+                        await this.syncToFirebase(); // Enviar merge a Firebase
+                        if (Logger && Logger.info) Logger.info('🎒 Merged local and Firebase data, synced back');
+                    } else {
+                        // Solo datos remotos, cargar directamente
+                        this.localCache = firebaseData.items;
+                        this.saveToLocalStorage();
+                        if (Logger && Logger.info) Logger.info('🎒 Loaded Firebase data');
+                    }
+                    
                     this.updateUI();
-                    
-                    if (Logger && Logger.info) Logger.info('🎒 Initial data loaded from Firebase');
                 } else {
                     if (Logger && Logger.warning) Logger.warning('🎒 Firebase document exists but has no items');
                 }
@@ -224,16 +237,14 @@ export class PackingListManager {
             const { doc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
             const db = this.firebaseManager.db;
-            const docRef = doc(db, this.firestoreCollection, this.deviceId);
+            const docRef = doc(db, this.firestoreCollection, this.documentId);
             
             await setDoc(docRef, {
                 items: this.localCache,
                 lastUpdated: serverTimestamp(),
-                deviceId: this.deviceId,
-                version: '1.0.0'
+                lastDeviceId: this.deviceId, // Tracking de qué dispositivo hizo el último cambio
+                version: '2.0.0' // Versión global
             }, { merge: true });
-            
-            if (Logger && Logger.success) Logger.success('🎒 Synced to Firebase');
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🎒 Error syncing to Firebase:', error);
             throw error;
@@ -271,13 +282,9 @@ export class PackingListManager {
     updateUI() {
         try {
             const cacheKeys = Object.keys(this.localCache);
-            if (Logger && Logger.info) Logger.info(`🎒 Updating UI with ${cacheKeys.length} cached items`);
             
             cacheKeys.forEach(itemKey => {
                 const checkbox = document.querySelector(`input[data-item-key="${itemKey}"]`);
-                if (Logger && Logger.info && !checkbox) {
-                    Logger.info(`🎒 Checkbox not found for item: ${itemKey}`);
-                }
                 if (checkbox && checkbox.checked !== this.localCache[itemKey]) {
                     checkbox.checked = this.localCache[itemKey];
                     

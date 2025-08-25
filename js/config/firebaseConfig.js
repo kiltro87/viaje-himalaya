@@ -84,8 +84,8 @@ service cloud.firestore {
       allow read, write: if true;
     }
     
-    // Permitir lectura/escritura de lista de equipaje para todos
-    match /packingList/{deviceId} {
+    // Permitir lectura/escritura de lista de equipaje global
+    match /packingList/global {
       allow read, write: if true;
     }
     
