@@ -331,21 +331,10 @@ export class PackingListManager {
         if (!statsContainer) return;
 
         try {
-            // Contar total de items generando las mismas claves que UIRenderer
-            const packingData = window.tripConfig?.packingListData || {};
-            const allExpectedKeys = [];
-            
-            Object.entries(packingData).forEach(([category, items]) => {
-                items.forEach(item => {
-                    allExpectedKeys.push(`${category}-${item}`);
-                });
-            });
-            
-            const totalItems = allExpectedKeys.length;
-            const packedItems = allExpectedKeys.filter(key => this.localCache[key]).length;
-            
-            // Debug (remover en producción)
-            // console.log('🔥 PACKING STATS:', { totalItems, packedItems, percentage: stats.percentage });
+            // Contar directamente desde los checkboxes visibles en la UI
+            const checkboxes = document.querySelectorAll('#packing-list input[type="checkbox"]');
+            const totalItems = checkboxes.length;
+            const packedItems = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
             
             const stats = {
                 packed: packedItems,
