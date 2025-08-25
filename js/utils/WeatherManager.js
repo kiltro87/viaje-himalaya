@@ -679,33 +679,36 @@ export class WeatherManager {
         const { context, ...weather } = contextualWeather;
         
         return `
-            <div class="mb-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-2xl shadow-xl">
+            <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-xl border border-blue-200 dark:border-blue-700">
                 <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-bold">📍 ${context.location}</h3>
-                        <p class="text-blue-100">Día ${context.day} del viaje</p>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">location_on</span>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">${context.location}</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">Día ${context.day} del viaje</p>
+                        </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-3xl font-bold">${weather.temperature}°C</div>
-                        <div class="text-blue-100">${weather.condition}</div>
+                        <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">${weather.temperature}°C</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">${weather.condition}</div>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="bg-white/20 rounded-lg p-3">
-                        <div class="text-sm text-blue-100">Sensación térmica</div>
-                        <div class="font-semibold">${weather.feelsLike}°C</div>
+                    <div class="bg-white dark:bg-slate-700 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
+                        <div class="text-sm text-slate-600 dark:text-slate-400">Sensación térmica</div>
+                        <div class="font-semibold text-slate-900 dark:text-white">${weather.feelsLike}°C</div>
                     </div>
-                    <div class="bg-white/20 rounded-lg p-3">
-                        <div class="text-sm text-blue-100">Humedad</div>
-                        <div class="font-semibold">${weather.humidity}%</div>
+                    <div class="bg-white dark:bg-slate-700 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
+                        <div class="text-sm text-slate-600 dark:text-slate-400">Humedad</div>
+                        <div class="font-semibold text-slate-900 dark:text-white">${weather.humidity}%</div>
                     </div>
                 </div>
 
                 ${context.recommendations.length > 0 ? `
-                    <div class="bg-white/20 rounded-lg p-3">
-                        <h4 class="font-semibold mb-2">💡 Recomendaciones</h4>
-                        <ul class="text-sm space-y-1">
+                    <div class="bg-white dark:bg-slate-700 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
+                        <h4 class="font-semibold text-slate-900 dark:text-white mb-2">💡 Recomendaciones</h4>
+                        <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-1">
                             ${context.recommendations.map(rec => `<li>• ${rec}</li>`).join('')}
                         </ul>
                     </div>

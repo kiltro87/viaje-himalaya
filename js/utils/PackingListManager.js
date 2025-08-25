@@ -91,7 +91,7 @@ export class PackingListManager {
             // Importar módulos de Firebase dinámicamente
             const { collection, doc, onSnapshot, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
-            const db = this.firebaseManager.getFirestore();
+            const db = this.firebaseManager.db;
             const docRef = doc(db, this.firestoreCollection, this.deviceId);
             
             // Listener para cambios en tiempo real
@@ -184,7 +184,7 @@ export class PackingListManager {
         try {
             const { doc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
-            const db = this.firebaseManager.getFirestore();
+            const db = this.firebaseManager.db;
             const docRef = doc(db, this.firestoreCollection, this.deviceId);
             
             await setDoc(docRef, {
@@ -277,9 +277,9 @@ export class PackingListManager {
                             ${stats.percentage === 100 ? 'check_circle' : 'luggage'}
                         </span>
                         <div>
-                            <h3 class="font-semibold text-slate-900 dark:text-white">Progreso de Empacado</h3>
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Progreso de Equipaje</h3>
                             <p class="text-sm text-slate-600 dark:text-slate-400">
-                                ${stats.packed} de ${stats.total} items empacados
+                                ${stats.packed} de ${stats.total} artículos listos
                             </p>
                         </div>
                     </div>
