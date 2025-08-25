@@ -1178,9 +1178,9 @@ export class BudgetManager {
                                         <div class="expense-item-wrapper" data-expense-id="${exp.id}">
                                             <!-- Vista Normal del Gasto -->
                                             <div class="expense-item-category group flex justify-between items-center py-2 px-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-all duration-200" data-expense-id="${exp.id}">
-                                                <span class="text-slate-700 dark:text-slate-300">${exp.concept}</span>
+                                                <span class="text-slate-700 dark:text-slate-300 ${exp.paid ? 'line-through opacity-60' : ''}">${exp.concept}</span>
                                                 <div class="flex items-center gap-2">
-                                                    <span class="font-medium text-green-700 dark:text-green-400">${window.Utils.formatCurrency(exp.amount, true)}</span>
+                                                    <span class="font-medium text-green-700 dark:text-green-400 ${exp.paid ? 'line-through opacity-60' : ''}">${window.Utils.formatCurrency(exp.amount, true)}</span>
                                                     <button class="delete-expense-btn opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-all duration-200" data-expense-id="${exp.id}" title="Eliminar gasto">
                                                         <span class="material-symbols-outlined text-xs">delete</span>
                                                     </button>

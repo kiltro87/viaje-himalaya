@@ -1351,9 +1351,17 @@ export class UIRenderer {
      * ✈️ DETECTAR VUELO EN DÍA: Verificar si hay vuelo programado
      */
     getFlightForDay(dayNumber) {
-        // Días conocidos con vuelos según el itinerario
+        // Días conocidos con vuelos según el itinerario y tripConfig
         const flightDays = {
-            12: { // Katmandú → Paro
+            1: { // Llegada a Katmandú - Día 1
+                from: 'Madrid (vía Doha)',
+                to: 'Katmandú', 
+                airline: 'Qatar Airways',
+                time: '16:45',
+                icon: '🛬',
+                description: 'Llegada al valle de Katmandú'
+            },
+            12: { // Katmandú → Paro - Día 12
                 from: 'Katmandú',
                 to: 'Paro', 
                 airline: 'Druk Air',
@@ -1361,13 +1369,21 @@ export class UIRenderer {
                 icon: '✈️',
                 description: 'Vuelo panorámico a Bután'
             },
-            17: { // Paro → Katmandú  
+            17: { // Paro → Katmandú - Día 17
                 from: 'Paro',
                 to: 'Katmandú',
                 airline: 'Bhutan Airlines', 
                 time: '07:05',
                 icon: '✈️',
                 description: 'Vuelo de regreso a Nepal'
+            },
+            18: { // Salida de Katmandú - Día 18
+                from: 'Katmandú',
+                to: 'Madrid (vía Doha)', 
+                airline: 'Qatar Airways',
+                time: '13:50',
+                icon: '🛫',
+                description: 'Vuelo de regreso a casa'
             }
         };
         
@@ -1921,12 +1937,12 @@ export class UIRenderer {
                             <span class="material-symbols-outlined text-white text-sm">${this.getCategoryIcon(itemCategory)}</span>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-slate-900 dark:text-white">${itemName}</h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400">${itemCategory}</p>
+                            <h4 class="font-semibold text-slate-900 dark:text-white ${item.paid ? 'line-through opacity-60' : ''}">${itemName}</h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 ${item.paid ? 'line-through opacity-60' : ''}">${itemCategory}</p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="text-lg font-bold text-slate-900 dark:text-white">${itemCost.toLocaleString('es-ES')} €</span>
+                        <span class="text-lg font-bold text-slate-900 dark:text-white ${item.paid ? 'line-through opacity-60' : ''}">${itemCost.toLocaleString('es-ES')} €</span>
                         ${item.paid ? '<div class="text-xs text-green-600 dark:text-green-400">✓ Pagado</div>' : '<div class="text-xs text-orange-600 dark:text-orange-400">⏳ Pendiente</div>'}
                     </div>
                 </div>
@@ -2090,6 +2106,17 @@ export class UIRenderer {
             if (e.target.matches('input[type="checkbox"]')) {
                 const itemKey = e.target.getAttribute('data-item-key');
                 if (itemKey) {
+                    // Actualizar visual inmediatamente (optimistic UI)
+                    const label = e.target.closest('label');
+                    const span = label.querySelector('span');
+                    if (span) {
+                        if (e.target.checked) {
+                            span.classList.add('line-through', 'opacity-50');
+                        } else {
+                            span.classList.remove('line-through', 'opacity-50');
+                        }
+                    }
+                    
                     // Inicializar PackingListManager si no existe
                     if (!window.PackingListManager) {
                         const { getPackingListManager } = await import('../utils/PackingListManager.js');
@@ -2101,8 +2128,11 @@ export class UIRenderer {
                         }
                     }
                     
-                    // Actualizar estado del item
+                    // Actualizar estado del item en el backend
                     await window.PackingListManager.toggleItem(itemKey, e.target.checked);
+                    
+                    // Actualizar estadísticas
+                    window.PackingListManager.updatePackingStats();
                 }
             }
         });
@@ -2217,26 +2247,11 @@ export class UIRenderer {
                                     <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl">${style.emoji}</span>
                                 </div>
                                 <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">${style.title}</p>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                    ${style.percentage}% (${style.percentage > 0 ? `${Math.round((style.percentage / 100) * tripConfig.itineraryData.length)} días` : '0 días'})
-                                </p>
                             </div>
                         `).join('')}
                     </div>
                     
-                    <!-- Resumen del estilo predominante -->
-                    ${tripStyles.length > 0 && tripStyles[0].percentage > 0 ? `
-                        <div class="mt-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl border border-purple-200 dark:border-purple-700">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-xl">${tripStyles[0].emoji}</span>
-                                <h5 class="font-semibold text-purple-800 dark:text-purple-200">Estilo Predominante: ${tripStyles[0].title}</h5>
-                            </div>
-                            <p class="text-sm text-purple-700 dark:text-purple-300">
-                                Tu viaje tiene un ${tripStyles[0].percentage}% de actividades de ${tripStyles[0].title.toLowerCase()}, 
-                                lo que lo convierte en un viaje ${this.getStyleDescription(tripStyles[0].title.toLowerCase())}.
-                            </p>
-                        </div>
-                    ` : ''}
+
                 </div>
             `;
         } catch (error) {

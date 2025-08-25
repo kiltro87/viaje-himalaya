@@ -335,6 +335,12 @@ export class PackingListManager {
             const totalItems = Object.values(window.tripConfig?.packingListData || {})
                 .flat().length;
             
+            console.log('🔥 PACKING STATS DEBUG:');
+            console.log('Total items in tripConfig:', totalItems);
+            console.log('LocalCache keys:', Object.keys(this.localCache));
+            console.log('LocalCache values:', Object.values(this.localCache));
+            console.log('Packed items count:', Object.values(this.localCache).filter(Boolean).length);
+            
             const stats = this.getPackingStats(totalItems);
             
             statsContainer.innerHTML = `
