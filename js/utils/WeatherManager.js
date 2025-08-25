@@ -719,12 +719,13 @@ export class WeatherManager {
      * 📊 RENDER GRID: Grid de todas las ciudades
      */
     renderWeatherGrid(allWeatherData) {
-        const weatherCards = allWeatherData.map(({ city, current, forecast }) => `
-            <div class="p-4 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                    <div class="flex items-center justify-between mb-3">
-                        <h4 class="font-semibold text-slate-900 dark:text-white">${city}</h4>
-                        <span class="text-2xl">${current.icon}</span>
-                    </div>
+        const weatherCards = allWeatherData.map(({ city, current, forecast }, index) => `
+            ${index > 0 ? '<div class="border-t border-slate-200 dark:border-slate-600 my-6"></div>' : ''}
+            <div class="py-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-semibold text-slate-900 dark:text-white">${city}</h4>
+                    <span class="text-2xl">${current.icon}</span>
+                </div>
                     
                     <div class="space-y-2">
                         <div class="flex justify-between items-center">
@@ -762,7 +763,7 @@ export class WeatherManager {
         `).join('');
 
         return `
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div class="mb-6">
                 ${weatherCards}
             </div>
         `;
