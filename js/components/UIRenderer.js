@@ -503,57 +503,7 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Resumen por fases (exacto del original) -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">Estilo del Viaje</h3>
-                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-                            <div class="flex justify-between gap-2 sm:gap-4 lg:gap-8">
-                                <div class="text-center flex-1 min-w-0">
-                                    <div class="relative w-full aspect-square max-w-32 mx-auto">
-                                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                            <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                                            <circle class="text-green-500" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="70" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                                        </svg>
-                                        <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl">🏔️</span>
-                                    </div>
-                                    <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">Aventura</p>
-                                </div>
-                                <div class="text-center flex-1 min-w-0">
-                                    <div class="relative w-full aspect-square max-w-32 mx-auto">
-                                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                            <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                                            <circle class="text-blue-500" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="140" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                                        </svg>
-                                        <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl">🏛️</span>
-                                    </div>
-                                    <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">Cultura</p>
-                                </div>
-                                <div class="text-center flex-1 min-w-0">
-                                    <div class="relative w-full aspect-square max-w-32 mx-auto">
-                                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                            <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                                            <circle class="text-emerald-500" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="113" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                                        </svg>
-                                        <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl text-emerald-600">nature</span>
-                                    </div>
-                                    <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">Naturaleza</p>
-                                </div>
-                                <div class="text-center flex-1 min-w-0">
-                                    <div class="relative w-full aspect-square max-w-32 mx-auto">
-                                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                            <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                                            <circle class="text-purple-500" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="184" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                                        </svg>
-                                        <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl text-purple-600">self_improvement</span>
-                                    </div>
-                                    <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">Espiritualidad</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+                <!-- Sección de Estilo eliminada - se usa renderTripStyleAnalysis() con gráficos circulares -->
                 
                 <!-- Análisis de Estilo de Viaje -->
                 ${this.renderTripStyleAnalysis()}
@@ -955,7 +905,52 @@ export class UIRenderer {
         
         document.querySelectorAll('.timeline-item').forEach(item => observer.observe(item));
 
+        // 🎯 AUTO-SCROLL AL DÍA ACTUAL
+        this.scrollToCurrentDay();
+
         console.log('✅ Itinerario renderizado correctamente');
+    }
+
+    /**
+     * 🎯 SCROLL AL DÍA ACTUAL: Hacer foco en el día actual del viaje en el itinerario
+     */
+    scrollToCurrentDay() {
+        try {
+            // Calcular día actual (usando Day Simulator si está activo)
+            const today = window.DaySimulator && window.DaySimulator.isSimulating 
+                ? window.DaySimulator.getSimulatedDate() 
+                : new Date();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            
+            console.log(`🎯 Scroll to current day: dayDiff=${dayDiff}`);
+            
+            // Si estamos durante el viaje, hacer scroll al día actual
+            if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
+                const currentDayId = `day-${dayDiff + 1}`;
+                const targetElement = document.querySelector(`[data-day-id="${currentDayId}"]`);
+                
+                if (targetElement) {
+                    setTimeout(() => {
+                        targetElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center',
+                            inline: 'nearest' 
+                        });
+                        
+                        // Agregar highlight temporal al día actual
+                        targetElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                        setTimeout(() => {
+                            targetElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                        }, 3000);
+                        
+                        console.log(`🎯 Scrolled to current day: ${currentDayId}`);
+                    }, 500); // Delay para asegurar que el DOM esté renderizado
+                }
+            }
+        } catch (error) {
+            console.error('Error scrolling to current day:', error);
+        }
     }
 
     generateItineraryPhases() {
@@ -2211,25 +2206,19 @@ export class UIRenderer {
                         <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Estilo de Viaje</h3>
                     </div>
                     
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="flex justify-between gap-2 sm:gap-4 lg:gap-8">
                         ${tripStyles.map(style => `
-                            <div class="relative bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-600">
-                                <div class="flex items-center justify-between mb-3">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-2xl">${style.emoji}</span>
-                                        <h4 class="font-semibold text-slate-900 dark:text-white">${style.title}</h4>
-                                    </div>
-                                    <span class="text-2xl font-bold ${style.color}">${style.percentage}%</span>
+                            <div class="text-center flex-1 min-w-0">
+                                <div class="relative w-full aspect-square max-w-32 mx-auto">
+                                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                        <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                        <circle class="${style.color}" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="${283 - (283 * style.percentage) / 100}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                    </svg>
+                                    <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl">${style.emoji}</span>
                                 </div>
-                                
-                                <!-- Barra de progreso -->
-                                <div class="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-3 mb-2">
-                                    <div class="h-3 rounded-full transition-all duration-1000 ease-out ${style.color.replace('text-', 'bg-')}" 
-                                         style="width: ${style.percentage}%"></div>
-                                </div>
-                                
-                                <p class="text-xs text-slate-500 dark:text-slate-400">
-                                    ${style.percentage > 0 ? `${Math.round((style.percentage / 100) * tripConfig.itineraryData.length)} días` : 'No incluido'}
+                                <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">${style.title}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                    ${style.percentage}% (${style.percentage > 0 ? `${Math.round((style.percentage / 100) * tripConfig.itineraryData.length)} días` : '0 días'})
                                 </p>
                             </div>
                         `).join('')}
