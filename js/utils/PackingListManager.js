@@ -94,7 +94,10 @@ export class PackingListManager {
             const { collection, doc, onSnapshot, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
             const db = this.firebaseManager.db;
+            Logger.info(`🔥 FIREBASE DEBUG: Collection=${this.firestoreCollection}, DocumentId=${this.documentId}`);
+            Logger.info('🔥 FIREBASE DEBUG: DB object:', db);
             const docRef = doc(db, this.firestoreCollection, this.documentId);
+            Logger.info('🔥 FIREBASE DEBUG: DocRef created:', docRef.path);
             
             // Cargar datos iniciales de Firebase
             await this.loadInitialData(docRef);
@@ -234,17 +237,29 @@ export class PackingListManager {
         if (!this.firebaseManager || !this.firebaseManager.isConnected) return;
 
         try {
+            Logger.info(`🔥 SYNC DEBUG: Starting sync to Firebase...`);
+            Logger.info(`🔥 SYNC DEBUG: Collection=${this.firestoreCollection}, DocumentId=${this.documentId}`);
+            
             const { doc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
             const db = this.firebaseManager.db;
+            Logger.info('🔥 SYNC DEBUG: DB object valid:', !!db);
             const docRef = doc(db, this.firestoreCollection, this.documentId);
+            Logger.info('🔥 SYNC DEBUG: DocRef path:', docRef.path);
             
-            await setDoc(docRef, {
+            const dataToSync = {
                 items: this.localCache,
                 lastUpdated: serverTimestamp(),
                 lastDeviceId: this.deviceId, // Tracking de qué dispositivo hizo el último cambio
                 version: '2.0.0' // Versión global
-            }, { merge: true });
+            };
+            
+            Logger.info('🔥 SYNC DEBUG: Data to sync:', dataToSync);
+            Logger.info('🔥 SYNC DEBUG: About to call setDoc...');
+            
+            await setDoc(docRef, dataToSync, { merge: true });
+            
+            Logger.info('🔥 SYNC DEBUG: setDoc completed successfully!');
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🎒 Error syncing to Firebase:', error);
             throw error;
