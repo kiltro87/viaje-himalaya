@@ -123,18 +123,28 @@ export class PackingListManager {
         try {
             const { getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
+            if (Logger && Logger.info) Logger.info('🎒 Loading initial data from Firebase...');
+            
             const docSnapshot = await getDoc(docRef);
             if (docSnapshot.exists()) {
                 const firebaseData = docSnapshot.data();
+                if (Logger && Logger.info) Logger.info('🎒 Firebase document exists:', firebaseData);
+                
                 if (firebaseData.items) {
+                    const itemCount = Object.keys(firebaseData.items).length;
+                    if (Logger && Logger.info) Logger.info(`🎒 Found ${itemCount} items in Firebase`);
+                    
                     // Fusionar datos de Firebase con localStorage, priorizando Firebase
                     this.localCache = { ...this.localCache, ...firebaseData.items };
                     this.saveToLocalStorage();
                     this.updateUI();
                     
                     if (Logger && Logger.info) Logger.info('🎒 Initial data loaded from Firebase');
+                } else {
+                    if (Logger && Logger.warning) Logger.warning('🎒 Firebase document exists but has no items');
                 }
             } else {
+                if (Logger && Logger.info) Logger.info('🎒 No Firebase document found, syncing local data');
                 // Si no hay datos en Firebase, sincronizar los datos locales
                 await this.syncToFirebase();
                 if (Logger && Logger.info) Logger.info('🎒 Local data synced to Firebase');
@@ -260,8 +270,14 @@ export class PackingListManager {
      */
     updateUI() {
         try {
-            Object.keys(this.localCache).forEach(itemKey => {
+            const cacheKeys = Object.keys(this.localCache);
+            if (Logger && Logger.info) Logger.info(`🎒 Updating UI with ${cacheKeys.length} cached items`);
+            
+            cacheKeys.forEach(itemKey => {
                 const checkbox = document.querySelector(`input[data-item-key="${itemKey}"]`);
+                if (Logger && Logger.info && !checkbox) {
+                    Logger.info(`🎒 Checkbox not found for item: ${itemKey}`);
+                }
                 if (checkbox && checkbox.checked !== this.localCache[itemKey]) {
                     checkbox.checked = this.localCache[itemKey];
                     

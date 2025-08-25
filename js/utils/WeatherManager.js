@@ -721,7 +721,6 @@ export class WeatherManager {
     renderWeatherGrid(allWeatherData) {
         const weatherCards = allWeatherData.map(({ city, current, forecast }) => `
             <div class="p-4 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                <div>
                     <div class="flex items-center justify-between mb-3">
                         <h4 class="font-semibold text-slate-900 dark:text-white">${city}</h4>
                         <span class="text-2xl">${current.icon}</span>
