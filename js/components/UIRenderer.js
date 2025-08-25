@@ -1353,6 +1353,33 @@ export class UIRenderer {
     }
 
     /**
+     * ✈️ DETECTAR VUELO EN DÍA: Verificar si hay vuelo programado
+     */
+    getFlightForDay(dayNumber) {
+        // Días conocidos con vuelos según el itinerario
+        const flightDays = {
+            12: { // Katmandú → Paro
+                from: 'Katmandú',
+                to: 'Paro', 
+                airline: 'Druk Air',
+                time: '09:10',
+                icon: '✈️',
+                description: 'Vuelo panorámico a Bután'
+            },
+            17: { // Paro → Katmandú  
+                from: 'Paro',
+                to: 'Katmandú',
+                airline: 'Bhutan Airlines', 
+                time: '07:05',
+                icon: '✈️',
+                description: 'Vuelo de regreso a Nepal'
+            }
+        };
+        
+        return flightDays[dayNumber] || null;
+    }
+
+    /**
      * 🏔️ RENDERIZAR CONTENIDO DURANTE EL VIAJE: Información del día actual
      */
     renderDuringTripContent(container, dayIndex) {
@@ -1363,6 +1390,7 @@ export class UIRenderer {
         }
 
         const dayNumber = dayIndex + 1;
+        const flightInfo = this.getFlightForDay(dayNumber);
         
         container.innerHTML = `
             <div class="text-center mb-8">
@@ -1372,50 +1400,78 @@ export class UIRenderer {
             </div>
             
             <div class="space-y-6">
+                ${flightInfo ? `
+                    <div class="p-4 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-200 dark:border-sky-700">
+                        <h3 class="font-semibold text-sky-800 dark:text-sky-200 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined">flight</span>
+                            Vuelo del día
+                        </h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+                            <div class="text-center">
+                                <p class="text-xs text-sky-600 dark:text-sky-400">Origen</p>
+                                <p class="font-medium text-sky-800 dark:text-sky-200">${flightInfo.from}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs text-sky-600 dark:text-sky-400">Destino</p>
+                                <p class="font-medium text-sky-800 dark:text-sky-200">${flightInfo.to}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs text-sky-600 dark:text-sky-400">Hora</p>
+                                <p class="font-medium text-sky-800 dark:text-sky-200">${flightInfo.time}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs text-sky-600 dark:text-sky-400">Aerolínea</p>
+                                <p class="font-medium text-sky-800 dark:text-sky-200">${flightInfo.airline}</p>
+                            </div>
+                        </div>
+                        <p class="text-sky-700 dark:text-sky-300 mt-3 text-sm">${flightInfo.description}</p>
+                    </div>
+                ` : ''}
+
                 ${currentDay.planA ? `
-                    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-                        <h3 class="font-semibold text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
-                            <span class="material-symbols-outlined">schedule</span>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-slate-600">schedule</span>
                             Plan principal
                         </h3>
-                        <p class="text-blue-700 dark:text-blue-300">${currentDay.planA}</p>
+                        <p class="text-slate-700 dark:text-slate-300">${currentDay.planA}</p>
                     </div>
                 ` : ''}
                 
                 ${currentDay.planB ? `
-                    <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
-                        <h3 class="font-semibold text-green-800 dark:text-green-200 mb-2 flex items-center gap-2">
-                            <span class="material-symbols-outlined">alt_route</span>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-slate-600">alt_route</span>
                             Plan alternativo
                         </h3>
-                        <p class="text-green-700 dark:text-green-300">${currentDay.planB}</p>
+                        <p class="text-slate-700 dark:text-slate-300">${currentDay.planB}</p>
                     </div>
                 ` : ''}
                 
                 ${currentDay.consejo ? `
-                    <div class="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-700">
-                        <h3 class="font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
-                            <span class="material-symbols-outlined">lightbulb</span>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-amber-600">lightbulb</span>
                             Consejo del día
                         </h3>
-                        <p class="text-amber-700 dark:text-amber-300">${currentDay.consejo}</p>
+                        <p class="text-slate-700 dark:text-slate-300">${currentDay.consejo}</p>
                     </div>
                 ` : ''}
                 
                 ${currentDay.bocado ? `
-                    <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
-                        <h3 class="font-semibold text-purple-800 dark:text-purple-200 mb-2 flex items-center gap-2">
-                            <span class="material-symbols-outlined">restaurant</span>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-orange-600">restaurant</span>
                             Recomendación gastronómica
                         </h3>
-                        <p class="text-purple-700 dark:text-purple-300">${currentDay.bocado}</p>
+                        <p class="text-slate-700 dark:text-slate-300">${currentDay.bocado}</p>
                     </div>
                 ` : ''}
                 
                 ${currentDay.accommodation ? `
-                    <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
+                    <div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
                         <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
-                            <span class="material-symbols-outlined">hotel</span>
+                            <span class="material-symbols-outlined text-green-600">hotel</span>
                             Alojamiento
                         </h3>
                         <p class="text-slate-700 dark:text-slate-300">${currentDay.accommodation}</p>
