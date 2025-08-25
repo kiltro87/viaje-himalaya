@@ -628,7 +628,6 @@ export class WeatherManager {
 
         // Renderizar con datos demo
         container.innerHTML = `
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-lg">
                 <div class="flex items-center gap-3 mb-6">
                     <span class="material-symbols-outlined text-2xl text-yellow-600 dark:text-yellow-400">wb_sunny</span>
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información Climática</h2>
@@ -666,7 +665,6 @@ export class WeatherManager {
                         <li>📍 Clima contextual según tu día actual del viaje</li>
                     </ul>
                 </div>
-            </div>
         `;
 
         if (Logger && Logger.info) Logger.info('🌤️ Enhanced static weather demo rendered');
