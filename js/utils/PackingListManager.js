@@ -336,6 +336,8 @@ export class PackingListManager {
             const totalItems = checkboxes.length;
             const packedItems = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
             
+            console.log('🔥 PACKING STATS UPDATE:', { totalItems, packedItems });
+            
             const stats = {
                 packed: packedItems,
                 total: totalItems,

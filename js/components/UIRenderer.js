@@ -2183,9 +2183,11 @@ export class UIRenderer {
             </div>
         `;
         
-        // Actualizar estadísticas
+        // Actualizar estadísticas (con delay para asegurar que DOM esté listo)
         if (window.PackingListManager) {
-            window.PackingListManager.updatePackingStats();
+            setTimeout(() => {
+                window.PackingListManager.updatePackingStats();
+            }, 100);
         }
         
         // Asegurar que el contenedor sea visible
@@ -2334,7 +2336,7 @@ export class UIRenderer {
                                         <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
                                         <circle class="${style.color}" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="${283 - (283 * style.percentage) / 100}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
                                     </svg>
-                                    <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl">${style.emoji}</span>
+                                    <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl ${style.color}">${style.icon}</span>
                                 </div>
                                 <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">${style.title}</p>
                             </div>
@@ -2354,11 +2356,11 @@ export class UIRenderer {
     calculateTripStyles() {
         // Definir categorías de actividades exactamente como las pasó el usuario
         const activityCategories = {
-            'naturaleza': { keywords: ['trekking', 'rafting', 'parque', 'montaña', 'selva', 'río', 'lago'], emoji: '🌲', color: 'text-green-500' },
-            'cultura': { keywords: ['templo', 'monasterio', 'museo', 'plaza', 'durbar', 'dzong', 'estupa'], emoji: '🏛️', color: 'text-amber-500' },
-            'ciudad': { keywords: ['thamel', 'pokhara', 'thimphu', 'paro', 'katmandú', 'mercado', 'restaurante'], emoji: '🏙️', color: 'text-red-500' },
-            'aventura': { keywords: ['parapente', 'rafting', 'trekking', 'safari'], emoji: '🏔️', color: 'text-purple-500' },
-            'relax': { keywords: ['aguas termales', 'spa', 'descanso', 'tarde libre'], emoji: '🏖️', color: 'text-sky-500' }
+            'naturaleza': { keywords: ['trekking', 'rafting', 'parque', 'montaña', 'selva', 'río', 'lago'], icon: 'nature', color: 'text-green-500' },
+            'cultura': { keywords: ['templo', 'monasterio', 'museo', 'plaza', 'durbar', 'dzong', 'estupa'], icon: 'temple_buddhist', color: 'text-amber-500' },
+            'ciudad': { keywords: ['thamel', 'pokhara', 'thimphu', 'paro', 'katmandú', 'mercado', 'restaurante'], icon: 'location_city', color: 'text-red-500' },
+            'aventura': { keywords: ['parapente', 'rafting', 'trekking', 'safari'], icon: 'hiking', color: 'text-purple-500' },
+            'relax': { keywords: ['aguas termales', 'spa', 'descanso', 'tarde libre'], icon: 'spa', color: 'text-sky-500' }
         };
         
         // Contar actividades por categoría
@@ -2389,7 +2391,7 @@ export class UIRenderer {
                     title: this.capitalizeFirst(category),
                     percentage: Math.round((count / totalDays) * 100),
                     color: config.color,
-                    emoji: config.emoji,
+                    icon: config.icon,
                     count: count
                 };
             })
