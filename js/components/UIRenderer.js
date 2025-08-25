@@ -1289,6 +1289,179 @@ export class UIRenderer {
         console.log('✅ Hoy renderizado correctamente');
     }
 
+    /**
+     * 📅 ACTUALIZAR CONTENIDO PRINCIPAL DEL DÍA: Contenido dinámico según fase del viaje
+     */
+    updateTodayMainContent() {
+        const container = document.getElementById('today-main-content');
+        if (!container) return;
+
+        try {
+            // Usar fecha simulada si el Day Simulator está activo
+            const today = window.DaySimulator && window.DaySimulator.isSimulating 
+                ? window.DaySimulator.getSimulatedDate() 
+                : new Date();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            
+            console.log(`📅 updateTodayMainContent: dayDiff=${dayDiff}, tripLength=${tripConfig.itineraryData.length}`);
+
+            if (dayDiff < 0) {
+                // ANTES DEL VIAJE: Mostrar preparativos
+                this.renderPreTripContent(container, Math.abs(dayDiff));
+            } else if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
+                // DURANTE EL VIAJE: Mostrar información del día actual
+                this.renderDuringTripContent(container, dayDiff);
+            } else {
+                // DESPUÉS DEL VIAJE: Mostrar recuerdos
+                this.renderPostTripContent(container);
+            }
+        } catch (error) {
+            console.error('Error updating today main content:', error);
+            container.innerHTML = '<p class="text-slate-600 dark:text-slate-400">Error al cargar la información del día</p>';
+        }
+    }
+
+    /**
+     * 🚀 RENDERIZAR CONTENIDO PRE-VIAJE: Preparativos y cuenta atrás
+     */
+    renderPreTripContent(container, daysUntil) {
+        container.innerHTML = `
+            <div class="text-center mb-8">
+                <div class="text-6xl font-black text-orange-600 dark:text-orange-400 mb-4">${daysUntil}</div>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                    ${daysUntil === 1 ? 'día para el viaje' : 'días para el viaje'}
+                </h2>
+                <p class="text-slate-600 dark:text-slate-400">¡La aventura está a punto de comenzar!</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-green-600">verified</span>
+                        Preparativos completados
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2 text-green-600">
+                            <span class="material-symbols-outlined text-sm">check_circle</span>
+                            <span class="text-sm">Pasaporte válido</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-green-600">
+                            <span class="material-symbols-outlined text-sm">check_circle</span>
+                            <span class="text-sm">Visa de Nepal</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-green-600">
+                            <span class="material-symbols-outlined text-sm">check_circle</span>
+                            <span class="text-sm">Seguro de viaje</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-orange-600">pending_actions</span>
+                        Últimos preparativos
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2 text-orange-600">
+                            <span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                            <span class="text-sm">Revisar equipaje</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-orange-600">
+                            <span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                            <span class="text-sm">Comprobar vuelos</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-orange-600">
+                            <span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                            <span class="text-sm">Descargar mapas offline</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 🏔️ RENDERIZAR CONTENIDO DURANTE EL VIAJE: Información del día actual
+     */
+    renderDuringTripContent(container, dayIndex) {
+        const currentDay = tripConfig.itineraryData[dayIndex];
+        if (!currentDay) {
+            container.innerHTML = '<p class="text-slate-600 dark:text-slate-400">No hay información disponible para este día</p>';
+            return;
+        }
+
+        const dayNumber = dayIndex + 1;
+        const activities = currentDay.activities || [];
+        
+        container.innerHTML = `
+            <div class="text-center mb-8">
+                <div class="text-4xl font-black text-orange-600 dark:text-orange-400 mb-2">Día ${dayNumber}</div>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">${currentDay.destination}</h2>
+                <p class="text-slate-600 dark:text-slate-400">${currentDay.description || 'Disfruta tu día de aventura'}</p>
+            </div>
+            
+            ${activities.length > 0 ? `
+                <div class="space-y-6">
+                    <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-600">schedule</span>
+                        Actividades de hoy
+                    </h3>
+                    <div class="grid gap-4">
+                        ${activities.map((activity, index) => `
+                            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                                <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                    ${index + 1}
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-medium text-slate-900 dark:text-white">${activity.name || activity}</h4>
+                                    ${activity.time ? `<p class="text-sm text-slate-600 dark:text-slate-400">${activity.time}</p>` : ''}
+                                    ${activity.description ? `<p class="text-sm text-slate-600 dark:text-slate-400 mt-1">${activity.description}</p>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : `
+                <div class="text-center py-8">
+                    <span class="material-symbols-outlined text-6xl text-slate-400 mb-4">explore</span>
+                    <p class="text-slate-600 dark:text-slate-400">Día libre para explorar ${currentDay.destination}</p>
+                </div>
+            `}
+        `;
+    }
+
+    /**
+     * 📸 RENDERIZAR CONTENIDO POST-VIAJE: Recuerdos y resumen
+     */
+    renderPostTripContent(container) {
+        container.innerHTML = `
+            <div class="text-center mb-8">
+                <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400 mb-4">flight_land</span>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">¡Viaje completado!</h2>
+                <p class="text-slate-600 dark:text-slate-400">Esperamos que hayas disfrutado de tu aventura en el Himalaya</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center p-6 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                    <span class="material-symbols-outlined text-3xl text-blue-600 mb-3">location_on</span>
+                    <h3 class="font-bold text-slate-900 dark:text-white">Destinos</h3>
+                    <p class="text-2xl font-bold text-blue-600">${tripConfig.itineraryData.length}</p>
+                </div>
+                <div class="text-center p-6 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                    <span class="material-symbols-outlined text-3xl text-orange-600 mb-3">photo_camera</span>
+                    <h3 class="font-bold text-slate-900 dark:text-white">Recuerdos</h3>
+                    <p class="text-2xl font-bold text-orange-600">∞</p>
+                </div>
+                <div class="text-center p-6 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                    <span class="material-symbols-outlined text-3xl text-green-600 mb-3">favorite</span>
+                    <h3 class="font-bold text-slate-900 dark:text-white">Experiencia</h3>
+                    <p class="text-2xl font-bold text-green-600">Única</p>
+                </div>
+            </div>
+        `;
+    }
+
     renderMap() {
         console.log('🗺️ Renderizando mapa principal...');
         const mainContent = document.getElementById('main-content');
