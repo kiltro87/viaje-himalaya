@@ -574,7 +574,10 @@ export class UIRenderer {
     updateTodayInfo() {
         console.log('📅 Actualizando información de hoy...');
         try {
-            const today = new Date();
+            // Usar fecha simulada si el Day Simulator está activo
+            const today = window.DaySimulator && window.DaySimulator.isSimulating 
+                ? window.DaySimulator.getSimulatedDate() 
+                : new Date();
             const tripStartDate = this.getTripStartDate();
             console.log('📅 Fecha de inicio del viaje:', tripStartDate);
             console.log('📅 Fecha de hoy:', today);

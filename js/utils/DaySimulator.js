@@ -87,6 +87,20 @@ export class DaySimulator {
     }
 
     /**
+     * 📅 OBTENER FECHA SIMULADA: Retorna la fecha actual simulada
+     */
+    getSimulatedDate() {
+        if (!this.isSimulating || !this.simulatedDay) {
+            return new Date();
+        }
+
+        const tripStart = this.getTripStartDate();
+        const simulatedDate = new Date(tripStart);
+        simulatedDate.setDate(simulatedDate.getDate() + (this.simulatedDay - 1));
+        return simulatedDate;
+    }
+
+    /**
      * 🎯 SIMULAR DÍA: Cambiar al día específico del viaje
      */
     simulateDay(dayNumber) {
@@ -630,6 +644,8 @@ let daySimulatorInstance = null;
 export function getDaySimulator() {
     if (!daySimulatorInstance) {
         daySimulatorInstance = new DaySimulator();
+        // Exponer globalmente para que UIRenderer pueda acceder
+        window.DaySimulator = daySimulatorInstance;
     }
     return daySimulatorInstance;
 }
