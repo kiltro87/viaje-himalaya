@@ -385,10 +385,12 @@ export class UIRenderer {
         const mainContent = document.getElementById('main-content');
         if (!mainContent) return;
 
-        // Calcular estadísticas
+        // Calcular estadísticas dinámicamente
         const totalDays = tripConfig.itineraryData.length;
         const totalCountries = tripConfig.calendarData.getTotalCountries();
-        const grandTotal = 4500; // Placeholder - calcular del presupuesto real
+        
+        // Calcular presupuesto total dinámicamente desde tripConfig
+        const grandTotal = this.calculateTotalBudget();
         const costPerDay = grandTotal / totalDays;
 
         mainContent.innerHTML = `
@@ -417,8 +419,8 @@ export class UIRenderer {
                                 <span id="trip-dates" class="text-sm font-medium">Cargando fechas...</span>
                             </div>
                         </div>
-                        <h1 class="text-4xl md:text-6xl font-black leading-tight mb-3">Mi Aventura en el Himalaya</h1>
-                        <p class="text-lg md:text-xl max-w-2xl opacity-90">Un recorrido para descubrir Nepal y Bután</p>
+                        <h1 class="text-4xl md:text-6xl font-black leading-tight mb-3">${this.getTripTitle()}</h1>
+                        <p class="text-lg md:text-xl max-w-2xl opacity-90">${this.getTripSubtitle()}</p>
                     </div>
                 </header>
 
@@ -519,6 +521,77 @@ export class UIRenderer {
         this.updateBudgetSummary();
 
         console.log('✅ Resumen renderizado correctamente');
+    }
+
+    /**
+     * 💰 CALCULAR PRESUPUESTO TOTAL: Sumar todas las categorías dinámicamente
+     */
+    calculateTotalBudget() {
+        try {
+            const budgetData = window.tripConfig?.budgetData || tripConfig?.budgetData || {};
+            let total = 0;
+            
+            // Sumar todas las categorías de presupuesto
+            Object.values(budgetData).forEach(category => {
+                if (Array.isArray(category)) {
+                    category.forEach(item => {
+                        total += item.cost || 0;
+                    });
+                }
+            });
+            
+            return total;
+        } catch (error) {
+            console.error('Error calculating total budget:', error);
+            return 4500; // Fallback solo si hay error
+        }
+    }
+
+    /**
+     * 🏷️ TÍTULO DEL VIAJE: Calculado dinámicamente desde destinos
+     */
+    getTripTitle() {
+        try {
+            const destinations = this.getUniqueDestinations();
+            if (destinations.length === 2 && destinations.includes('Nepal') && destinations.includes('Bután')) {
+                return 'Mi Aventura en el Himalaya';
+            } else if (destinations.length > 0) {
+                return `Mi Aventura en ${destinations.join(' y ')}`;
+            }
+            return 'Mi Aventura de Viaje';
+        } catch (error) {
+            return 'Mi Aventura en el Himalaya';
+        }
+    }
+
+    /**
+     * 📝 SUBTÍTULO DEL VIAJE: Calculado dinámicamente desde duración y destinos
+     */
+    getTripSubtitle() {
+        try {
+            const totalDays = tripConfig.itineraryData.length;
+            const destinations = this.getUniqueDestinations();
+            const destinationsText = destinations.join(' y ');
+            
+            return `Un recorrido de ${totalDays} días para descubrir ${destinationsText}`;
+        } catch (error) {
+            return 'Un recorrido para descubrir Nepal y Bután';
+        }
+    }
+
+    /**
+     * 🌍 DESTINOS ÚNICOS: Extraer países únicos del itinerario
+     */
+    getUniqueDestinations() {
+        try {
+            const countries = tripConfig.itineraryData
+                .map(day => day.country)
+                .filter(country => country);
+            
+            return [...new Set(countries)];
+        } catch (error) {
+            return ['Nepal', 'Bután'];
+        }
     }
 
     updateTodayInfo() {
@@ -1348,46 +1421,106 @@ export class UIRenderer {
     }
 
     /**
-     * ✈️ DETECTAR VUELO EN DÍA: Verificar si hay vuelo programado
+     * ✈️ DETECTAR VUELO EN DÍA: Verificar si hay vuelo programado (DINÁMICO)
      */
     getFlightForDay(dayNumber) {
-        // Días conocidos con vuelos según el itinerario y tripConfig
-        const flightDays = {
-            1: { // Llegada a Katmandú - Día 1
-                from: 'Madrid (vía Doha)',
-                to: 'Katmandú', 
-                airline: 'Qatar Airways',
-                time: '16:45',
-                icon: '🛬',
-                description: 'Llegada al valle de Katmandú'
-            },
-            12: { // Katmandú → Paro - Día 12
-                from: 'Katmandú',
-                to: 'Paro', 
-                airline: 'Druk Air',
-                time: '09:10',
-                icon: '✈️',
-                description: 'Vuelo panorámico a Bután'
-            },
-            17: { // Paro → Katmandú - Día 17
-                from: 'Paro',
-                to: 'Katmandú',
-                airline: 'Bhutan Airlines', 
-                time: '07:05',
-                icon: '✈️',
-                description: 'Vuelo de regreso a Nepal'
-            },
-            18: { // Salida de Katmandú - Día 18
-                from: 'Katmandú',
-                to: 'Madrid (vía Doha)', 
-                airline: 'Qatar Airways',
-                time: '13:50',
-                icon: '🛫',
-                description: 'Vuelo de regreso a casa'
+        try {
+            const flightsData = window.tripConfig?.flightsData || tripConfig?.flightsData || [];
+            const tripStartDate = this.getTripStartDate();
+            
+            // Mapeo de códigos de aeropuerto a nombres legibles
+            const airportNames = {
+                'MAD': 'Madrid',
+                'DOH': 'Doha', 
+                'KTM': 'Katmandú',
+                'PBH': 'Paro'
+            };
+            
+            // Buscar vuelos que correspondan al día específico
+            for (const flight of flightsData) {
+                for (const segment of flight.segments) {
+                    // Parsear fecha del vuelo
+                    const flightDate = this.parseSpanishDate(segment.fromDateTime);
+                    if (!flightDate) continue;
+                    
+                    // Calcular qué día del viaje es
+                    const daysDiff = Math.floor((flightDate - tripStartDate) / (1000 * 60 * 60 * 24)) + 1;
+                    
+                    if (daysDiff === dayNumber) {
+                        // Extraer hora del fromDateTime
+                        const time = segment.fromDateTime.split(' ').pop();
+                        
+                        // Determinar icono según tipo de vuelo y destino
+                        let icon = '✈️';
+                        let description = flight.title;
+                        
+                        if (flight.type === 'Internacional') {
+                            if (segment.to === 'KTM') {
+                                icon = '🛬';
+                                description = 'Llegada al valle de Katmandú';
+                            } else if (segment.from === 'KTM') {
+                                icon = '🛫'; 
+                                description = 'Vuelo de regreso a casa';
+                            }
+                        } else {
+                            description = `Vuelo ${flight.type === 'Regional' ? 'panorámico' : ''} ${flight.title.includes('→') ? flight.title.split('→')[1].trim() : ''}`.trim();
+                        }
+                        
+                        return {
+                            from: airportNames[segment.from] || segment.from,
+                            to: airportNames[segment.to] || segment.to,
+                            airline: flight.airline,
+                            time: time,
+                            icon: icon,
+                            description: description,
+                            type: flight.type,
+                            flightData: flight
+                        };
+                    }
+                }
             }
-        };
-        
-        return flightDays[dayNumber] || null;
+            
+            return null;
+        } catch (error) {
+            console.error('Error getting flight for day:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 📅 PARSEAR FECHA ESPAÑOLA: Convertir "20 de Octubre 09:10" a Date
+     */
+    parseSpanishDate(dateString) {
+        try {
+            const months = {
+                'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3, 'Mayo': 4, 'Junio': 5,
+                'Julio': 6, 'Agosto': 7, 'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
+            };
+            
+            const parts = dateString.split(' ');
+            if (parts.length < 4) return null;
+            
+            const day = parseInt(parts[0]);
+            const monthName = parts[2]; 
+            const timePart = parts[3];
+            
+            const monthIndex = months[monthName];
+            if (monthIndex === undefined) return null;
+            
+            // Usar el año del viaje (2025)
+            const date = new Date(2025, monthIndex, day);
+            
+            // Agregar hora si está disponible
+            if (timePart) {
+                const [hours, minutes] = timePart.split(':').map(Number);
+                date.setHours(hours, minutes, 0, 0);
+            }
+            
+            return date;
+        } catch (error) {
+            console.error('Error parsing Spanish date:', dateString, error);
+            return null;
+        }
     }
 
     /**

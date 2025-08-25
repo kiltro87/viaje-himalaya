@@ -23,6 +23,16 @@
  */
 
 export const tripConfig = {
+    // Metadatos del viaje
+    tripInfo: {
+        title: "Mi Aventura en el Himalaya",
+        subtitle: "Un recorrido para descubrir Nepal y Bután",
+        description: "Una aventura épica de 18 días explorando los tesoros culturales y naturales del Himalaya",
+        destinations: ["Nepal", "Bután"],
+        totalDays: 18,
+        year: 2025
+    },
+
     // Datos del itinerario
     itineraryData: [
         {
