@@ -95,6 +95,9 @@ export class PackingListManager {
             const db = this.firebaseManager.db;
             const docRef = doc(db, this.firestoreCollection, this.deviceId);
             
+            // Cargar datos iniciales de Firebase
+            await this.loadInitialData(docRef);
+            
             // Listener para cambios en tiempo real
             this.unsubscribe = onSnapshot(docRef, (docSnapshot) => {
                 if (docSnapshot.exists() && !this.syncInProgress) {
@@ -106,13 +109,38 @@ export class PackingListManager {
             }, (error) => {
                 Logger.error('🎒 Firebase listener error:', error);
             });
-
-            // Sincronizar datos existentes
-            await this.syncToFirebase();
             
 
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🎒 Error setting up Firebase sync:', error);
+        }
+    }
+
+    /**
+     * 📥 CARGAR DATOS INICIALES: Cargar datos de Firebase al inicializar
+     */
+    async loadInitialData(docRef) {
+        try {
+            const { getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            
+            const docSnapshot = await getDoc(docRef);
+            if (docSnapshot.exists()) {
+                const firebaseData = docSnapshot.data();
+                if (firebaseData.items) {
+                    // Fusionar datos de Firebase con localStorage, priorizando Firebase
+                    this.localCache = { ...this.localCache, ...firebaseData.items };
+                    this.saveToLocalStorage();
+                    this.updateUI();
+                    
+                    if (Logger && Logger.info) Logger.info('🎒 Initial data loaded from Firebase');
+                }
+            } else {
+                // Si no hay datos en Firebase, sincronizar los datos locales
+                await this.syncToFirebase();
+                if (Logger && Logger.info) Logger.info('🎒 Local data synced to Firebase');
+            }
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('🎒 Error loading initial data:', error);
         }
     }
 

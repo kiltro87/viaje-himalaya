@@ -693,18 +693,18 @@ export class WeatherManager {
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="bg-white dark:bg-slate-700 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
+                    <div class="p-2">
                         <div class="text-sm text-slate-600 dark:text-slate-400">Sensación térmica</div>
                         <div class="font-semibold text-slate-900 dark:text-white">${weather.feelsLike}°C</div>
                     </div>
-                    <div class="bg-white dark:bg-slate-700 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
+                    <div class="p-2">
                         <div class="text-sm text-slate-600 dark:text-slate-400">Humedad</div>
                         <div class="font-semibold text-slate-900 dark:text-white">${weather.humidity}%</div>
                     </div>
                 </div>
 
                 ${context.recommendations.length > 0 ? `
-                    <div class="bg-white dark:bg-slate-700 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
+                    <div class="pt-2 border-t border-blue-200 dark:border-blue-700">
                         <h4 class="font-semibold text-slate-900 dark:text-white mb-2">💡 Recomendaciones</h4>
                         <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-1">
                             ${context.recommendations.map(rec => `<li>• ${rec}</li>`).join('')}
@@ -720,8 +720,8 @@ export class WeatherManager {
      */
     renderWeatherGrid(allWeatherData) {
         const weatherCards = allWeatherData.map(({ city, current, forecast }) => `
-            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-shadow">
-                <div class="p-4">
+            <div class="p-4 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                <div>
                     <div class="flex items-center justify-between mb-3">
                         <h4 class="font-semibold text-slate-900 dark:text-white">${city}</h4>
                         <span class="text-2xl">${current.icon}</span>
@@ -744,7 +744,6 @@ export class WeatherManager {
                             </div>
                         </div>
                     </div>
-                </div>
                 
                 ${forecast.length > 0 ? `
                     <div class="bg-slate-50 dark:bg-slate-700/50 p-3 border-t border-slate-200 dark:border-slate-600">
