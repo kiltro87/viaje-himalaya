@@ -418,6 +418,79 @@ export class UIRenderer {
                     </div>
                 </div>
             </div>
+
+            <!-- Información del día (4 cards como en la versión original) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">location_on</span>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Origen</h3>
+                    <p class="text-slate-600 dark:text-slate-400">Madrid, España</p>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">flight_land</span>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Destino</h3>
+                    <p class="text-slate-600 dark:text-slate-400">Katmandú, Nepal</p>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">schedule</span>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Duración</h3>
+                    <p class="text-slate-600 dark:text-slate-400">8h 45m</p>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">airplane_ticket</span>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Aerolínea</h3>
+                    <p class="text-slate-600 dark:text-slate-400">Qatar Airways</p>
+                </div>
+            </div>
+
+            <!-- Preparativos para el viaje (como en versión original) -->
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8 mt-8">
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="material-symbols-outlined text-3xl text-emerald-600 dark:text-emerald-400">checklist</span>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Preparativos para el Viaje</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-slate-900 dark:text-white">Documentos necesarios</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 text-green-600">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span class="text-sm">Pasaporte válido</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-green-600">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span class="text-sm">Visa de Nepal (on arrival)</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-orange-600">
+                                <span class="material-symbols-outlined text-sm">pending</span>
+                                <span class="text-sm">Tarjeta de embarque</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-slate-900 dark:text-white">Equipaje de mano</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 text-green-600">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span class="text-sm">Documentos importantes</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-green-600">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span class="text-sm">Medicamentos básicos</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-green-600">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span class="text-sm">Cargador de móvil</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         `;
     }
 
@@ -460,8 +533,35 @@ export class UIRenderer {
                     </div>
                 </div>
 
+                <!-- Información del día (4 cards como en la versión original) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">location_on</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Ubicación</h3>
+                        <p class="text-slate-600 dark:text-slate-400">${currentDay.location || currentDay.country || 'En ruta'}</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">hotel</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Alojamiento</h3>
+                        <p class="text-slate-600 dark:text-slate-400">${currentDay.accommodation || 'No especificado'}</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">hiking</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Actividad</h3>
+                        <p class="text-slate-600 dark:text-slate-400">${currentDay.icon === '🏔️' ? 'Trekking' : currentDay.icon === '🏛️' ? 'Cultural' : currentDay.icon === '✈️' ? 'Vuelo' : 'Aventura'}</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">restaurant</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Comida</h3>
+                        <p class="text-slate-600 dark:text-slate-400">${currentDay.bocado || 'Local tradicional'}</p>
+                    </div>
+                </div>
+
                 ${currentDay.activities && currentDay.activities.length > 0 ? `
-                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-6">
+                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-6 mb-6">
                         <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                             <span class="material-symbols-outlined text-blue-600">event_note</span>
                             Actividades del día
@@ -476,6 +576,26 @@ export class UIRenderer {
                         </div>
                     </div>
                 ` : ''}
+
+                <!-- Detalles adicionales del día -->
+                <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-6">
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="material-symbols-outlined text-2xl text-emerald-600 dark:text-emerald-400">info</span>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Detalles del Día</h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-slate-900 dark:text-white">Plan Principal</h4>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">${currentDay.planA || 'Disfrutar de la experiencia al máximo'}</p>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-slate-900 dark:text-white">Consejos del Día</h4>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">${currentDay.consejo || 'Mantente hidratado y disfruta cada momento'}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     }
@@ -610,13 +730,29 @@ export class UIRenderer {
                 }
             }
             
-            // Fallback final: fecha predeterminada del viaje
-            Logger.warning('Using fallback date: 2024-12-19');
-            return new Date('2024-12-19');
+            // Buscar la fecha del primer vuelo internacional (misma lógica que SummaryRenderer)
+            const firstInternationalFlight = tripConfig.flightsData.find(f => f.type === 'Internacional');
+            if (firstInternationalFlight && firstInternationalFlight.segments && firstInternationalFlight.segments.length > 0) {
+                const firstSegment = firstInternationalFlight.segments[0];
+                // Extraer la fecha del string "9 de Octubre 22:45"
+                const dateString = firstSegment.fromDateTime;
+                const year = tripConfig.tripInfo.year; // Usar el año del tripConfig
+                
+                // Parsear la fecha (ej. "9 de Octubre 22:45" en 2025)
+                const parsedDate = DateUtils.parseDateWithMonthName(dateString, year);
+                if (parsedDate) {
+                    Logger.debug(`📅 Trip start date parsed from flight data: ${parsedDate}`);
+                    return parsedDate;
+                }
+            }
+            
+            // Fallback final: fecha del vuelo basada en tripConfig
+            Logger.warning('⚠️ Could not determine trip start date from flights or itinerary, using default.');
+            return new Date('2025-10-09T22:45:00Z'); // Fecha por defecto si no se encuentra
             
         } catch (error) {
             Logger.error('Error getting trip start date:', error);
-            return new Date('2024-12-19');
+            return new Date('2025-10-09T22:45:00Z');
         }
     }
 
