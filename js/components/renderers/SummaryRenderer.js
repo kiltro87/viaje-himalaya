@@ -458,4 +458,68 @@ export class SummaryRenderer {
             Logger.error('Error updating trip progress:', error);
         }
     }
+
+    /**
+     * Renderizar sección de vuelos
+     */
+    renderFlightsSection() {
+        try {
+            if (!tripConfig.flightsData || tripConfig.flightsData.length === 0) {
+                return '';
+            }
+
+            const flightSegmentHTML = (segment) => `
+                <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-2xl">
+                    <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">flight</span>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-bold text-lg text-slate-900 dark:text-white">${segment.from}</p>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">${segment.fromDateTime}</p>
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-400">
+                                <div class="w-8 border-t border-dashed border-slate-300"></div>
+                                <span class="material-symbols-outlined text-slate-400">flight_takeoff</span>
+                                <div class="w-8 border-t border-dashed border-slate-300"></div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-lg text-slate-900 dark:text-white">${segment.to}</p>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">${segment.toDateTime}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            const flightCardHTML = (flight) => `
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">${flight.title}</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">${flight.airline}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        ${flight.segments.map(segment => flightSegmentHTML(segment)).join('')}
+                    </div>
+                </div>`;
+
+            return `
+                <section class="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 border border-slate-200 dark:border-slate-700 shadow-lg">
+                    <div class="flex items-center gap-3 mb-8">
+                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight_takeoff</span>
+                        <h3 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Información de Vuelos</h3>
+                    </div>
+                    
+                    <div class="grid gap-6 lg:grid-cols-2">
+                        ${tripConfig.flightsData.map(flight => flightCardHTML(flight)).join('')}
+                    </div>
+                </section>
+            `;
+            
+        } catch (error) {
+            Logger.error('Error rendering flights section:', error);
+            return '';
+        }
+    }
 }

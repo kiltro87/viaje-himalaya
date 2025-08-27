@@ -146,8 +146,8 @@ export class UIRenderer {
                 mapRenderer.renderMap(mainContent);
             },
             [VIEWS.BUDGET]: () => {
-                Logger.ui('💰 Rendering budget view - delegating to BudgetManager');
-                this.budgetManager.render();
+                Logger.ui('💰 Rendering budget view');
+                this.renderGastos();
             },
             [VIEWS.FLIGHTS]: () => {
                 Logger.ui('✈️ Rendering flights view');
@@ -464,6 +464,165 @@ export class UIRenderer {
             Logger.error('❌ Error rendering extras view:', error);
             this.renderErrorView(error);
         }
+    }
+
+    /**
+     * Renderizar vista de gastos
+     */
+    renderGastos() {
+        Logger.ui('💰 Rendering budget section');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        try {
+            mainContent.innerHTML = `
+                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                    <!-- Header de Gastos -->
+                    <div class="mb-12 hidden md:block">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400">account_balance_wallet</span>
+                            <div>
+                                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Gestión de Gastos</h1>
+                                <p class="text-lg text-slate-600 dark:text-slate-400">Controla tu presupuesto y registra todos los gastos de tu aventura</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenido de Gastos -->
+                    <div id="budget" class="space-y-6 md:space-y-8">
+                        <!-- El contenido se generará dinámicamente -->
+                    </div>
+                </div>
+            `;
+            
+            // Renderizar presupuesto inmediatamente
+            setTimeout(() => {
+                this.renderBudget();
+            }, 100);
+            
+            Logger.success('✅ Budget structure rendered');
+        } catch (error) {
+            Logger.error('❌ Error rendering budget view:', error);
+            this.renderErrorView(error);
+        }
+    }
+
+    /**
+     * Renderizar presupuesto en el contenedor
+     */
+    renderBudget() {
+        Logger.ui('💰 Rendering budget content');
+        const container = document.getElementById('budget');
+        if (!container) {
+            Logger.error('❌ Container #budget not found');
+            Logger.debug('🔍 Available elements with ID:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+            return;
+        }
+        Logger.debug('✅ Container #budget found:', container);
+
+        // Usar la implementación del presupuesto
+        Logger.ui('💰 Calling budgetManager.render...');
+        this.budgetManager.render(container, tripConfig);
+        
+        Logger.success('✅ Budget rendered completely');
+    }
+
+    /**
+     * Mostrar modal de detalles del itinerario
+     */
+    showItineraryModal(dayId) {
+        const day = tripConfig.itineraryData.find(d => d.id === dayId);
+        if (!day) {
+            Logger.warning(`showItineraryModal not available for day: ${dayId}`);
+            return;
+        }
+
+        const detailCard = (icon, title, content) => content ? `
+            <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl">
+                <h4 class="font-semibold text-md flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">${icon}</span> 
+                    ${title}
+                </h4>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 pl-10">${content}</p>
+            </div>
+        ` : '';
+
+        const modalHTML = `
+            <div id="itinerary-modal-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-4" style="pointer-events: auto;">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-[999999]" style="pointer-events: auto;">
+                    <button id="close-modal-btn" class="absolute top-4 right-4 z-[999999] p-2 rounded-full bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-700 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                    <img src="${day.image}" alt="${day.title}" class="w-full h-60 object-cover rounded-t-2xl" onerror="this.onerror=null;this.src='https://placehold.co/800x400/4f46e5/ffffff?text=Himalaya';">
+                    <div class="p-6 space-y-4">
+                        <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">DÍA ${day.id.replace('day-','')}</p>
+                        <h3 class="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            ${this.getActivityIconHTML(day.icon, 'text-4xl')} 
+                            ${day.title}
+                        </h3>
+                        ${day.coords ? `
+                            <div class="mt-6">
+                                <h4 class="font-semibold text-md flex items-center gap-2 mb-4">
+                                    <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">map</span> 
+                                    Lugares de interés
+                                </h4>
+                                <div id="modal-map-${day.id}" class="h-64 w-full rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                    <div class="text-center">
+                                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                                        <p class="text-sm text-slate-500">Cargando mapa...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${detailCard('map', 'Itinerario', day.planA)}
+                        ${detailCard('coffee', 'Tiempo Libre', day.planB)}
+                        ${detailCard('lightbulb', 'Consejo del Día', day.consejo)}
+                        ${detailCard('restaurant', 'Bocado del Día', day.bocado)}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Crear contenedor del modal si no existe
+        let modalContainer = document.getElementById('itinerary-modal-container');
+        if (!modalContainer) {
+            modalContainer = document.createElement('div');
+            modalContainer.id = 'itinerary-modal-container';
+            modalContainer.style.zIndex = '999999';
+            modalContainer.style.position = 'fixed';
+            modalContainer.style.top = '0';
+            modalContainer.style.left = '0';
+            modalContainer.style.width = '100%';
+            modalContainer.style.height = '100%';
+            modalContainer.style.pointerEvents = 'none';
+            document.body.appendChild(modalContainer);
+        }
+        
+        modalContainer.innerHTML = modalHTML;
+
+        // Event listeners para cerrar el modal
+        document.getElementById('itinerary-modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'itinerary-modal-overlay') {
+                modalContainer.innerHTML = '';
+            }
+        });
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            modalContainer.innerHTML = '';
+        });
+
+        // Crear mapa del modal si hay coordenadas
+        if (day.coords) {
+            setTimeout(() => {
+                mapRenderer.createModalMap(day.id, day.coords, day.title);
+            }, 500);
+        }
+    }
+
+    /**
+     * Obtener HTML del icono de actividad
+     */
+    getActivityIconHTML(icon, size = 'text-xl') {
+        return `<span class="material-symbols-outlined ${size} text-blue-600 dark:text-blue-400">${icon}</span>`;
     }
 
     /**
