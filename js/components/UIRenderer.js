@@ -152,6 +152,10 @@ export class UIRenderer {
             [VIEWS.FLIGHTS]: () => {
                 Logger.ui('✈️ Rendering flights view');
                 this.renderFlights();
+            },
+            ['extras']: () => {
+                Logger.ui('🎁 Rendering extras view');
+                this.renderExtras();
             }
         };
 
@@ -276,7 +280,7 @@ export class UIRenderer {
             const tripStartDate = this.getTripStartDate();
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
             
-            Logger.data('📅 Trip dates calculated', { tripStartDate, today, dayDiff });
+            Logger.data('📅 Trip dates calculated', { tripStartDate, today, dayDiff, totalDays: tripConfig.itineraryData.length });
             
             if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
                 const currentDayData = tripConfig.itineraryData[dayDiff];
@@ -377,25 +381,88 @@ export class UIRenderer {
      */
     getTripStartDate() {
         try {
-            const calendarData = tripConfig.calendarData;
-            if (calendarData && calendarData.tripStartDate) {
-                return new Date(calendarData.tripStartDate);
+            // Primero intentar obtener la fecha desde calendarData
+            if (tripConfig.calendarData && tripConfig.calendarData.tripStartDate) {
+                Logger.debug('Using tripStartDate from calendarData:', tripConfig.calendarData.tripStartDate);
+                return new Date(tripConfig.calendarData.tripStartDate);
+            }
+            
+            // Fallback: calcular desde getFormattedStartDate si está disponible
+            if (tripConfig.calendarData && typeof tripConfig.calendarData.getFormattedStartDate === 'function') {
+                const startDateString = tripConfig.calendarData.getFormattedStartDate();
+                Logger.debug('Using getFormattedStartDate:', startDateString);
+                return new Date(startDateString);
             }
             
             // Fallback: usar primera fecha del itinerario si está disponible
             if (tripConfig.itineraryData && tripConfig.itineraryData.length > 0) {
                 const firstDay = tripConfig.itineraryData[0];
                 if (firstDay.date) {
+                    Logger.debug('Using first day date from itinerary:', firstDay.date);
                     return new Date(firstDay.date);
                 }
             }
             
-            // Fallback final: fecha predeterminada
+            // Fallback final: fecha predeterminada del viaje
+            Logger.warning('Using fallback date: 2024-12-19');
             return new Date('2024-12-19');
             
         } catch (error) {
             Logger.error('Error getting trip start date:', error);
             return new Date('2024-12-19');
+        }
+    }
+
+    /**
+     * Renderizar vista de extras
+     */
+    renderExtras() {
+        Logger.ui('🎁 Rendering extras view');
+        
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        try {
+            mainContent.innerHTML = `
+                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                    <div class="flex items-center gap-4 mb-8">
+                        <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400">extension</span>
+                        <div>
+                            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Extras del Viaje</h1>
+                            <p class="text-lg text-slate-600 dark:text-slate-400">Información adicional y herramientas útiles</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-green-600">info</span>
+                                Información General
+                            </h2>
+                            <div class="space-y-4 text-slate-600 dark:text-slate-400">
+                                <p>Esta sección contiene información adicional sobre el viaje, agencias, contactos de emergencia y más.</p>
+                                <p>Próximamente se añadirá más contenido útil para el viaje.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-blue-600">settings</span>
+                                Herramientas
+                            </h2>
+                            <div class="space-y-4 text-slate-600 dark:text-slate-400">
+                                <p>Herramientas útiles para gestionar y personalizar la experiencia del viaje.</p>
+                                <p>Funciones de exportación, simulador de fechas y más.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            Logger.success('✅ Extras view rendered successfully');
+        } catch (error) {
+            Logger.error('❌ Error rendering extras view:', error);
+            this.renderErrorView(error);
         }
     }
 

@@ -33,6 +33,7 @@ import { HeaderRenderer } from './renderers/HeaderRenderer.js';
 import RealtimeSync from '../utils/RealtimeSync.js';
 import { ExpenseOrchestrator } from '../utils/ExpenseOrchestrator.js';
 import { container } from '../core/DependencyContainer.js';
+import { tripConfig } from '../config/tripConfig.js';
 
 export class BudgetManager {
     /**
@@ -591,9 +592,11 @@ export class BudgetManager {
         return colors[cleanCategory] || colors[category] || 'bg-slate-500';
     }
 
-    render(container, tripConfig) {
+    render(container, tripConfigParam) {
         Logger.debug('💰 Renderizando presupuesto...');
-        const budgetData = tripConfig.budgetData.budgetData;
+        // Usar tripConfig importado si no se pasa como parámetro
+        const tripConfigToUse = tripConfigParam || tripConfig;
+        const budgetData = tripConfigToUse.budgetData.budgetData;
         const allExpenses = Object.values(budgetData).flat();
         const allCategories = [...new Set(allExpenses.map(item => item.category))];
         const categoryOptionsHTML = allCategories.map(cat => {
