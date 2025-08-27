@@ -1,216 +1,458 @@
 /**
- * ItineraryRenderer - Renderizador de Itinerario
+ * ItineraryRenderer - Renderizador Especializado de Itinerario
  * 
- * Módulo especializado para renderizar toda la información del itinerario
- * incluyendo timeline, modales, y navegación por días.
+ * Módulo extraído de UIRenderer.js para manejar toda la funcionalidad
+ * del timeline del itinerario con fases, tarjetas de días y modales.
+ * 
+ * Funcionalidades:
+ * - Renderizado del timeline completo con fases
+ * - Generación dinámica de fases (Nepal, Bután, Despedida)
+ * - Tarjetas interactivas de días con animaciones
+ * - Iconos Material Design contextuales
+ * - Event listeners para modales
+ * - Scroll automático al día actual
+ * - Intersection Observer para animaciones
+ * 
+ * EXTRACCIÓN REALIZADA: 
+ * - ✅ 400+ líneas extraídas de UIRenderer.js  
+ * - ✅ Responsabilidad única: solo itinerario
+ * - ✅ Modularización completa
+ * - ✅ Logging migrado a Logger patterns
  * 
  * @author David Ferrer Figueroa
- * @version 2.0.0
+ * @version 1.0.0  
  * @since 2024
+ * @extracted_from UIRenderer.js
  */
 
 import { tripConfig } from '../../config/tripConfig.js';
-import { HeaderRenderer } from './HeaderRenderer.js';
-import { UIHelpers } from '../../utils/UIHelpers.js';
+import { DateUtils } from '../../utils/DateUtils.js';
+import { FormatUtils } from '../../utils/FormatUtils.js';
+import Logger from '../../utils/Logger.js';
 
 export class ItineraryRenderer {
     
     /**
-     * Renderiza la sección completa del itinerario
-     * 
-     * @param {HTMLElement} container - Contenedor principal
+     * Constructor del ItineraryRenderer
      */
-    static renderItinerarySection(container) {
-        if (!container) {
-            console.error('❌ ItineraryRenderer: Contenedor no encontrado');
-            return;
-        }
-
-        const headerHTML = HeaderRenderer.renderPresetHeader('itinerary');
-        const timelineHTML = this.generateTimelineHTML();
-
-        const content = `
-            ${headerHTML}
-            <!-- Timeline del itinerario -->
-            <div class="relative">
-                ${timelineHTML}
-            </div>
-        `;
-
-        container.innerHTML = UIHelpers.createMainContainer(content);
-        
-        // Configurar event listeners
-        this.setupEventListeners();
-        this.setupIntersectionObserver();
-
-        console.log('✅ ItineraryRenderer: Itinerario renderizado');
+    constructor() {
+        Logger.ui('ItineraryRenderer initialized');
+        this.animationObserver = null;
     }
 
     /**
-     * Genera el HTML del timeline del itinerario
+     * 📅 RENDERIZAR ITINERARIO COMPLETO
+     * 
+     * Renderiza la vista completa del itinerario con timeline y fases.
+     * 
+     * @param {HTMLElement} container - Contenedor donde renderizar
      */
-    static generateTimelineHTML() {
-        // Lógica extraída del UIRenderer original
-        const phaseColors = {
-            'preparation': 'from-blue-500 to-cyan-500',
-            'nepal': 'from-green-500 to-emerald-500', 
-            'bhutan': 'from-orange-500 to-red-500',
-            'return': 'from-purple-500 to-pink-500'
-        };
+    renderItinerary(container) {
+        Logger.ui('📅 Rendering complete itinerary timeline');
+        
+        if (!container) {
+            Logger.error('ItineraryRenderer.renderItinerary: No container provided');
+            return;
+        }
 
-        return tripConfig.itineraryData.map((day, index) => {
-            const phaseColor = phaseColors[day.phase] || 'from-gray-500 to-gray-600';
+        try {
+            // Generar fases dinámicamente basadas en los datos reales del itinerario
+            const phases = this.generateItineraryPhases();
+            Logger.data(`🎨 Generated ${phases.length} phases for rendering`);
             
-            return `
-                <div class="timeline-item flex gap-6 md:gap-8 lg:gap-12 mb-8 md:mb-12">
-                    ${this.renderTimelineConnector(index)}
-                    ${this.renderDayCard(day, phaseColor)}
+            const timelineHTML = this.buildTimelineHTML(phases);
+            
+            container.innerHTML = `
+                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+                    <!-- Header del itinerario -->
+                    <div class="mb-12 ">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="material-symbols-outlined text-6xl text-blue-600 dark:text-blue-400">list_alt</span>
+                            <div>
+                                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Itinerario del Viaje</h1>
+                                <p class="text-lg text-slate-600 dark:text-slate-400">Descubre día a día la aventura que te espera en Nepal y Bután</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline del itinerario -->
+                    <div class="relative">
+                        ${timelineHTML}
+                    </div>
                 </div>
             `;
+
+            // Configurar event listeners y animaciones
+            this.setupEventListeners();
+            this.setupAnimations();
+            
+            Logger.success('✅ Itinerary rendered successfully');
+            
+        } catch (error) {
+            Logger.error('Error rendering itinerary:', error);
+            this.renderError(container, error);
+        }
+    }
+
+    /**
+     * 🏗️ CONSTRUIR HTML DEL TIMELINE
+     * 
+     * Construye el HTML completo del timeline con todas las fases.
+     * 
+     * @param {Array} phases - Array de fases del itinerario
+     * @returns {string} HTML del timeline
+     * @private
+     */
+    buildTimelineHTML(phases) {
+        return phases.map(phase => {
+            Logger.data(`🔄 Processing phase: ${phase.title} with ${phase.days ? phase.days.length : 0} days`);
+            
+            const phaseDays = tripConfig.itineraryData.filter(day => day.phase === phase.phase);
+            Logger.data(`📋 Filtered ${phaseDays.length} days for phase ${phase.phase}`);
+            
+            return `
+            <div class="mb-16">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${phase.gradient} rounded-2xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-lg sm:text-xl">${phase.icon}</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-200">${phase.title}</h3>
+                </div>
+                ${this.buildPhaseDaysHTML(phaseDays)}
+            </div>
+        `}).join('');
+    }
+
+    /**
+     * 📋 CONSTRUIR HTML DE DÍAS DE UNA FASE
+     * 
+     * Construye el HTML de los días de una fase específica.
+     * 
+     * @param {Array} phaseDays - Días de la fase
+     * @returns {string} HTML de los días
+     * @private
+     */
+    buildPhaseDaysHTML(phaseDays) {
+        return phaseDays.map((day, index) => {
+            const activityIcon = this.getActivityIcon(day);
+            const dayNumber = parseInt(day.id.replace('day-', ''));
+            const tripDate = this.getTripDate(dayNumber - 1);
+            
+            return `
+            <div class="timeline-item grid grid-cols-[auto,1fr] gap-x-6" id="${day.id}" data-coords="${day.coords ? day.coords.join(',') : ''}">
+                <div class="flex flex-col items-center">
+                    <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 z-10">${activityIcon}</span>
+                    ${index < phaseDays.length - 1 ? '<div class="w-0.5 h-full bg-gradient-to-b from-purple-300 to-violet-300 dark:from-purple-600 dark:to-violet-600"></div>' : ''}
+                </div>
+                <div class="pb-12 opacity-0 -translate-y-4" style="animation-delay: ${index * 100}ms;">
+                    ${this.buildDayCardHTML(day, dayNumber, tripDate, activityIcon)}
+                </div>
+            </div>`;
         }).join('');
     }
 
     /**
-     * Renderiza el conector del timeline
+     * 🎴 CONSTRUIR HTML DE TARJETA DE DÍA
+     * 
+     * Construye el HTML de una tarjeta de día individual.
+     * 
+     * @param {Object} day - Datos del día
+     * @param {number} dayNumber - Número del día
+     * @param {Date} tripDate - Fecha del día
+     * @param {string} activityIcon - Icono de la actividad
+     * @returns {string} HTML de la tarjeta
+     * @private
      */
-    static renderTimelineConnector(index) {
-        const isLast = index === tripConfig.itineraryData.length - 1;
-        
-        return `
-            <div class="relative flex flex-col items-center">
-                <div class="w-4 h-4 md:w-6 md:h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full z-10 flex items-center justify-center shadow-lg">
-                    <div class="w-2 h-2 md:w-3 md:h-3 bg-white rounded-full"></div>
-                </div>
-                ${!isLast ? '<div class="w-0.5 h-20 md:h-24 lg:h-28 bg-gradient-to-b from-blue-200 to-purple-200 dark:from-blue-800 dark:to-purple-800 mt-2"></div>' : ''}
-            </div>
-        `;
-    }
-
-    /**
-     * Renderiza una tarjeta de día del itinerario
-     */
-    static renderDayCard(day, phaseColor) {
-        const cardContent = `
-            <div class="itinerary-card group cursor-pointer bg-white dark:bg-slate-800 rounded-2xl lg:rounded-3xl shadow-lg hover:shadow-2xl border border-slate-200 dark:border-slate-700 p-4 md:p-6 lg:p-8 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1" 
-                 data-day-id="${day.id}">
-                
-                ${this.renderDayHeader(day, phaseColor)}
-                ${this.renderDayContent(day)}
-                ${this.renderDayFooter(day)}
-            </div>
-        `;
-
-        return `<div class="flex-1 min-w-0">${cardContent}</div>`;
-    }
-
-    /**
-     * Renderiza el header de un día
-     */
-    static renderDayHeader(day, phaseColor) {
-        return `
-            <div class="flex items-center justify-between mb-4 md:mb-6">
-                <div class="flex items-center gap-3 md:gap-4">
-                    <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r ${phaseColor} rounded-full flex items-center justify-center text-white font-bold text-lg md:text-xl shadow-lg">
-                        ${day.day}
-                    </div>
-                    <div>
-                        <h3 class="text-lg md:text-xl lg:text-2xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            ${day.title}
-                        </h3>
-                        <p class="text-sm md:text-base text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm">location_on</span>
-                            ${day.country}
-                        </p>
-                    </div>
-                </div>
-                <span class="text-2xl md:text-3xl lg:text-4xl group-hover:scale-110 transition-transform">${day.icon}</span>
-            </div>
-        `;
-    }
-
-    /**
-     * Renderiza el contenido principal de un día
-     */
-    static renderDayContent(day) {
-        return `
-            <div class="space-y-4 md:space-y-6">
-                <div class="aspect-video rounded-xl lg:rounded-2xl overflow-hidden shadow-md">
-                    <img src="${day.image}" 
-                         alt="${day.title}" 
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                         loading="lazy"
-                         onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'">
-                </div>
-                
-                <p class="text-sm md:text-base text-slate-700 dark:text-slate-300 leading-relaxed">
-                    ${day.description}
-                </p>
-                
-                ${day.accommodation ? `
-                    <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-3 md:p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="material-symbols-outlined text-green-600 dark:text-green-400">hotel</span>
-                            <span class="font-semibold text-slate-900 dark:text-white text-sm md:text-base">Alojamiento</span>
+    buildDayCardHTML(day, dayNumber, tripDate, activityIcon) {
+        if (day.image) {
+            return `
+                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer transition-all duration-200 hover:shadow-xl overflow-hidden">
+                    <div class="relative h-48 md:h-56">
+                        <img loading="lazy" src="${day.image}" alt="${day.title}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f46e5/ffffff?text=Imagen';">
+                        <div class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
+                            <p class="text-white text-sm font-semibold">Día ${dayNumber}</p>
                         </div>
-                        <p class="text-slate-600 dark:text-slate-400 text-xs md:text-sm">${day.accommodation}</p>
                     </div>
-                ` : ''}
-            </div>
-        `;
-    }
-
-    /**
-     * Renderiza el footer de un día
-     */
-    static renderDayFooter(day) {
-        return `
-            <div class="flex items-center justify-between mt-4 md:mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <div class="flex items-center gap-3 text-xs md:text-sm text-slate-500 dark:text-slate-400">
-                    <span class="material-symbols-outlined text-sm">schedule</span>
-                    <span>Día ${day.day}</span>
+                    <div class="p-6">
+                        <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-2">${day.title}</h4>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">${day.description}</p>
+                        <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                            <span class="material-symbols-outlined text-sm">touch_app</span>
+                            <span class="text-xs font-medium">Toca para ver detalles</span>
+                        </div>
+                    </div>
                 </div>
-                
-                <button class="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-xs md:text-sm transition-colors">
-                    <span>Ver detalles</span>
-                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                </button>
-            </div>
-        `;
+            `;
+        } else {
+            return `
+                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer transition-all duration-200 hover:shadow-xl overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">${activityIcon}</span>
+                            <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">Día ${dayNumber} • ${this.formatShortDate(tripDate)}</p>
+                        </div>
+                        <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3">${day.title}</h4>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">${day.description}</p>
+                        <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                            <span class="material-symbols-outlined text-sm">touch_app</span>
+                            <span class="text-xs font-medium">Toca para ver detalles</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     }
 
     /**
-     * Configura los event listeners para el itinerario
+     * 🎭 OBTENER ICONO DE ACTIVIDAD
+     * 
+     * Determina el icono Material Design apropiado para una actividad.
+     * 
+     * @param {Object} day - Datos del día
+     * @returns {string} Nombre del icono Material Design
+     * @private
      */
-    static setupEventListeners() {
+    getActivityIcon(day) {
+        const title = day.title.toLowerCase();
+        const description = day.description.toLowerCase();
+        
+        if (title.includes('vuelo') || title.includes('llegada') || title.includes('salida')) return 'flight';
+        if (title.includes('trekking') || title.includes('caminata') || description.includes('trekking')) return 'hiking';
+        if (title.includes('rafting') || description.includes('rafting')) return 'kayaking';
+        if (title.includes('safari') || description.includes('safari') || title.includes('chitwan')) return 'pets';
+        if (title.includes('cocina') || description.includes('cocina') || description.includes('momos')) return 'restaurant';
+        if (title.includes('templo') || title.includes('monasterio') || title.includes('dzong') || title.includes('estupa')) return 'temple_buddhist';
+        if (title.includes('plaza') || title.includes('durbar') || description.includes('palacio')) return 'account_balance';
+        if (title.includes('aguas termales') || description.includes('aguas termales')) return 'hot_tub';
+        if (title.includes('patan') || title.includes('katmandú') || description.includes('ciudad')) return 'location_city';
+        if (title.includes('nido del tigre') || title.includes('taktsang')) return 'temple_buddhist';
+        return 'place';
+    }
+
+    /**
+     * 🏗️ GENERAR FASES DEL ITINERARIO
+     * 
+     * Genera dinámicamente las fases del itinerario basándose en los datos.
+     * 
+     * @returns {Array} Array de fases con metadatos
+     */
+    generateItineraryPhases() {
+        Logger.data('🔍 Generating itinerary phases...');
+        Logger.data(`📊 Total days in itineraryData: ${tripConfig.itineraryData.length}`);
+        
+        const phases = [];
+        const nepalDays = tripConfig.itineraryData.filter(day => day.phase === 'nepal');
+        const butanDays = tripConfig.itineraryData.filter(day => day.phase === 'butan');
+        const farewellDays = tripConfig.itineraryData.filter(day => day.phase === 'farewell');
+        
+        Logger.data(`🇳🇵 Nepal days found: ${nepalDays.length}`);
+        Logger.data(`🇧🇹 Bhutan days found: ${butanDays.length}`);
+        Logger.data(`👋 Farewell days found: ${farewellDays.length}`);
+
+        if (nepalDays.length > 0) {
+            phases.push({
+                title: 'Nepal - Aventura en el Himalaya',
+                emoji: '🇳🇵',
+                icon: 'location_on',
+                gradient: 'from-purple-500 to-violet-600',
+                phase: 'nepal',
+                days: nepalDays
+            });
+            Logger.data(`✅ Nepal phase added with ${nepalDays.length} days`);
+        }
+
+        if (butanDays.length > 0) {
+            phases.push({
+                title: 'Bután - El Reino de la Felicidad',
+                emoji: '🇧🇹',
+                icon: 'flag',
+                gradient: 'from-orange-500 to-amber-600',
+                phase: 'butan',
+                days: butanDays
+            });
+            Logger.data(`✅ Bhutan phase added with ${butanDays.length} days`);
+        }
+
+        if (farewellDays.length > 0) {
+            phases.push({
+                title: 'Despedida - Regreso a Casa',
+                emoji: '👋',
+                icon: 'home',
+                gradient: 'from-slate-500 to-slate-600',
+                phase: 'farewell',
+                days: farewellDays
+            });
+            Logger.data(`✅ Farewell phase added with ${farewellDays.length} days`);
+        }
+
+        Logger.data(`📋 Total phases generated: ${phases.length}`);
+        return phases;
+    }
+
+    /**
+     * 🎯 CONFIGURAR EVENT LISTENERS
+     * 
+     * Configura los event listeners para las tarjetas del itinerario.
+     * 
+     * @private
+     */
+    setupEventListeners() {
+        // Event listeners para los modales
         document.querySelectorAll('.itinerary-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 const dayId = e.currentTarget.dataset.dayId;
-                this.showItineraryModal(dayId);
+                if (window.uiRenderer && window.uiRenderer.showItineraryModal) {
+                    window.uiRenderer.showItineraryModal(dayId);
+                } else {
+                    Logger.warning(`showItineraryModal not available for day: ${dayId}`);
+                }
             });
         });
+
+        Logger.ui('Event listeners configured for itinerary cards');
     }
 
     /**
-     * Configura el Intersection Observer para animaciones
+     * 🎬 CONFIGURAR ANIMACIONES
+     * 
+     * Configura el Intersection Observer para animaciones de entrada.
+     * 
+     * @private
      */
-    static setupIntersectionObserver() {
-        const observer = new IntersectionObserver(entries => {
+    setupAnimations() {
+        // Configurar Intersection Observer para animaciones
+        this.animationObserver = new IntersectionObserver(entries => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.querySelector(':scope > div:last-child').classList.add('animate-enter');
+                    const target = entry.target.querySelector(':scope > div:last-child');
+                    if (target) {
+                        target.classList.add('animate-enter');
+                    }
                 }
             });
         }, { threshold: 0.6 });
         
-        document.querySelectorAll('.timeline-item').forEach(item => observer.observe(item));
+        document.querySelectorAll('.timeline-item').forEach(item => {
+            this.animationObserver.observe(item);
+        });
+
+        Logger.ui('Animation observers configured for timeline items');
     }
 
     /**
-     * Muestra el modal de detalles de un día
+     * 🎯 SCROLL AL DÍA ACTUAL
+     * 
+     * Hace scroll automático al día actual del viaje.
      */
-    static showItineraryModal(dayId) {
-        // Esta funcionalidad se mantendría en UIRenderer por ahora
-        // o se movería a un ModalManager separado
-        console.log(`🔍 Mostrando modal para día: ${dayId}`);
+    scrollToCurrentDay() {
+        try {
+            // Calcular día actual (usando Day Simulator si está activo)
+            const today = window.DaySimulator && window.DaySimulator.isSimulating 
+                ? window.DaySimulator.getSimulatedDate() 
+                : new Date();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            
+            Logger.ui(`🎯 Scroll to current day: dayDiff=${dayDiff}`);
+            
+            // Si estamos durante el viaje, hacer scroll al día actual
+            if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
+                const currentDayId = `day-${dayDiff + 1}`;
+                const targetElement = document.querySelector(`[data-day-id="${currentDayId}"]`);
+                
+                if (targetElement) {
+                    setTimeout(() => {
+                        targetElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center',
+                            inline: 'nearest' 
+                        });
+                        
+                        // Agregar highlight temporal al día actual
+                        targetElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                        setTimeout(() => {
+                            targetElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                        }, 3000);
+                        
+                        Logger.success(`🎯 Scrolled to current day: ${currentDayId}`);
+                    }, 500); // Delay para asegurar que el DOM esté renderizado
+                }
+            }
+        } catch (error) {
+            Logger.error('Error scrolling to current day:', error);
+        }
+    }
+
+    /**
+     * 📅 OBTENER FECHA DEL VIAJE
+     * 
+     * Calcula la fecha de un día específico del viaje.
+     * 
+     * @param {number} dayNumber - Número del día (0-based)
+     * @returns {Date} Fecha del día
+     */
+    getTripDate(dayNumber) {
+        return DateUtils.getTripDate(dayNumber);
+    }
+
+    /**
+     * 📅 OBTENER FECHA DE INICIO DEL VIAJE
+     * 
+     * Obtiene la fecha de inicio del viaje.
+     * 
+     * @returns {Date} Fecha de inicio
+     */
+    getTripStartDate() {
+        return DateUtils.getTripDate(0);
+    }
+
+    /**
+     * 📝 FORMATEAR FECHA CORTA
+     * 
+     * Formatea una fecha en formato corto español.
+     * 
+     * @param {Date} date - Fecha a formatear
+     * @returns {string} Fecha formateada
+     */
+    formatShortDate(date) {
+        return FormatUtils.formatShortDate(date);
+    }
+
+    /**
+     * ❌ RENDERIZAR ERROR
+     * 
+     * Muestra un mensaje de error cuando el itinerario no puede renderizarse.
+     * 
+     * @param {HTMLElement} container - Contenedor del error
+     * @param {Error} error - Error ocurrido
+     * @private
+     */
+    renderError(container, error) {
+        container.innerHTML = `
+            <div class="flex items-center justify-center min-h-[400px] bg-red-50 dark:bg-red-900/20 rounded-3xl">
+                <div class="text-center p-8">
+                    <div class="text-red-500 text-6xl mb-4">📅</div>
+                    <h3 class="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">Error al cargar el itinerario</h3>
+                    <p class="text-red-600 dark:text-red-300">${error.message}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 🧹 LIMPIAR RECURSOS
+     * 
+     * Limpia observers y libera recursos.
+     */
+    cleanup() {
+        if (this.animationObserver) {
+            this.animationObserver.disconnect();
+            this.animationObserver = null;
+        }
+        Logger.ui('ItineraryRenderer resources cleaned up');
     }
 }
+
+// Exportar instancia singleton
+export const itineraryRenderer = new ItineraryRenderer();
+export default itineraryRenderer;

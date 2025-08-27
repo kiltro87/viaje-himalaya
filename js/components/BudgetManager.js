@@ -307,7 +307,7 @@ export class BudgetManager {
         // 🚨 PREVENIR MÚLTIPLES LISTENERS
         if (this.realtimeUnsubscribe) {
             if (!Logger.isMobile) {
-                console.log('🔥 DEBUG: Listener ya existe, desuscribiendo el anterior...');
+                Logger.debug('Firebase listener exists, unsubscribing previous one');
             }
             this.realtimeUnsubscribe();
             this.realtimeUnsubscribe = null;
@@ -315,13 +315,13 @@ export class BudgetManager {
         
         if (!this.firebaseManager.isConnected) {
             if (!Logger.isMobile) {
-                console.log('🔥 DEBUG: Firebase not connected, skipping realtime sync');
+                Logger.warning('Firebase not connected, skipping realtime sync');
             }
             return;
         }
         
         if (!Logger.isMobile) {
-            console.log('🔥 DEBUG: Setting up NEW Firebase realtime listener...');
+            Logger.debug('Setting up NEW Firebase realtime listener');
         }
         
         // 🚨 DEBOUNCE para evitar actualizaciones demasiado frecuentes

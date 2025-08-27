@@ -28,7 +28,8 @@ import { ResponsiveUtils } from '../utils/ResponsiveUtils.js';
 import { BudgetManager } from './BudgetManager.js';
 import { HeaderRenderer } from './renderers/HeaderRenderer.js';
 import { WeatherRenderer } from './renderers/WeatherRenderer.js';
-import { ItineraryRenderer } from './renderers/ItineraryRenderer.js';
+import { mapRenderer } from './renderers/MapRenderer.js';
+import { itineraryRenderer } from './renderers/ItineraryRenderer.js';
 import { UIHelpers } from '../utils/UIHelpers.js';
 
 export class UIRenderer {
@@ -172,16 +173,18 @@ export class UIRenderer {
                 this.renderSummary();
             },
             [VIEWS.ITINERARY]: () => {
-                Logger.ui('Rendering itinerary view');
-                this.renderItinerary();
+                Logger.ui('Rendering itinerary view - delegating to ItineraryRenderer');
+                const mainContent = document.getElementById('main-content');
+                itineraryRenderer.renderItinerary(mainContent);
             },
             [VIEWS.TODAY]: () => {
                 Logger.ui('Rendering today view');
                 this.renderToday();
             },
             [VIEWS.MAP]: () => {
-                Logger.map('Rendering map view');
-                this.renderMap();
+                Logger.map('Rendering map view - delegating to MapRenderer');
+                const mainContent = document.getElementById('main-content');
+                mapRenderer.renderMap(mainContent);
             },
             [VIEWS.BUDGET]: () => {
                 Logger.budget('Rendering budget view');
@@ -393,7 +396,7 @@ export class UIRenderer {
 
     // Renderizar la vista de resumen (basada en el original)
     renderSummary() {
-        console.log('📊 Renderizando resumen...');
+        Logger.ui('📊 Rendering summary view');
         
         const mainContent = document.getElementById('main-content');
         if (!mainContent) return;
@@ -510,7 +513,7 @@ export class UIRenderer {
         this.updateTodayInfo();
         this.updateBudgetSummary();
 
-        console.log('✅ Resumen renderizado correctamente');
+        Logger.success('✅ Summary rendered successfully');
     }
 
     /**
@@ -558,7 +561,7 @@ export class UIRenderer {
 
 
     updateTodayInfo() {
-        console.log('📅 Actualizando información de hoy...');
+        Logger.ui('📅 Updating today information');
         try {
             // Usar fecha simulada si el Day Simulator está activo
             const today = window.DaySimulator && window.DaySimulator.isSimulating 
@@ -810,239 +813,7 @@ export class UIRenderer {
     }
 
     // Renderizar la vista de itinerario (restaurado a método original)
-    renderItinerary() {
-        Logger.ui('📅 Renderizando itinerario...');
-        this.renderItineraryFallback();
-    }
 
-    // Itinerario completo con funcionalidad original restaurada
-    renderItineraryFallback() {
-        const mainContent = document.getElementById('main-content');
-        if (!mainContent) return;
-
-        // Generar fases dinámicamente basadas en los datos reales del itinerario
-        const phases = this.generateItineraryPhases();
-        console.log('🎨 Fases para renderizar:', phases);
-        
-        const timelineHTML = phases.map(p => {
-            console.log(`🔄 Procesando fase: ${p.title} con ${p.days ? p.days.length : 0} días`);
-            
-            const phaseDays = tripConfig.itineraryData.filter(day => day.phase === p.phase);
-            console.log(`📋 Días filtrados para fase ${p.phase}:`, phaseDays.length);
-            
-            return `
-            <div class="mb-16">
-                <div class="flex items-center gap-4 mb-8">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white text-lg sm:text-xl">location_on</span>
-                    </div>
-                    <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-200">${p.title}</h3>
-                </div>
-                ${phaseDays.map((day, index) => {
-                    // Función para obtener el icono específico según la actividad
-                    const getActivityIcon = (day) => {
-                        const title = day.title.toLowerCase();
-                        const description = day.description.toLowerCase();
-                        
-                        if (title.includes('vuelo') || title.includes('llegada') || title.includes('salida')) return 'flight';
-                        if (title.includes('trekking') || title.includes('caminata') || description.includes('trekking')) return 'hiking';
-                        if (title.includes('rafting') || description.includes('rafting')) return 'kayaking';
-                        if (title.includes('safari') || description.includes('safari') || title.includes('chitwan')) return 'pets';
-                        if (title.includes('cocina') || description.includes('cocina') || description.includes('momos')) return 'restaurant';
-                        if (title.includes('templo') || title.includes('monasterio') || title.includes('dzong') || title.includes('estupa')) return 'temple_buddhist';
-                        if (title.includes('plaza') || title.includes('durbar') || description.includes('palacio')) return 'account_balance';
-                        if (title.includes('aguas termales') || description.includes('aguas termales')) return 'hot_tub';
-                        if (title.includes('patan') || title.includes('katmandú') || description.includes('ciudad')) return 'location_city';
-                        if (title.includes('nido del tigre') || title.includes('taktsang')) return 'temple_buddhist';
-                        return 'place';
-                    };
-                    
-                    return `
-                    <div class="timeline-item grid grid-cols-[auto,1fr] gap-x-6" id="${day.id}" data-coords="${day.coords ? day.coords.join(',') : ''}">
-                        <div class="flex flex-col items-center">
-                            <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 z-10">${getActivityIcon(day)}</span>
-                            ${index < phaseDays.length - 1 ? '<div class="w-0.5 h-full bg-gradient-to-b from-purple-300 to-violet-300 dark:from-purple-600 dark:to-violet-600"></div>' : ''}
-                        </div>
-                        <div class="pb-12 opacity-0 -translate-y-4" style="animation-delay: ${index * 100}ms;">
-                            <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer transition-all duration-200 hover:shadow-xl overflow-hidden">
-                                ${day.image ? `
-                                    <div class="relative h-48 md:h-56">
-                                        <img loading="lazy" src="${day.image}" alt="${day.title}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f46e5/ffffff?text=Imagen';">
-                                        <div class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
-                                            <p class="text-white text-sm font-semibold">${(() => {
-                                                const dayNumber = parseInt(day.id.replace('day-', ''));
-                                                return `Día ${dayNumber}`;
-                                            })()}</p>
-                                        </div>
-                                    </div>
-                                    <div class="p-6">
-                                        <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-2">${day.title}</h4>
-                                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">${day.description}</p>
-                                        <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                                            <span class="material-symbols-outlined text-sm">touch_app</span>
-                                            <span class="text-xs font-medium">Toca para ver detalles</span>
-                                        </div>
-                                    </div>
-                                ` : `
-                                    <div class="p-6">
-                                        <div class="flex items-center gap-3 mb-4">
-                                            <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">${getActivityIcon(day)}</span>
-                                            <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">${(() => {
-                                                const dayNumber = parseInt(day.id.replace('day-', ''));
-                                                const tripDate = this.getTripDate(dayNumber - 1);
-                                                return `Día ${dayNumber} • ${this.formatShortDate(tripDate)}`;
-                                            })()}</p>
-                                        </div>
-                                        <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3">${day.title}</h4>
-                                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">${day.description}</p>
-                                        <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                                            <span class="material-symbols-outlined text-sm">touch_app</span>
-                                            <span class="text-xs font-medium">Toca para ver detalles</span>
-                                        </div>
-                                    </div>
-                                `}
-                            </div>
-                        </div>
-                    </div>`;
-                }).join('')}
-            </div>
-        `}).join('');
-
-        mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
-                <!-- Header del itinerario -->
-                <div class="mb-12 ">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="material-symbols-outlined text-6xl text-blue-600 dark:text-blue-400">list_alt</span>
-                        <div>
-                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Itinerario del Viaje</h1>
-                            <p class="text-lg text-slate-600 dark:text-slate-400">Descubre día a día la aventura que te espera en Nepal y Bután</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Timeline del itinerario -->
-                <div class="relative">
-                    ${timelineHTML}
-                </div>
-            </div>
-        `;
-
-        // Agregar event listeners para los modales
-        document.querySelectorAll('.itinerary-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                this.showItineraryModal(e.currentTarget.dataset.dayId);
-            });
-        });
-
-        // Configurar Intersection Observer para animaciones
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.querySelector(':scope > div:last-child').classList.add('animate-enter');
-                }
-            });
-        }, { threshold: 0.6 });
-        
-        document.querySelectorAll('.timeline-item').forEach(item => observer.observe(item));
-
-        console.log('✅ Itinerario renderizado correctamente');
-    }
-
-    /**
-     * 🎯 SCROLL AL DÍA ACTUAL: Hacer foco en el día actual del viaje en el itinerario
-     */
-    scrollToCurrentDay() {
-        try {
-            // Calcular día actual (usando Day Simulator si está activo)
-            const today = window.DaySimulator && window.DaySimulator.isSimulating 
-                ? window.DaySimulator.getSimulatedDate() 
-                : new Date();
-            const tripStartDate = this.getTripStartDate();
-            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
-            
-            console.log(`🎯 Scroll to current day: dayDiff=${dayDiff}`);
-            
-            // Si estamos durante el viaje, hacer scroll al día actual
-            if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
-                const currentDayId = `day-${dayDiff + 1}`;
-                const targetElement = document.querySelector(`[data-day-id="${currentDayId}"]`);
-                
-                if (targetElement) {
-                    setTimeout(() => {
-                        targetElement.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'center',
-                            inline: 'nearest' 
-                        });
-                        
-                        // Agregar highlight temporal al día actual
-                        targetElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
-                        setTimeout(() => {
-                            targetElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
-                        }, 3000);
-                        
-                        console.log(`🎯 Scrolled to current day: ${currentDayId}`);
-                    }, 500); // Delay para asegurar que el DOM esté renderizado
-                }
-            }
-        } catch (error) {
-            console.error('Error scrolling to current day:', error);
-        }
-    }
-
-    generateItineraryPhases() {
-        console.log('🔍 Generando fases del itinerario...');
-        console.log('📊 Total días en itineraryData:', tripConfig.itineraryData.length);
-        
-        const phases = [];
-        const nepalDays = tripConfig.itineraryData.filter(day => day.phase === 'nepal');
-        const butanDays = tripConfig.itineraryData.filter(day => day.phase === 'butan');
-        const farewellDays = tripConfig.itineraryData.filter(day => day.phase === 'farewell');
-        
-        console.log('🇳🇵 Días de Nepal encontrados:', nepalDays.length);
-        console.log('🇧🇹 Días de Bután encontrados:', butanDays.length);
-        console.log('👋 Días de Despedida encontrados:', farewellDays.length);
-
-        if (nepalDays.length > 0) {
-            phases.push({
-                title: 'Nepal - Aventura en el Himalaya',
-                emoji: '🇳🇵',
-                icon: 'location_on',
-                gradient: 'from-purple-500 to-violet-600',
-                phase: 'nepal',
-                days: nepalDays
-            });
-            console.log('✅ Fase Nepal agregada con', nepalDays.length, 'días');
-        }
-
-        if (butanDays.length > 0) {
-            phases.push({
-                title: 'Bután - El Reino de la Felicidad',
-                emoji: '🇧🇹',
-                icon: 'flag',
-                gradient: 'from-orange-500 to-amber-600',
-                phase: 'butan',
-                days: butanDays
-            });
-            console.log('✅ Fase Bután agregada con', butanDays.length, 'días');
-        }
-
-        if (farewellDays.length > 0) {
-            phases.push({
-                title: 'Despedida - Regreso a Casa',
-                emoji: '👋',
-                icon: 'home',
-                gradient: 'from-slate-500 to-slate-600',
-                phase: 'farewell',
-                days: farewellDays
-            });
-            console.log('✅ Fase Despedida agregada con', farewellDays.length, 'días');
-        }
-
-        console.log('📋 Total fases generadas:', phases.length);
-        return phases;
-    }
 
     getIconGradient(icon) {
         const gradients = {
@@ -1137,125 +908,12 @@ export class UIRenderer {
         // Crear mapa del modal si hay coordenadas
         if (day.coords) {
             setTimeout(() => {
-                this.createModalMap(day.id, day.coords, day.title);
+                mapRenderer.createModalMap(day.id, day.coords, day.title);
             }, 500);
         }
     }
 
-    createModalMap(dayId, coords, title) {
-        console.log(`🗺️ Creando mapa del modal para: ${dayId}`);
-        
-        // ⏱️ ESPERAR A QUE EL MODAL SEA VISIBLE
-        setTimeout(() => {
-            const mapContainer = document.getElementById(`modal-map-${dayId}`);
-            if (!mapContainer) {
-                console.error(`Contenedor del mapa no encontrado: modal-map-${dayId}`);
-                return;
-            }
-            
-            // ✅ VERIFICAR QUE LEAFLET ESTÉ DISPONIBLE
-            if (typeof L === 'undefined') {
-                console.error('❌ Leaflet no está cargado');
-                mapContainer.innerHTML = `
-                    <div class="flex items-center justify-center h-full p-4 text-center">
-                        <div class="text-slate-600 dark:text-slate-400">
-                            <span class="material-symbols-outlined text-4xl mb-2 opacity-50">map</span>
-                            <p>Cargando mapa...</p>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
-            try {
-                // 🧹 LIMPIAR EL CONTENEDOR
-                mapContainer.innerHTML = '';
-                
-                // 📏 ASEGURAR DIMENSIONES CORRECTAS
-                mapContainer.style.height = '300px';
-                mapContainer.style.width = '100%';
-                
-                // 🗺️ CREAR EL MAPA
-                const map = L.map(`modal-map-${dayId}`, { 
-                    closePopupOnClick: false,
-                    zoomControl: true,
-                    attributionControl: true,
-                    preferCanvas: true
-                }).setView(coords, 12);
-                
-                // 🎨 AÑADIR CAPA DE TILES
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                    subdomains: 'abcd',
-                    maxZoom: 19
-                }).addTo(map);
-                
-                // 📍 MARCADOR PRINCIPAL DEL DÍA
-                const mainIcon = L.divIcon({
-                    className: 'custom-div-icon',
-                    html: `<div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
-                        📍
-                    </div>`,
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 20]
-                });
-                
-                L.marker(coords, { icon: mainIcon })
-                    .addTo(map)
-                    .bindPopup(`<b>${title}</b><br><small>Ubicación principal del día</small>`, { closeButton: false })
-                    .openPopup();
-                
-                // 🎯 OBTENER LUGARES CERCANOS
-                const nearbyPlaces = tripConfig.placesByDay[dayId] || [];
-                const markers = [];
-                
-                nearbyPlaces.forEach(place => {
-                const placeIcon = L.divIcon({
-                    className: 'custom-div-icon',
-                    html: `<div class="w-8 h-8 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-200 dark:border-slate-600">
-                        ${this.getActivityIconHTML(place.icon, 'text-sm')}
-                    </div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
-                });
-                
-                const marker = L.marker(place.coords, { icon: placeIcon })
-                    .addTo(map)
-                    .bindPopup(`<b>${place.name}</b><br><small>${place.description}</small>`, { closeButton: false });
-                
-                markers.push(marker);
-            });
-            
-            // Ajustar vista para mostrar todos los marcadores
-            if (nearbyPlaces.length > 0) {
-                const allCoords = [coords, ...nearbyPlaces.map(p => p.coords)];
-                const bounds = L.latLngBounds(allCoords);
-                map.fitBounds(bounds, { padding: [20, 20] });
-            }
-            
-            // 🔄 FORZAR REDIBUJADO DEL MAPA
-            setTimeout(() => {
-                map.invalidateSize();
-            }, 100);
-            
-            // 📊 LOG DE ÉXITO
-            console.log(`✅ Mapa del modal creado exitosamente para día: ${dayId}`);
-            
-        } catch (error) {
-            console.error(`❌ Error creando mapa del modal para día ${dayId}:`, error);
-            mapContainer.innerHTML = `
-                <div class="flex items-center justify-center h-full p-4 text-center">
-                    <div class="text-slate-600 dark:text-slate-400">
-                        <span class="material-symbols-outlined text-4xl mb-2 opacity-50">error</span>
-                        <p class="text-sm">Error al cargar el mapa</p>
-                        <p class="text-xs mt-1">${title}</p>
-                        <p class="text-xs text-slate-500">${coords[0]?.toFixed(4)}, ${coords[1]?.toFixed(4)}</p>
-                    </div>
-                </div>
-            `;
-        }
-    }, 200); // Timeout reducido para mejor UX
-    }
+
 
     renderToday() {
         console.log('🌅 Renderizando hoy...');
@@ -1658,174 +1316,7 @@ export class UIRenderer {
         `;
     }
 
-    renderMap() {
-        console.log('🗺️ Renderizando mapa principal...');
-        const mainContent = document.getElementById('main-content');
-        if (!mainContent) return;
 
-        try {
-            mainContent.innerHTML = `
-                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                    <!-- Header del mapa -->
-                    ${HeaderRenderer.renderPresetHeader('map')}
-
-                    <!-- Contenedor del mapa -->
-                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden" style="height: 70vh; min-height: 500px;">
-                        <div id="map" class="w-full h-full rounded-3xl"></div>
-                    </div>
-                </div>
-            `;
-            
-            setTimeout(() => {
-                try {
-                    // Crear el mapa centrado en Nepal/Bután
-                    const map = L.map('map', { closePopupOnClick: false }).setView([28.3949, 84.1240], 7);
-                    
-                    // Añadir capa de tiles
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
-                        attribution: '&copy; OpenStreetMap &copy; CARTO' 
-                    }).addTo(map);
-                    
-                    // Crear marcadores para cada día del itinerario
-                    const markers = [];
-                    tripConfig.itineraryData.forEach(day => {
-                        if (day.coords) {
-                            const dayNumber = parseInt(day.id.replace('day-', ''));
-                            const tripDate = this.getTripDate(dayNumber - 1);
-                            
-                            // Contenido del popup
-                            const popupContent = `
-                                <div class="w-48">
-                                    <img src="${day.image || 'https://placehold.co/400x200/4f46e5/ffffff?text=Himalaya'}" 
-                                         class="w-full h-24 object-cover rounded-t-lg" alt="${day.title}">
-                                    <div class="p-2">
-                                        <b class="text-blue-600">${day.title}</b>
-                                        <p class="text-xs">Día ${dayNumber} - ${this.formatShortDate(tripDate)}</p>
-                                        <p class="text-xs text-slate-600 mt-1">${day.description.substring(0, 80)}...</p>
-                                        <button onclick="window.uiRenderer.showItineraryModal('${day.id}')" 
-                                                class="text-blue-500 text-xs font-semibold mt-1 block hover:underline">
-                                            Ver detalles →
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
-                            
-                            // Determinar icono Material Design
-                            let materialIcon = 'location_on';
-                            let iconColor = 'text-blue-600';
-                            
-                            if (day.icon === '✈️') {
-                                materialIcon = 'flight';
-                                iconColor = 'text-blue-600';
-                            } else if (day.icon === '🏛️') {
-                                materialIcon = 'temple_buddhist';
-                                iconColor = 'text-purple-600';
-                            } else if (day.icon === '🏔️') {
-                                materialIcon = 'hiking';
-                                iconColor = 'text-green-600';
-                            } else if (day.icon === '🚣') {
-                                materialIcon = 'kayaking';
-                                iconColor = 'text-orange-600';
-                            } else if (day.icon === '🛬') {
-                                materialIcon = 'flight_land';
-                                iconColor = 'text-blue-600';
-                            } else if (day.icon === '🐘') {
-                                materialIcon = 'pets';
-                                iconColor = 'text-amber-600';
-                            } else if (day.icon === '♨️') {
-                                materialIcon = 'hot_tub';
-                                iconColor = 'text-red-600';
-                            }
-                            
-                            // Crear icono personalizado con Material Design
-                            const customIcon = L.divIcon({
-                                className: 'custom-div-icon',
-                                html: `<div class="w-10 h-10 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-200 dark:border-slate-600">
-                                    <span class="material-symbols-outlined text-lg ${iconColor}">${materialIcon}</span>
-                                </div>`,
-                                iconSize: [40, 40],
-                                iconAnchor: [20, 20]
-                            });
-                            
-                            // Crear marcador
-                            const marker = L.marker(day.coords, { icon: customIcon })
-                                .addTo(map)
-                                .bindPopup(popupContent, { 
-                                    offset: L.point(0, -20), 
-                                    autoClose: false, 
-                                    closeButton: true 
-                                });
-                            
-                            // Eventos del marcador
-                            let hoverTimeout;
-                            marker.on('mouseover', function () { 
-                                clearTimeout(hoverTimeout); 
-                                this.openPopup(); 
-                            });
-                            marker.on('mouseout', function () { 
-                                hoverTimeout = setTimeout(() => this.closePopup(), 2000); 
-                            });
-                            marker.on('click', () => {
-                                this.showItineraryModal(day.id);
-                            });
-                            
-                            markers.push(marker);
-                            
-                            // Añadir coordenadas para la ruta
-                            if (day.coords) {
-                                this.routeCoords = this.routeCoords || [];
-                                this.routeCoords.push(day.coords);
-                            }
-                        }
-                    });
-                    
-                    // Crear ruta si hay coordenadas
-                    if (this.routeCoords && this.routeCoords.length > 1) {
-                        L.polyline(this.routeCoords, {
-                            color: '#3b82f6',
-                            weight: 3,
-                            opacity: 0.7,
-                            smoothFactor: 1
-                        }).addTo(map);
-                    }
-                    
-                    // Ajustar vista para mostrar todos los marcadores
-                    if (markers.length > 0) {
-                        const group = new L.featureGroup(markers);
-                        map.fitBounds(group.getBounds().pad(0.1));
-                    }
-                    
-                    // Guardar referencia del mapa
-                    this.map = map;
-                    
-                    console.log('✅ Mapa principal creado exitosamente');
-                } catch (error) {
-                    console.error('❌ Error al crear el mapa:', error);
-                    mainContent.innerHTML = `
-                        <div class="fixed inset-0 flex items-center justify-center bg-red-50 dark:bg-red-900/20 z-10">
-                            <div class="text-center p-8">
-                                <div class="text-red-500 text-6xl mb-4">🗺️</div>
-                                <h3 class="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">Error al cargar el mapa</h3>
-                                <p class="text-red-600 dark:text-red-300">${error.message}</p>
-                            </div>
-                        </div>
-                    `;
-                }
-            }, 100);
-            
-        } catch (error) {
-            console.error('❌ Error al renderizar mapa:', error);
-            mainContent.innerHTML = `
-                <div class="fixed inset-0 flex items-center justify-center bg-red-50 dark:bg-red-900/20 z-10">
-                    <div class="text-center p-8">
-                        <div class="text-red-500 text-6xl mb-4">🗺️</div>
-                        <h3 class="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">Error al cargar el mapa</h3>
-                        <p class="text-red-600 dark:text-red-300">${error.message}</p>
-                    </div>
-                </div>
-            `;
-        }
-    }
 
 
     // Renderizar sección de Gastos independiente
@@ -2538,58 +2029,7 @@ export class UIRenderer {
         }
     }
 
-    generateItineraryPhases() {
-        console.log('🔍 Generando fases del itinerario...');
-        console.log('📊 Total días en itineraryData:', tripConfig.itineraryData.length);
-        
-        const phases = [];
-        const nepalDays = tripConfig.itineraryData.filter(day => day.phase === 'nepal');
-        const butanDays = tripConfig.itineraryData.filter(day => day.phase === 'butan');
-        const farewellDays = tripConfig.itineraryData.filter(day => day.phase === 'farewell');
-        
-        console.log('🇳🇵 Días de Nepal encontrados:', nepalDays.length);
-        console.log('🇧🇹 Días de Bután encontrados:', butanDays.length);
-        console.log('👋 Días de Despedida encontrados:', farewellDays.length);
 
-        if (nepalDays.length > 0) {
-            phases.push({
-                title: 'Nepal - Aventura en el Himalaya',
-                emoji: '🇳🇵',
-                icon: 'location_on',
-                gradient: 'from-purple-500 to-violet-600',
-                phase: 'nepal',
-                days: nepalDays
-            });
-            console.log('✅ Fase Nepal agregada con', nepalDays.length, 'días');
-        }
-
-        if (butanDays.length > 0) {
-            phases.push({
-                title: 'Bután - El Reino de la Felicidad',
-                emoji: '🇧🇹',
-                icon: 'flag',
-                gradient: 'from-orange-500 to-amber-600',
-                phase: 'butan',
-                days: butanDays
-            });
-            console.log('✅ Fase Bután agregada con', butanDays.length, 'días');
-        }
-
-        if (farewellDays.length > 0) {
-            phases.push({
-                title: 'Despedida - Regreso a Casa',
-                emoji: '👋',
-                icon: 'home',
-                gradient: 'from-slate-500 to-slate-600',
-                phase: 'farewell',
-                days: farewellDays
-            });
-            console.log('✅ Fase Despedida agregada con', farewellDays.length, 'días');
-        }
-
-        console.log('📋 Total fases generadas:', phases.length);
-        return phases;
-    }
 
 
 
