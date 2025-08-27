@@ -266,7 +266,7 @@ export class UIRenderer {
     // =============================
 
     /**
-     * Renderizar vista "Hoy"
+     * Renderizar vista "Hoy" (header estilo Itinerario)
      */
     renderToday() {
         Logger.ui('📅 Rendering today view');
@@ -282,20 +282,38 @@ export class UIRenderer {
             
             Logger.data('📅 Trip dates calculated', { tripStartDate, today, dayDiff, totalDays: tripConfig.itineraryData.length });
             
+            let contentHTML = '';
+            
             if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
                 const currentDayData = tripConfig.itineraryData[dayDiff];
                 Logger.data('📅 Current day data loaded', currentDayData);
-                
-                mainContent.innerHTML = this.generateTodayContent(currentDayData, dayDiff);
+                contentHTML = this.generateTodayContent(currentDayData, dayDiff);
             } else {
                 // Antes o después del viaje
                 const statusTitle = dayDiff < 0 ? 'Preparando el viaje' : 'Viaje completado';
                 const statusMessage = dayDiff < 0 ? 
                     `Faltan ${Math.abs(dayDiff)} días para comenzar la aventura` : 
                     'El viaje ha terminado. ¡Esperamos que hayas disfrutado!';
-                    
-                mainContent.innerHTML = this.generatePrePostTripContent(statusTitle, statusMessage);
+                contentHTML = this.generatePrePostTripContent(statusTitle, statusMessage);
             }
+            
+            // Envolver con header estilo Itinerario
+            mainContent.innerHTML = `
+                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                    <!-- Header de Hoy (estilo Itinerario) -->
+                    <div class="mb-12">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400">today</span>
+                            <div>
+                                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">¿Qué hacemos hoy?</h1>
+                                <p class="text-lg text-slate-600 dark:text-slate-400">Descubre las actividades y planes del día actual</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${contentHTML}
+                </div>
+            `;
             
             Logger.success('✅ Today view rendered successfully');
         } catch (error) {
@@ -414,7 +432,7 @@ export class UIRenderer {
     }
 
     /**
-     * Renderizar vista de extras completa
+     * Renderizar vista de extras completa (header estilo Itinerario)
      */
     renderExtras() {
         Logger.ui('🎒 Rendering extras section');
@@ -422,11 +440,11 @@ export class UIRenderer {
         if (!mainContent) return;
 
         try {
-            // Seguir el mismo patrón que renderItinerary()
+            // Usar mismo patrón de header que Itinerario
             mainContent.innerHTML = `
                 <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                    <!-- Header de Extras -->
-                    <div class="mb-12 hidden md:block">
+                    <!-- Header de Extras (estilo Itinerario) -->
+                    <div class="mb-12">
                         <div class="flex items-center gap-4 mb-4">
                             <span class="material-symbols-outlined text-6xl text-purple-600 dark:text-purple-400">inventory_2</span>
                             <div>
@@ -468,7 +486,7 @@ export class UIRenderer {
     }
 
     /**
-     * Renderizar vista de gastos
+     * Renderizar vista de gastos (header estilo Itinerario)
      */
     renderGastos() {
         Logger.ui('💰 Rendering budget section');
@@ -478,8 +496,8 @@ export class UIRenderer {
         try {
             mainContent.innerHTML = `
                 <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                    <!-- Header de Gastos -->
-                    <div class="mb-12 hidden md:block">
+                    <!-- Header de Gastos (estilo Itinerario) -->
+                    <div class="mb-12">
                         <div class="flex items-center gap-4 mb-4">
                             <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400">account_balance_wallet</span>
                             <div>
@@ -746,7 +764,7 @@ export class UIRenderer {
     }
 
     /**
-     * Renderizar lista de equipaje
+     * Renderizar lista de equipaje (estilo original restaurado)
      */
     async renderPackingList() {
         Logger.ui('🎒 Rendering packing list');
@@ -757,7 +775,28 @@ export class UIRenderer {
         }
         Logger.debug('✅ Container #packing-list found');
 
-        // Función para obtener icono de categoría
+        // Inicializar PackingListManager si no existe (como en el original)
+        let packingManager = stateManager.getPackingListManager();
+        if (!packingManager) {
+            try {
+                const { getPackingListManager } = await import('../utils/PackingListManager.js');
+                packingManager = getPackingListManager();
+                stateManager.setPackingListManager(packingManager);
+                
+                // Inicializar con FirebaseManager si está disponible
+                const firebaseManager = stateManager.getFirebaseManager();
+                if (firebaseManager) {
+                    await packingManager.initialize(firebaseManager);
+                }
+            } catch (error) {
+                Logger.warning('PackingListManager not available, using simple implementation');
+                packingManager = null;
+            }
+        }
+
+        const saved = packingManager ? packingManager.getItems() : {};
+        
+        // Función para obtener icono de categoría (sin círculos de relleno)
         const getCategoryIcon = (category) => {
             const cleanCategory = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
             const icons = {
@@ -770,17 +809,17 @@ export class UIRenderer {
             return icons[cleanCategory] || 'inventory_2';
         };
 
-        // Función para obtener color de categoría
+        // Función para obtener color de categoría (como texto, no fondo)
         const getCategoryColor = (category) => {
             const cleanCategory = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
             const colors = {
-                'Ropa': 'bg-blue-500',
-                'Calzado': 'bg-green-500',
-                'Equipo': 'bg-purple-500', 
-                'Documentos y Salud': 'bg-red-500',
-                'Otros': 'bg-gray-500'
+                'Ropa': 'text-blue-600',
+                'Calzado': 'text-green-600',
+                'Equipo': 'text-purple-600', 
+                'Documentos y Salud': 'text-red-600',
+                'Otros': 'text-gray-600'
             };
-            return colors[cleanCategory] || 'bg-gray-500';
+            return colors[cleanCategory] || 'text-gray-600';
         };
 
         const listHTML = Object.entries(tripConfig.packingListData).map(([category, items]) => {
@@ -789,68 +828,79 @@ export class UIRenderer {
             const cleanCategoryName = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
             
             return `
-                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 mb-6">
-                    <div class="p-6">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-12 h-12 ${categoryColor} rounded-xl flex items-center justify-center shadow-lg">
-                                <span class="material-symbols-outlined text-white text-xl">${categoryIcon}</span>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900 dark:text-white">${cleanCategoryName}</h3>
-                                <p class="text-sm text-slate-600 dark:text-slate-400">${items.length} elementos</p>
-                            </div>
-                        </div>
-                        
-                        <div class="grid gap-3">
-                            ${items.map((item, index) => `
-                                <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-                                    <input type="checkbox" class="packing-checkbox w-5 h-5 text-green-600 bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded focus:ring-green-500 dark:focus:ring-green-600" data-category="${category}" data-item="${item}">
-                                    <span class="flex-1 text-slate-700 dark:text-slate-300">${item}</span>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-2xl ${categoryColor}">${categoryIcon}</span>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">${cleanCategoryName}</h3>
+                    </div>
+                    <div class="space-y-2">
+                        ${items.map(item => {
+                            const itemKey = `${category}-${item}`;
+                            const isChecked = saved[itemKey] || false;
+                            return `
+                                <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} 
+                                           data-item-key="${itemKey}"
+                                           class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                    <span class="text-slate-700 dark:text-slate-300 ${isChecked ? 'line-through opacity-50' : ''}">${item}</span>
                                 </label>
-                            `).join('')}
-                        </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             `;
         }).join('');
 
-        const fullHTML = `
+        container.innerHTML = `
             <div class="flex items-center gap-3 mb-8">
-                <span class="material-symbols-outlined text-3xl text-purple-600 dark:text-purple-400">luggage</span>
+                <span class="material-symbols-outlined text-3xl text-teal-600 dark:text-teal-400">luggage</span>
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Lista de Equipaje</h2>
             </div>
             
-            <div class="mb-6">
-                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
-                        <h4 class="font-semibold text-blue-900 dark:text-blue-100">Lista Interactiva</h4>
-                    </div>
-                    <p class="text-sm text-blue-800 dark:text-blue-200">Marca los elementos que ya tienes listos para el viaje. El progreso se guarda automáticamente.</p>
-                </div>
-            </div>
+            <!-- Estadísticas de empacado -->
+            <div id="packing-stats" class="mb-6"></div>
             
-            ${listHTML}
+            <div class="grid gap-6 md:grid-cols-2">
+                ${listHTML}
+            </div>
         `;
         
-        container.innerHTML = fullHTML;
+        // Actualizar estadísticas (con delay para asegurar que DOM esté listo)
+        if (packingManager) {
+            setTimeout(() => {
+                packingManager.updatePackingStats();
+            }, 100);
+        }
         
-        // Configurar event listeners para los checkboxes
-        const checkboxes = container.querySelectorAll('.packing-checkbox');
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const category = e.target.dataset.category;
-                const item = e.target.dataset.item;
-                const isChecked = e.target.checked;
-                
-                Logger.debug(`Packing item ${isChecked ? 'checked' : 'unchecked'}: ${category} - ${item}`);
-                
-                // Aquí se podría implementar persistencia con localStorage o Firebase
-                // Por ahora solo logging
-            });
+        // Asegurar que el contenedor sea visible
+        container.style.opacity = '1 !important';
+        
+        // Configurar event listeners para los checkboxes con Firebase (estilo original)
+        container.addEventListener('change', async e => {
+            if (e.target.matches('input[type="checkbox"]')) {
+                const itemKey = e.target.getAttribute('data-item-key');
+                if (itemKey) {
+                    // Actualizar visual inmediatamente (optimistic UI)
+                    const label = e.target.closest('label');
+                    const span = label.querySelector('span');
+                    if (span) {
+                        if (e.target.checked) {
+                            span.classList.add('line-through', 'opacity-50');
+                        } else {
+                            span.classList.remove('line-through', 'opacity-50');
+                        }
+                    }
+                    
+                    // Actualizar PackingListManager si está disponible
+                    if (packingManager) {
+                        await packingManager.toggleItem(itemKey, e.target.checked);
+                        packingManager.updatePackingStats();
+                    }
+                }
+            }
         });
         
-        Logger.success('✅ Packing list rendered with interactive checkboxes');
+        Logger.success('✅ Packing list rendered with original style');
     }
 
     /**

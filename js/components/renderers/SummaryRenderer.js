@@ -464,7 +464,7 @@ export class SummaryRenderer {
     }
 
     /**
-     * Renderizar sección de vuelos
+     * Renderizar sección de vuelos (estilo original restaurado)
      */
     renderFlightsSection() {
         try {
@@ -504,9 +504,22 @@ export class SummaryRenderer {
                         </div>
                     </div>
                     <div class="space-y-4">
-                        ${flight.segments.map(segment => flightSegmentHTML(segment)).join('')}
+                        ${flight.segments.map((segment, index) => `
+                            ${index > 0 && flight.segments[index-1].layover ? 
+                                `<div class="text-center py-2">
+                                    <div class="inline-flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-3 py-1 rounded-full text-sm border border-orange-200 dark:border-orange-800">
+                                        <span class="material-symbols-outlined text-sm">schedule</span>
+                                        ${flight.segments[index-1].layover}
+                                    </div>
+                                </div>` : ''}
+                            ${flightSegmentHTML(segment)}
+                        `).join('')}
                     </div>
                 </div>`;
+
+            // Separar vuelos internacionales y regionales como en el original
+            const internationalFlights = tripConfig.flightsData.filter(f => f.type === 'Internacional');
+            const regionalFlights = tripConfig.flightsData.filter(f => f.type === 'Regional');
 
             return `
                 <section class="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 border border-slate-200 dark:border-slate-700 shadow-lg">
@@ -515,8 +528,14 @@ export class SummaryRenderer {
                         <h3 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Información de Vuelos</h3>
                     </div>
                     
-                    <div class="grid gap-6 lg:grid-cols-2">
-                        ${tripConfig.flightsData.map(flight => flightCardHTML(flight)).join('')}
+                    <div class="space-y-8">
+                        ${internationalFlights.length > 0 ? flightCardHTML(internationalFlights[0]) : ''}
+                        ${regionalFlights.length > 0 ? `
+                            <div class="grid md:grid-cols-2 gap-6">
+                                ${regionalFlights.map(flightCardHTML).join('')}
+                            </div>
+                        ` : ''}
+                        ${internationalFlights.length > 1 ? flightCardHTML(internationalFlights[1]) : ''}
                     </div>
                 </section>
             `;
