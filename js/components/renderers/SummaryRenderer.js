@@ -206,6 +206,10 @@ export class SummaryRenderer {
                         </div>
                     </div>
                 </section>
+
+                <!-- Información de Vuelos -->
+                ${this.renderFlightsSection()}
+
             </div>
         `;
 

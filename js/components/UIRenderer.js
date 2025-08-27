@@ -757,23 +757,100 @@ export class UIRenderer {
         }
         Logger.debug('✅ Container #packing-list found');
 
-        // Placeholder básico por ahora
-        const listHTML = `
+        // Función para obtener icono de categoría
+        const getCategoryIcon = (category) => {
+            const cleanCategory = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+            const icons = {
+                'Ropa': 'checkroom',
+                'Calzado': 'footprint', 
+                'Equipo': 'backpack',
+                'Documentos y Salud': 'medical_services',
+                'Otros': 'inventory_2'
+            };
+            return icons[cleanCategory] || 'inventory_2';
+        };
+
+        // Función para obtener color de categoría
+        const getCategoryColor = (category) => {
+            const cleanCategory = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+            const colors = {
+                'Ropa': 'bg-blue-500',
+                'Calzado': 'bg-green-500',
+                'Equipo': 'bg-purple-500', 
+                'Documentos y Salud': 'bg-red-500',
+                'Otros': 'bg-gray-500'
+            };
+            return colors[cleanCategory] || 'bg-gray-500';
+        };
+
+        const listHTML = Object.entries(tripConfig.packingListData).map(([category, items]) => {
+            const categoryIcon = getCategoryIcon(category);
+            const categoryColor = getCategoryColor(category);
+            const cleanCategoryName = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+            
+            return `
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 mb-6">
+                    <div class="p-6">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-12 h-12 ${categoryColor} rounded-xl flex items-center justify-center shadow-lg">
+                                <span class="material-symbols-outlined text-white text-xl">${categoryIcon}</span>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white">${cleanCategoryName}</h3>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">${items.length} elementos</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid gap-3">
+                            ${items.map((item, index) => `
+                                <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <input type="checkbox" class="packing-checkbox w-5 h-5 text-green-600 bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded focus:ring-green-500 dark:focus:ring-green-600" data-category="${category}" data-item="${item}">
+                                    <span class="flex-1 text-slate-700 dark:text-slate-300">${item}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const fullHTML = `
             <div class="flex items-center gap-3 mb-8">
                 <span class="material-symbols-outlined text-3xl text-purple-600 dark:text-purple-400">luggage</span>
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Lista de Equipaje</h2>
             </div>
             
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-                <p class="text-slate-600 dark:text-slate-400">
-                    La funcionalidad completa de lista de equipaje se restaurará próximamente.
-                    Incluirá checkboxes interactivos y categorías detalladas.
-                </p>
+            <div class="mb-6">
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
+                        <h4 class="font-semibold text-blue-900 dark:text-blue-100">Lista Interactiva</h4>
+                    </div>
+                    <p class="text-sm text-blue-800 dark:text-blue-200">Marca los elementos que ya tienes listos para el viaje. El progreso se guarda automáticamente.</p>
+                </div>
             </div>
+            
+            ${listHTML}
         `;
         
-        container.innerHTML = listHTML;
-        Logger.success('✅ Packing list placeholder rendered');
+        container.innerHTML = fullHTML;
+        
+        // Configurar event listeners para los checkboxes
+        const checkboxes = container.querySelectorAll('.packing-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const category = e.target.dataset.category;
+                const item = e.target.dataset.item;
+                const isChecked = e.target.checked;
+                
+                Logger.debug(`Packing item ${isChecked ? 'checked' : 'unchecked'}: ${category} - ${item}`);
+                
+                // Aquí se podría implementar persistencia con localStorage o Firebase
+                // Por ahora solo logging
+            });
+        });
+        
+        Logger.success('✅ Packing list rendered with interactive checkboxes');
     }
 
     /**

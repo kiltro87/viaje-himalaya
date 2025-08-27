@@ -736,7 +736,7 @@ export class BudgetManager {
 
         container.style.opacity = '1 !important';
         this.tripConfig = tripConfig;
-        this.setupEventListeners();
+                                    this.setupEventListeners();
     }
 
     setupEventListeners() {
@@ -1269,29 +1269,29 @@ export class BudgetManager {
                     });
                 });
                 
-                        // 💾 GUARDAR EDICIÓN INLINE (con limpieza de listeners anteriores)
-        document.querySelectorAll('.save-inline-edit').forEach(btn => {
-            // 🧹 LIMPIAR listeners anteriores para evitar duplicados
-            btn.replaceWith(btn.cloneNode(true));
-        });
-        
-        // 🆕 AÑADIR listeners frescos
-        document.querySelectorAll('.save-inline-edit').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+                // 💾 GUARDAR EDICIÓN INLINE (con limpieza de listeners anteriores)
+                document.querySelectorAll('.save-inline-edit').forEach(btn => {
+                    // 🧹 LIMPIAR listeners anteriores para evitar duplicados
+                    btn.replaceWith(btn.cloneNode(true));
+                });
+                
+                // 🆕 AÑADIR listeners frescos
+                document.querySelectorAll('.save-inline-edit').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const expenseId = btn.dataset.expenseId;
                         await this.saveInlineEdit(expenseId);
                     });
                 });
                 
-                        // ❌ CANCELAR EDICIÓN INLINE (con limpieza de listeners anteriores)
-        document.querySelectorAll('.cancel-inline-edit').forEach(btn => {
-            // 🧹 LIMPIAR listeners anteriores para evitar duplicados
-            btn.replaceWith(btn.cloneNode(true));
-        });
-        
-        // 🆕 AÑADIR listeners frescos
-        document.querySelectorAll('.cancel-inline-edit').forEach(btn => {
+                // ❌ CANCELAR EDICIÓN INLINE (con limpieza de listeners anteriores)
+                document.querySelectorAll('.cancel-inline-edit').forEach(btn => {
+                    // 🧹 LIMPIAR listeners anteriores para evitar duplicados
+                    btn.replaceWith(btn.cloneNode(true));
+                });
+                
+                // 🆕 AÑADIR listeners frescos
+                document.querySelectorAll('.cancel-inline-edit').forEach(btn => {
             btn.addEventListener('click', (e) => {
                         e.preventDefault();
                         const expenseId = btn.dataset.expenseId;
@@ -1345,6 +1345,8 @@ export class BudgetManager {
                                 if (selectedCategories.length > 0) {
                                     // Si hay categorías seleccionadas, actualizar su contenido
                                     this.showCategoryContent();
+                                    // Reconfigurar listeners de presupuesto después de actualizar
+                                    setTimeout(() => this.setupBudgetFormListeners(), 100);
                                 } else {
                                     // Si no hay categorías seleccionadas, ocultar contenido
                                     const contentContainer = document.getElementById('budget-content');
@@ -1923,5 +1925,73 @@ export class BudgetManager {
             const subTotal = subItems.reduce((subSum, subItem) => subSum + (parseFloat(subItem.cost) || 0), 0);
             return sum + cost + subTotal;
         }, 0);
+    }
+
+    /**
+     * Configurar event listeners para formularios de presupuesto
+     * 
+     * Método separado para reconfigurar los listeners de creación de gastos
+     * desde items del presupuesto. Se llama después de actualizar el DOM.
+     * 
+     * @private
+     */
+    setupBudgetFormListeners() {
+        // 💵 PRESUPUESTO: Click en item para mostrar formulario inline
+        document.querySelectorAll('.budget-item-clickable').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const itemId = item.dataset.itemId;
+                if (itemId) {
+                    this.toggleBudgetInlineForm(itemId);
+                }
+            });
+        });
+
+        // 💾 CREAR GASTO DESDE PRESUPUESTO
+        document.querySelectorAll('.create-budget-expense').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const itemId = btn.dataset.itemId;
+                await this.createExpenseFromBudget(itemId);
+            });
+        });
+
+        // ❌ CANCELAR FORMULARIO PRESUPUESTO
+        document.querySelectorAll('.cancel-budget-inline').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const itemId = btn.dataset.itemId;
+                this.hideBudgetInlineForm(itemId);
+            });
+        });
+
+        // 🎯 SUBITEMS (usar inline forms como los items principales)
+        document.querySelectorAll('.budget-subitem-clickable').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const itemId = item.dataset.itemId;
+                this.toggleBudgetInlineForm(itemId);
+            });
+        });
+
+        // 💾 CREAR GASTO DESDE SUBITEM
+        document.querySelectorAll('.create-subitem-expense').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const itemId = btn.dataset.itemId;
+                await this.createExpenseFromBudget(itemId);
+            });
+        });
+
+        // ❌ CANCELAR FORMULARIO SUBITEM
+        document.querySelectorAll('.cancel-subitem-inline').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const itemId = btn.dataset.itemId;
+                this.hideBudgetInlineForm(itemId);
+            });
+        });
+
+        Logger.debug('✅ Budget form listeners configured');
     }
 }

@@ -453,22 +453,45 @@ export class MapRenderer {
      * @private
      */
     adjustModalMapView(map, coords, markers) {
+        // Incluir marcador principal y lugares cercanos
         const nearbyPlaces = tripConfig.placesByDay || {};
-        const allCoords = [coords, ...Object.values(nearbyPlaces).flat().map(p => p.coords)].filter(Boolean);
+        const allCoords = [coords];
         
-        if (allCoords.length > 1) {
-            // Si hay múltiples coordenadas, maximizar la vista para verlas todas bien
-            const bounds = L.latLngBounds(allCoords);
-            map.fitBounds(bounds, { 
-                padding: [40, 40], // Más padding para mejor visualización
-                maxZoom: 16 // Zoom máximo para evitar acercarse demasiado
+        // Agregar coordenadas de lugares cercanos si existen
+        if (nearbyPlaces && Object.keys(nearbyPlaces).length > 0) {
+            Object.values(nearbyPlaces).flat().forEach(place => {
+                if (place.coords) {
+                    allCoords.push(place.coords);
+                }
             });
-        } else {
-            // Si solo hay una coordenada, usar un zoom óptimo para ver el área
-            map.setView(coords, 16); // Zoom más alto para ver mejor el entorno
         }
         
-        Logger.debug(`🗺️ Modal map view maximized: ${allCoords.length} coordinates, zoom optimized for visibility`);
+        // Filtrar coordenadas válidas
+        const validCoords = allCoords.filter(coord => coord && coord.length === 2);
+        
+        if (validCoords.length > 1) {
+            // Si hay múltiples coordenadas, ajustar vista para verlas todas
+            const bounds = L.latLngBounds(validCoords);
+            map.fitBounds(bounds, { 
+                padding: [60, 60], // Más padding para mejor visualización
+                maxZoom: 14 // Zoom más alejado para ver el contexto
+            });
+        } else if (coords) {
+            // Si solo hay una coordenada, zoom enfocado pero no demasiado cercano
+            map.setView(coords, 15); // Zoom óptimo para ver el área
+        }
+        
+        // Forzar actualización del tamaño después de ajustar vista
+        setTimeout(() => {
+            map.invalidateSize();
+            // Re-aplicar bounds después de invalidar tamaño
+            if (validCoords.length > 1) {
+                const bounds = L.latLngBounds(validCoords);
+                map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+            }
+        }, 200);
+        
+        Logger.debug(`🗺️ Modal map view optimized: ${validCoords.length} coordinates, enhanced zoom for visibility`);
     }
 
     /**
