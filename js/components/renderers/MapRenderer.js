@@ -457,15 +457,18 @@ export class MapRenderer {
         const allCoords = [coords, ...Object.values(nearbyPlaces).flat().map(p => p.coords)].filter(Boolean);
         
         if (allCoords.length > 1) {
-            // Si hay múltiples coordenadas, ajustar a todas
+            // Si hay múltiples coordenadas, maximizar la vista para verlas todas bien
             const bounds = L.latLngBounds(allCoords);
-            map.fitBounds(bounds, { padding: [20, 20] });
+            map.fitBounds(bounds, { 
+                padding: [40, 40], // Más padding para mejor visualización
+                maxZoom: 16 // Zoom máximo para evitar acercarse demasiado
+            });
         } else {
-            // Si solo hay una coordenada, centrar con zoom apropiado
-            map.setView(coords, 14); // Zoom más cercano para una sola ubicación
+            // Si solo hay una coordenada, usar un zoom óptimo para ver el área
+            map.setView(coords, 16); // Zoom más alto para ver mejor el entorno
         }
         
-        Logger.debug(`Modal map view adjusted: ${allCoords.length} coordinates`);
+        Logger.debug(`🗺️ Modal map view maximized: ${allCoords.length} coordinates, zoom optimized for visibility`);
     }
 
     /**

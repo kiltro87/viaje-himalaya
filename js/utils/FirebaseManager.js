@@ -455,17 +455,41 @@ export class FirebaseManager {
      * @returns {Promise<boolean>} True si se eliminó correctamente
      */
     async deleteExpense(expenseId) {
+        Logger.debug(`🔥 Firebase deleteExpense called for ID: ${expenseId}`);
+        
         if (!this.isConnected) {
+            Logger.warning('Not connected to Firebase, using local delete');
             return this.deleteExpenseLocal(expenseId);
         }
 
         try {
-            const { doc, deleteDoc } = 
+            const { doc, deleteDoc, getDoc } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
-            await deleteDoc(doc(this.db, firestoreConfig.collections.expenses, expenseId));
+            // Verificar que el documento existe antes de eliminar
+            const docRef = doc(this.db, firestoreConfig.collections.expenses, expenseId);
+            const docSnap = await getDoc(docRef);
+            
+            if (!docSnap.exists()) {
+                Logger.warning(`🚨 Document ${expenseId} does not exist in Firebase`);
+                return false;
+            }
+            
+            Logger.debug(`✅ Document ${expenseId} exists, proceeding with delete`);
+            
+            // Eliminar el documento
+            await deleteDoc(docRef);
             
             Logger.data('Expense deleted from Firebase:', expenseId);
+            
+            // Verificar que efectivamente se eliminó
+            const verifySnap = await getDoc(docRef);
+            if (verifySnap.exists()) {
+                Logger.error(`🚨 DELETE FAILED: Document ${expenseId} still exists after delete operation`);
+                return false;
+            }
+            
+            Logger.success(`✅ DELETE VERIFIED: Document ${expenseId} successfully removed from Firebase`);
             
             // Actualizar localStorage como backup
             this.updateLocalStorage();
