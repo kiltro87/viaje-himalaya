@@ -27,6 +27,7 @@ import { tripConfig } from '../../config/tripConfig.js';
 import { DateUtils } from '../../utils/DateUtils.js';
 import { FormatUtils } from '../../utils/FormatUtils.js';
 import Logger from '../../utils/Logger.js';
+import stateManager from '../../utils/StateManager.js';
 
 export class SummaryRenderer {
     
@@ -213,3 +214,256 @@ export class SummaryRenderer {
         
         Logger.success('📊 Summary view rendered successfully');
     }
+
+    /**
+     * 💰 CALCULAR PRESUPUESTO TOTAL
+     * 
+     * Suma todas las categorías del presupuesto planificado
+     * @returns {number} Total presupuestado
+     */
+    calculateTotalBudget() {
+        try {
+            // Acceder a la estructura correcta: budgetData.budgetData
+            const budgetDataSource = stateManager.getState('config.tripConfig')?.budgetData?.budgetData || tripConfig?.budgetData?.budgetData || {};
+            let total = 0;
+            
+            // Sumar todas las categorías de presupuesto
+            Object.values(budgetDataSource).forEach(category => {
+                if (Array.isArray(category)) {
+                    category.forEach(item => {
+                        total += item.cost || 0;
+                    });
+                }
+            });
+            return total;
+        } catch (error) {
+            Logger.error('Error calculating total budget:', error);
+            return 4500; // Fallback solo si hay error
+        }
+    }
+
+    /**
+     * 💸 CALCULAR TOTAL GASTADO
+     * 
+     * Suma todos los gastos reales del AppState
+     * @returns {number} Total gastado
+     */
+    calculateTotalSpent() {
+        try {
+            let totalSpent = 0;
+            
+            // Obtener gastos del localStorage si existe AppState
+            totalSpent = stateManager.getTotalSpent();
+            return totalSpent;
+        } catch (error) {
+            Logger.error('Error calculating total spent:', error);
+            return 0; // Fallback si hay error
+        }
+    }
+
+    /**
+     * 📊 RENDERIZAR ANÁLISIS DE ESTILO DE VIAJE
+     * 
+     * Genera gráficos circulares que muestran el tipo de actividades del viaje
+     * @returns {string} HTML del análisis de estilo
+     */
+    renderTripStyleAnalysis() {
+        try {
+            const tripStyles = this.calculateTripStyles();
+            
+            return `
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-2xl text-purple-600 dark:text-purple-400">analytics</span>
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Estilo de Viaje</h3>
+                </div>
+                
+                <div class="flex justify-between gap-2 sm:gap-4 lg:gap-8">
+                    ${tripStyles.map(style => `
+                        <div class="text-center flex-1 min-w-0">
+                            <div class="relative w-full aspect-square max-w-32 mx-auto">
+                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                    <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                    <circle class="${style.color}" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="${283 - (283 * style.percentage) / 100}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                                </svg>
+                                <span class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl lg:text-4xl ${style.color}">${style.icon}</span>
+                            </div>
+                            <p class="font-semibold mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">${style.title}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } catch (error) {
+            Logger.error('Error rendering travel style analysis:', error);
+            return '';
+        }
+    }
+
+    /**
+     * 🎯 CALCULAR ESTILOS DE VIAJE
+     * 
+     * Analiza las actividades del itinerario y calcula porcentajes por categoría
+     * @returns {Array} Array de objetos con estilos de viaje y porcentajes
+     */
+    calculateTripStyles() {
+        // Definir categorías de actividades exactamente como las pasó el usuario
+        const activityCategories = {
+            'naturaleza': { keywords: ['trekking', 'rafting', 'parque', 'montaña', 'selva', 'río', 'lago'], icon: 'nature', color: 'text-green-500' },
+            'cultura': { keywords: ['templo', 'monasterio', 'museo', 'plaza', 'durbar', 'dzong', 'estupa'], icon: 'temple_buddhist', color: 'text-amber-500' },
+            'ciudad': { keywords: ['thamel', 'pokhara', 'thimphu', 'paro', 'katmandú', 'mercado', 'restaurante'], icon: 'location_city', color: 'text-red-500' },
+            'aventura': { keywords: ['parapente', 'rafting', 'trekking', 'safari'], icon: 'hiking', color: 'text-purple-500' },
+            'relax': { keywords: ['aguas termales', 'spa', 'descanso', 'tarde libre'], icon: 'spa', color: 'text-sky-500' }
+        };
+        
+        // Contar actividades por categoría
+        const categoryCounts = {};
+        const totalDays = tripConfig.itineraryData.length;
+        
+        // Inicializar contadores
+        Object.keys(activityCategories).forEach(category => {
+            categoryCounts[category] = 0;
+        });
+        
+        // Contar actividades en todo el itinerario
+        tripConfig.itineraryData.forEach(day => {
+            const dayText = `${day.title} ${day.activities} ${day.descripcion}`.toLowerCase();
+            
+            Object.keys(activityCategories).forEach(category => {
+                const keywords = activityCategories[category].keywords;
+                keywords.forEach(keyword => {
+                    if (dayText.includes(keyword.toLowerCase())) {
+                        categoryCounts[category]++;
+                    }
+                });
+            });
+        });
+        
+        // Convertir a porcentajes y crear objetos para renderizado
+        const styles = Object.keys(activityCategories).map(category => {
+            const count = categoryCounts[category];
+            const percentage = Math.round((count / totalDays) * 100);
+            
+            return {
+                title: category.charAt(0).toUpperCase() + category.slice(1),
+                percentage: Math.min(percentage, 100), // Cap at 100%
+                icon: activityCategories[category].icon,
+                color: activityCategories[category].color
+            };
+        });
+        
+        // Ordenar por porcentaje descendente y tomar solo los top 4
+        return styles.sort((a, b) => b.percentage - a.percentage).slice(0, 4);
+    }
+
+    /**
+     * 🔄 ACTUALIZAR CONTENIDO DINÁMICO
+     * 
+     * Actualiza elementos que dependen de fechas y datos dinámicos
+     */
+    updateDynamicContent() {
+        Logger.ui('🔄 Updating dynamic content in summary');
+        
+        try {
+            // Actualizar fechas del viaje
+            const tripStartDate = this.getTripStartDate();
+            const tripEndDate = new Date(tripStartDate);
+            tripEndDate.setDate(tripStartDate.getDate() + tripConfig.itineraryData.length - 1);
+            
+            const startDateFormatted = DateUtils.formatDate(tripStartDate, { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            const endDateFormatted = DateUtils.formatDate(tripEndDate, { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            // Actualizar elementos del DOM
+            const tripDatesElement = document.getElementById('trip-dates');
+            const summaryDatesElement = document.getElementById('summary-dates');
+            
+            if (tripDatesElement) {
+                tripDatesElement.textContent = `${startDateFormatted} - ${endDateFormatted}`;
+            }
+            
+            if (summaryDatesElement) {
+                summaryDatesElement.textContent = `${startDateFormatted} - ${endDateFormatted}`;
+            }
+            
+            // Actualizar progreso del viaje
+            this.updateTripProgress();
+            
+            Logger.success('🔄 Dynamic content updated successfully');
+            
+        } catch (error) {
+            Logger.error('Error updating dynamic content:', error);
+        }
+    }
+
+    /**
+     * 📅 OBTENER FECHA DE INICIO DEL VIAJE
+     * 
+     * @returns {Date} Fecha de inicio del viaje
+     */
+    getTripStartDate() {
+        try {
+            const calendarData = tripConfig.calendarData;
+            if (calendarData && calendarData.tripStartDate) {
+                return new Date(calendarData.tripStartDate);
+            }
+            
+            // Fallback: usar primera fecha del itinerario si está disponible
+            if (tripConfig.itineraryData && tripConfig.itineraryData.length > 0) {
+                const firstDay = tripConfig.itineraryData[0];
+                if (firstDay.date) {
+                    return new Date(firstDay.date);
+                }
+            }
+            
+            // Fallback final: fecha predeterminada
+            return new Date('2024-12-19');
+            
+        } catch (error) {
+            Logger.error('Error getting trip start date:', error);
+            return new Date('2024-12-19');
+        }
+    }
+
+    /**
+     * 📈 ACTUALIZAR PROGRESO DEL VIAJE
+     * 
+     * Calcula y muestra el progreso actual del viaje
+     */
+    updateTripProgress() {
+        try {
+            const today = stateManager.getCurrentDate();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            const totalDays = tripConfig.itineraryData.length;
+            
+            const daysCompletedElement = document.getElementById('days-completed');
+            const tripStatusElement = document.getElementById('trip-status');
+            
+            if (daysCompletedElement) {
+                const completedDays = Math.max(0, Math.min(dayDiff + 1, totalDays));
+                daysCompletedElement.textContent = `${completedDays} de ${totalDays}`;
+            }
+            
+            if (tripStatusElement) {
+                let status = '';
+                if (dayDiff < 0) {
+                    status = 'Próximamente';
+                } else if (dayDiff >= totalDays) {
+                    status = 'Completado';
+                } else {
+                    status = 'En curso';
+                }
+                tripStatusElement.textContent = status;
+            }
+            
+        } catch (error) {
+            Logger.error('Error updating trip progress:', error);
+        }
+    }
+}

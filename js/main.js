@@ -33,6 +33,7 @@ if (Logger && typeof Logger.init === 'function') {
     Logger.init('Application startup initiated');
     Logger.startPerformance('app-initialization');
 } else {
+    // Fallback si Logger no está disponible
     console.log('🚀 Application startup initiated (Logger not available)');
 }
 
@@ -174,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Logger && Logger.error) {
             Logger.error('Application initialization failed', error);
         } else {
-            console.error('❌ Application initialization failed:', error);
+            Logger.error('❌ Application initialization failed:', error);
         }
     }
 });
@@ -193,13 +194,13 @@ window.clearAppCache = async () => {
             await Promise.all(
                 cacheNames.map(cacheName => caches.delete(cacheName))
             );
-            console.log('✅ Service Worker cache cleared');
+            Logger.success('✅ Service Worker cache cleared');
         }
         
         // Recargar página
         window.location.reload(true);
     } catch (error) {
-        console.error('❌ Error clearing cache:', error);
+        Logger.error('❌ Error clearing cache:', error);
     }
 };
 

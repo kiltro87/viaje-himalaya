@@ -498,8 +498,8 @@ export class BudgetManager {
      * Objetos inicializados:
      * - window.AppState: Estado de la aplicación con persistencia
      * - window.ExpenseManager: Gestor CRUD de gastos
-     * - window.Utils: Utilidades de formateo y cálculo
-     * - window.budgetInstance: Referencia a esta instancia
+     * - Class methods: Utilidades de formateo y cálculo
+     * - DependencyContainer: Referencia a esta instancia
      */
     initializeGlobals() {
         // Inicializar expenses en StateManager si no existen
@@ -509,64 +509,13 @@ export class BudgetManager {
             Logger.data('💾 Expenses loaded from localStorage into StateManager');
         }
 
-        // 🚀 INICIALIZAR EXPENSE MANAGER ULTRA-OPTIMIZADO V4.0
-        if (!window.ExpenseManager) {
-            window.ExpenseManager = {
-                // ⚡ MÉTODOS OPTIMIZADOS CON OPTIMISTIC UI
-                add: async (expense) => {
-                    const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.expenseOrchestrator) {
-                        throw new Error('ExpenseOrchestrator not available');
-                    }
-                    return await budgetInstance.expenseOrchestrator.add(expense);
-                },
-                
-                update: async (id, updates) => {
-                    const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.expenseOrchestrator) {
-                        throw new Error('ExpenseOrchestrator not available');
-                    }
-                    return await budgetInstance.expenseOrchestrator.update(id, updates);
-                },
-                
-                remove: async (id) => {
-                    const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.expenseOrchestrator) {
-                        throw new Error('ExpenseOrchestrator not available');
-                    }
-                    return await budgetInstance.expenseOrchestrator.remove(id);
-                },
-                
-                // 🚀 MÉTODOS AVANZADOS EXCLUSIVOS
-                addMultiple: async (expenses) => {
-                    const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.expenseOrchestrator) {
-                        throw new Error('ExpenseOrchestrator not available');
-                    }
-                    return await budgetInstance.expenseOrchestrator.addMultiple(expenses);
-                },
-                
-                forceSync: async () => {
-                    const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.expenseOrchestrator) {
-                        throw new Error('ExpenseOrchestrator not available');
-                    }
-                    return await budgetInstance.expenseOrchestrator.forceSync();
-                },
-                
-                getStats: () => {
-                    const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.expenseOrchestrator) {
-                        return { error: 'ExpenseOrchestrator not available' };
-                    }
-                    return budgetInstance.expenseOrchestrator.getPerformanceStats();
-                }
-            };
-        }
+        // ✅ WINDOW.EXPENSEMANAGER ELIMINADO COMPLETAMENTE
+        // Todas las operaciones van directo a this.expenseOrchestrator
+        Logger.data('💳 ExpenseManager operations delegated to ExpenseOrchestrator (NO MORE WINDOW.*)');
 
-        // Inicializar Utils si no existe
-        if (!window.Utils) {
-            window.Utils = {
+        // ✅ WINDOW.UTILS ELIMINADO COMPLETAMENTE
+        // Todas las utilidades son métodos de clase
+        Logger.data('🛠️ Utils methods available as class methods (NO MORE WINDOW.*)');
                 formatCurrency(amount, showSymbol = false) {
                     if (typeof amount !== 'number' || isNaN(amount)) {
                         return showSymbol ? '0,00 €' : '0,00';

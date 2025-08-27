@@ -256,13 +256,13 @@ export class FirebaseManager {
             const localExpenses = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]');
             
             if (localExpenses.length > 0) {
-                console.log('🔥 DEBUG: Checking if migration is needed...');
+                Logger.debug('🔥 Checking if migration is needed...');
                 
                 // Verificar si ya hay datos en Firebase para evitar duplicación
                 const existingExpenses = await this.getAllExpenses();
                 
                 if (existingExpenses.length === 0) {
-                    console.log('🔥 DEBUG: No existing Firebase data, proceeding with migration...');
+                    Logger.debug('🔥 No existing Firebase data, proceeding with migration...');
                     Logger.data(`Migrating ${localExpenses.length} expenses from localStorage to Firebase`);
                     
                     for (const expense of localExpenses) {
@@ -274,7 +274,7 @@ export class FirebaseManager {
                     
                     Logger.success(`Successfully migrated ${localExpenses.length} expenses to Firebase`);
                 } else {
-                    console.log('🔥 DEBUG: Firebase already has data, skipping migration to avoid duplicates');
+                    Logger.debug('🔥 Firebase already has data, skipping migration to avoid duplicates');
                     Logger.data(`Skipping migration - Firebase already has ${existingExpenses.length} expenses`);
                 }
             }
@@ -293,19 +293,19 @@ export class FirebaseManager {
      */
     async addExpense(expense, triggerCallbacks = true) {
         if (!this.isMobile) {
-            console.log('🔥 DEBUG: addExpense called', { expense, isConnected: this.isConnected });
+            Logger.debug('🔥 addExpense called', { expense, isConnected: this.isConnected });
         }
         
         if (!this.isConnected) {
             if (!this.isMobile) {
-                console.log('🔥 DEBUG: Not connected, using localStorage');
+                Logger.debug('🔥 Not connected, using localStorage');
             }
             return this.addExpenseLocal(expense);
         }
 
         try {
             if (!this.isMobile) {
-                console.log('🔥 DEBUG: Importing Firestore modules...');
+                Logger.debug('🔥 Importing Firestore modules...');
             }
             const { collection, addDoc, serverTimestamp } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
@@ -319,15 +319,15 @@ export class FirebaseManager {
             };
 
             if (!this.isMobile) {
-                console.log('🔥 DEBUG: Expense data prepared:', expenseData);
-                console.log('🔥 DEBUG: Database reference:', this.db);
-                console.log('🔥 DEBUG: Collection name:', firestoreConfig.collections.expenses);
+                Logger.debug('🔥 Expense data prepared:', expenseData);
+                Logger.debug('🔥 Database reference:', this.db);
+                Logger.debug('🔥 Collection name:', firestoreConfig.collections.expenses);
             }
 
             const docRef = await addDoc(collection(this.db, firestoreConfig.collections.expenses), expenseData);
             
             if (!this.isMobile) {
-                console.log('🔥 DEBUG: Document added successfully:', docRef.id);
+                Logger.success('🔥 Document added successfully:', docRef.id);
             }
             Logger.data('Expense added to Firebase:', docRef.id);
             
@@ -341,8 +341,8 @@ export class FirebaseManager {
             return docRef.id;
             
         } catch (error) {
-            console.error('🔥 DEBUG: Error adding expense to Firebase:', error);
-            console.error('🔥 DEBUG: Error details:', error.message, error.code);
+            Logger.error('🔥 Error adding expense to Firebase:', error);
+            Logger.error('🔥 Error details:', error.message, error.code);
             Logger.error('Error adding expense to Firebase:', error);
             
             // Fallback a localStorage
@@ -397,7 +397,7 @@ export class FirebaseManager {
             if (!existingSnapshot.empty) {
                 // 🔄 YA EXISTE → Actualizar el documento existente
                 const existingDoc = existingSnapshot.docs[0];
-                console.log('🔄 Documento existente encontrado, actualizando:', existingDoc.id);
+                Logger.debug('🔄 Documento existente encontrado, actualizando:', existingDoc.id);
                 
                 const updateData = {
                     ...updates,
@@ -406,11 +406,11 @@ export class FirebaseManager {
                 };
 
                 await updateDoc(existingDoc.ref, updateData);
-                console.log('✅ Documento existente actualizado:', existingDoc.id);
+                Logger.success('✅ Documento existente actualizado:', existingDoc.id);
                 
             } else {
                 // 🆕 NO EXISTE → Crear nuevo con el ID como docId
-                console.log('🆕 Creando nuevo documento con ID:', expenseId);
+                Logger.debug('🆕 Creando nuevo documento con ID:', expenseId);
                 
                 const upsertData = {
                     // Datos base del gasto (para crear si no existe)
@@ -425,9 +425,9 @@ export class FirebaseManager {
                 };
 
                 await setDoc(docRef, upsertData);
-                console.log('✅ Nuevo documento creado:', expenseId);
+                Logger.success('✅ Nuevo documento creado:', expenseId);
             }
-            console.log('✅ UPSERT completado en Firebase:', expenseId);
+            Logger.success('✅ UPSERT completado en Firebase:', expenseId);
             
             Logger.data('Expense updated in Firebase:', expenseId);
             
@@ -673,7 +673,7 @@ export class FirebaseManager {
         const listenerId = 'expenses-listener';
         
         if (!this.isMobile) {
-            console.log('🔥 DEBUG: setupRealtimeListener called', { 
+            Logger.debug('🔥 setupRealtimeListener called', { 
                 isConnected: this.isConnected,
                 existingListeners: this.listeners.size 
             });
@@ -682,7 +682,7 @@ export class FirebaseManager {
         // 🚨 PREVENIR LISTENERS DUPLICADOS
         if (this.listeners.has(listenerId)) {
             if (!this.isMobile) {
-                console.log('🔥 DEBUG: Listener ya existe, desuscribiendo el anterior...');
+                Logger.debug('🔥 Listener ya existe, desuscribiendo el anterior...');
             }
             const existingUnsubscribe = this.listeners.get(listenerId);
             existingUnsubscribe();
@@ -696,13 +696,13 @@ export class FirebaseManager {
 
         try {
             if (!this.isMobile) {
-                console.log('🔥 DEBUG: Importing Firestore modules for listener...');
+                Logger.debug('🔥 Importing Firestore modules for listener...');
             }
             const { collection, onSnapshot, orderBy, query } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
             if (!this.isMobile) {
-                console.log('🔥 DEBUG: Creating Firestore query...');
+                Logger.debug('🔥 Creating Firestore query...');
             }
             const q = query(
                 collection(this.db, firestoreConfig.collections.expenses),
@@ -710,7 +710,7 @@ export class FirebaseManager {
             );
             
             if (!this.isMobile) {
-                console.log('🔥 DEBUG: Setting up onSnapshot listener...');
+                Logger.debug('🔥 Setting up onSnapshot listener...');
             }
             const unsubscribe = onSnapshot(q, (querySnapshot) => {
                 const expenses = [];
@@ -723,7 +723,7 @@ export class FirebaseManager {
                 });
                 
                 if (!this.isMobile) {
-                    console.log('🔥 DEBUG: Realtime update received:', expenses.length, 'expenses');
+                    Logger.debug('🔥 Realtime update received:', expenses.length, 'expenses');
                 }
                 Logger.data(`Realtime update: ${expenses.length} expenses`);
                 
@@ -732,7 +732,7 @@ export class FirebaseManager {
                 
                 callback(expenses);
             }, (error) => {
-                console.error('🔥 DEBUG: Realtime listener error:', error);
+                Logger.error('🔥 Realtime listener error:', error);
                 Logger.error('Realtime listener error:', error);
             });
             
@@ -740,7 +740,7 @@ export class FirebaseManager {
             this.listeners.set(listenerId, unsubscribe);
             
             if (!this.isMobile) {
-                console.log('🔥 DEBUG: Realtime listener configured successfully');
+                Logger.success('🔥 Realtime listener configured successfully');
             }
             
             // Retornar función que desuscribe Y elimina del registro
@@ -750,7 +750,7 @@ export class FirebaseManager {
             };
             
         } catch (error) {
-            console.error('🔥 DEBUG: Error setting up realtime listener:', error);
+            Logger.error('🔥 Error setting up realtime listener:', error);
             Logger.error('Error setting up realtime listener:', error);
             return () => {};
         }
@@ -966,7 +966,7 @@ export class FirebaseManager {
      * @private
      */
     showConfigurationInstructions() {
-        console.log(`
+        Logger.warning(`
 🔥 FIREBASE NO CONFIGURADO
 
 Para habilitar almacenamiento en la nube:
