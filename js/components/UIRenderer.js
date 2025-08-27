@@ -949,42 +949,6 @@ export class UIRenderer {
         console.log('✅ Itinerario renderizado correctamente');
     }
 
-        mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
-                <!-- Header del itinerario -->
-                ${HeaderRenderer.renderPresetHeader('itinerary')}
-
-                <!-- Timeline del itinerario -->
-                <div class="relative">
-                    ${timelineHTML}
-                </div>
-            </div>
-        `;
-
-        // Agregar event listeners para los modales
-        document.querySelectorAll('.itinerary-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                this.showItineraryModal(e.currentTarget.dataset.dayId);
-            });
-        });
-
-        // Configurar Intersection Observer para animaciones
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.querySelector(':scope > div:last-child').classList.add('animate-enter');
-                }
-            });
-        }, { threshold: 0.6 });
-        
-        document.querySelectorAll('.timeline-item').forEach(item => observer.observe(item));
-
-        // 🎯 AUTO-SCROLL AL DÍA ACTUAL
-        this.scrollToCurrentDay();
-
-        console.log('✅ Itinerario renderizado correctamente');
-    }
-
     /**
      * 🎯 SCROLL AL DÍA ACTUAL: Hacer foco en el día actual del viaje en el itinerario
      */
