@@ -1147,47 +1147,194 @@ export class UIRenderer {
         Logger.success('✅ Packing list rendered with original style');
     }
 
-    /**
-     * Renderizar información del clima
+        /**
+     * Renderizar información del clima con detalles completos
      */
     async renderWeather() {
-        Logger.ui('🌤️ Rendering weather information');
+        Logger.ui('🌤️ Rendering enhanced weather information');
         const container = document.getElementById('weather');
         if (!container) {
             Logger.warning('⚠️ Container #weather not found');
             return;
         }
 
+        // Información climática detallada para el período de viaje
+        const enhancedWeatherData = [
+            {
+                location: 'Katmandú',
+                dayTemp: '22-25°C',
+                nightTemp: '5-10°C',
+                humidity: '65%',
+                condition: 'Despejado',
+                uvIndex: '7 (Alto)',
+                wind: '12 km/h',
+                forecast: ['☀️ 24°C', '⛅ 21°C', '🌤️ 23°C'],
+                icon: 'location_city',
+                color: 'text-blue-600'
+            },
+            {
+                location: 'Pokhara',
+                dayTemp: '22-25°C',
+                nightTemp: '5-10°C',
+                humidity: '70%',
+                condition: 'Templado',
+                uvIndex: '6 (Moderado)',
+                wind: '8 km/h',
+                forecast: ['🌤️ 23°C', '☁️ 20°C', '🌦️ 18°C'],
+                icon: 'landscape',
+                color: 'text-green-600'
+            },
+            {
+                location: 'Chitwan',
+                dayTemp: '25-30°C',
+                nightTemp: '15-20°C',
+                humidity: '80%',
+                condition: 'Húmedo',
+                uvIndex: '8 (Alto)',
+                wind: '6 km/h',
+                forecast: ['☀️ 28°C', '🌤️ 26°C', '⛅ 24°C'],
+                icon: 'wb_sunny',
+                color: 'text-orange-600'
+            },
+            {
+                location: 'Thimphu',
+                dayTemp: '15-22°C',
+                nightTemp: '0-7°C',
+                humidity: '55%',
+                condition: 'Fresco',
+                uvIndex: '5 (Moderado)',
+                wind: '15 km/h',
+                forecast: ['🌤️ 18°C', '❄️ 12°C', '☁️ 16°C'],
+                icon: 'terrain',
+                color: 'text-slate-600'
+            },
+            {
+                location: 'Paro',
+                dayTemp: '15-22°C',
+                nightTemp: '0-7°C',
+                humidity: '60%',
+                condition: 'Montañoso',
+                uvIndex: '6 (Moderado)',
+                wind: '18 km/h',
+                forecast: ['⛅ 17°C', '🌨️ 10°C', '🌤️ 19°C'],
+                icon: 'terrain',
+                color: 'text-slate-600'
+            },
+            {
+                location: 'Punakha',
+                dayTemp: '18-25°C',
+                nightTemp: '10-15°C',
+                humidity: '62%',
+                condition: 'Templado',
+                uvIndex: '6 (Moderado)',
+                wind: '10 km/h',
+                forecast: ['☀️ 22°C', '🌤️ 20°C', '⛅ 18°C'],
+                icon: 'landscape',
+                color: 'text-green-600'
+            }
+        ];
+
         const weatherHTML = `
             <div class="flex items-center gap-3 mb-8">
                 <span class="material-symbols-outlined text-3xl text-orange-600 dark:text-orange-400">wb_sunny</span>
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información Climática</h2>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información Climática Detallada</h2>
             </div>
             
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                ${tripConfig.weatherLocations.map(location => `
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-lg border border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="material-symbols-outlined ${location.color}">${location.icon}</span>
-                            <h3 class="font-semibold text-slate-900 dark:text-white">${location.location}</h3>
-                        </div>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-slate-600 dark:text-slate-400">Día:</span>
-                                <span class="font-medium text-slate-900 dark:text-white">${location.dayTemp}</span>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${enhancedWeatherData.map(location => `
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="material-symbols-outlined text-2xl ${location.color}">${location.icon}</span>
+                            <div>
+                                <h3 class="font-bold text-slate-900 dark:text-white">${location.location}</h3>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">${location.condition}</p>
                             </div>
+                        </div>
+                        
+                        <!-- Temperaturas principales -->
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 text-center">
+                                <span class="material-symbols-outlined text-orange-600 text-sm">wb_sunny</span>
+                                <div class="text-sm font-medium text-orange-800 dark:text-orange-200">Día</div>
+                                <div class="text-lg font-bold text-orange-900 dark:text-orange-100">${location.dayTemp}</div>
+                            </div>
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
+                                <span class="material-symbols-outlined text-blue-600 text-sm">nights_stay</span>
+                                <div class="text-sm font-medium text-blue-800 dark:text-blue-200">Noche</div>
+                                <div class="text-lg font-bold text-blue-900 dark:text-blue-100">${location.nightTemp}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Detalles climáticos -->
+                        <div class="space-y-2 text-sm mb-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-xs">water_drop</span>
+                                    Humedad:
+                                </span>
+                                <span class="font-medium text-slate-900 dark:text-white">${location.humidity}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-xs">light_mode</span>
+                                    UV:
+                                </span>
+                                <span class="font-medium text-slate-900 dark:text-white">${location.uvIndex}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-xs">air</span>
+                                    Viento:
+                                </span>
+                                <span class="font-medium text-slate-900 dark:text-white">${location.wind}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Previsión 3 días -->
+                        <div class="border-t border-slate-200 dark:border-slate-700 pt-3">
+                            <div class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Próximos 3 días:</div>
                             <div class="flex justify-between">
-                                <span class="text-slate-600 dark:text-slate-400">Noche:</span>
-                                <span class="font-medium text-slate-900 dark:text-white">${location.nightTemp}</span>
+                                ${location.forecast.map((day, index) => `
+                                    <div class="text-center">
+                                        <div class="text-xs text-slate-500 dark:text-slate-500">D+${index + 1}</div>
+                                        <div class="text-sm">${day}</div>
+                                    </div>
+                                `).join('')}
                             </div>
                         </div>
                     </div>
                 `).join('')}
             </div>
+            
+            <!-- Recomendaciones generales -->
+            <div class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">tips_and_updates</span>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Recomendaciones Climáticas</h3>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4 text-sm">
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-slate-900 dark:text-white">🌤️ Para el clima templado:</h4>
+                        <ul class="text-slate-600 dark:text-slate-400 space-y-1">
+                            <li>• Ropa en capas para adaptarse a cambios</li>
+                            <li>• Protector solar (UV alto en altitud)</li>
+                            <li>• Gafas de sol de calidad</li>
+                        </ul>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-slate-900 dark:text-white">🏔️ Para montaña:</h4>
+                        <ul class="text-slate-600 dark:text-slate-400 space-y-1">
+                            <li>• Chaqueta impermeable y cortavientos</li>
+                            <li>• Ropa térmica para las noches</li>
+                            <li>• Calzado adecuado con buen agarre</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         `;
-        
+
         container.innerHTML = weatherHTML;
-        Logger.success('✅ Weather information rendered');
+        Logger.success('✅ Enhanced weather information rendered');
     }
 
     /**
