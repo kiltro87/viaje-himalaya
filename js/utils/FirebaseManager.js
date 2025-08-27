@@ -523,7 +523,15 @@ export class FirebaseManager {
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
             Logger.debug(`🔍 Querying Firebase collection: ${firestoreConfig.collections.expenses}`);
+            Logger.debug(`🔍 Collection name resolved to: "${firestoreConfig.collections.expenses}"`);
             Logger.debug(`🔍 Database instance:`, this.db);
+            Logger.debug(`🔍 Database type:`, typeof this.db);
+            
+            // CRITICAL TEST: usar string literal directamente
+            Logger.debug(`🧪 TESTING: Using literal 'expenses' collection name`);
+            let testCollectionRef = collection(this.db, 'expenses');
+            let testSnapshot = await getDocs(testCollectionRef);
+            Logger.debug(`🧪 TEST RESULT: Found ${testSnapshot.size} documents with literal 'expenses'`);
             
             // Primero intentar consulta simple sin orderBy
             let collectionRef = collection(this.db, firestoreConfig.collections.expenses);
