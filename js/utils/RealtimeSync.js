@@ -43,11 +43,21 @@ export class RealtimeSync {
      * Inicializa la conexión de tiempo real
      */
     async initializeConnection() {
-        // Intentar WebSocket primero, luego Firebase
-        await this.tryWebSocketConnection();
+        // Skip WebSocket en localhost para evitar errores molestos
+        const isLocalhost = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1';
+        
+        if (!isLocalhost) {
+            // Intentar WebSocket primero en producción
+            await this.tryWebSocketConnection();
+        } else {
+            if (Logger && Logger.data) Logger.data('Localhost detected, skipping WebSocket connection');
+        }
         
         if (!this.isWebSocketConnected) {
-            if (Logger && Logger.warning) Logger.warning('WebSocket failed, falling back to Firebase Realtime');
+            if (!isLocalhost && Logger && Logger.warning) {
+                Logger.warning('WebSocket failed, falling back to Firebase Realtime');
+            }
             await this.setupFirebaseRealtime();
         }
     }

@@ -284,6 +284,14 @@ export class UIRenderer {
     }
 
     /**
+     * Obtiene la fecha de inicio del viaje
+     * @returns {Date} Fecha de inicio del viaje (9 de octubre de 2025)
+     */
+    getTripStartDate() {
+        return DateUtils.getTripDate(0);
+    }
+
+    /**
      * Formatear fecha en formato corto español
      * @param {Date} date - Fecha a formatear
      * @returns {string} Fecha formateada (ej: "15 Oct")

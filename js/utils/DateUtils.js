@@ -41,6 +41,22 @@ export class DateUtils {
     }
 
     /**
+     * Obtiene la fecha de un día específico del viaje
+     * @param {number} dayNumber - Número del día del viaje (0-based)
+     * @returns {Date} Fecha correspondiente al día especificado
+     */
+    static getTripDate(dayNumber) {
+        // Fecha de inicio del viaje: 9 de octubre de 2025
+        const tripStartDate = new Date('2025-10-09');
+        
+        // Añadir el número de días al inicio del viaje
+        const tripDate = new Date(tripStartDate);
+        tripDate.setDate(tripStartDate.getDate() + dayNumber);
+        
+        return tripDate;
+    }
+
+    /**
      * Convierte una fecha ISO a objeto Date
      * @param {string} isoString - Fecha en formato ISO
      * @returns {Date} Objeto Date

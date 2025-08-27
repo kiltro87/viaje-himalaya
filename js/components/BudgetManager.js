@@ -506,7 +506,7 @@ export class BudgetManager {
                     if (!budgetInstance?.expenseOrchestrator) {
                         throw new Error('ExpenseOrchestrator not available');
                     }
-                    return await budgetInstance.optimizedExpenseManager.add(expense);
+                    return await budgetInstance.expenseOrchestrator.add(expense);
                 },
                 
                 update: async (id, updates) => {
