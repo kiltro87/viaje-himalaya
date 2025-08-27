@@ -548,8 +548,8 @@ export class FirebaseManager {
                     Logger.error(`🚨 Even with correct Firebase ID, document not found: ${correctFirebaseId}`);
                     return false;
                 }
-            
-            Logger.debug(`✅ Document ${expenseId} exists, proceeding with delete using Firebase ID: ${correctFirebaseId}`);
+                
+                Logger.debug(`✅ Document ${expenseId} exists, proceeding with delete using Firebase ID: ${correctFirebaseId}`);
             
             // Eliminar el documento usando el ID correcto
             await deleteDoc(docRef);
@@ -573,6 +573,7 @@ export class FirebaseManager {
             }
             
             return true;
+            }
             
         } catch (error) {
             Logger.error('Error deleting expense from Firebase:', error);
