@@ -108,7 +108,20 @@ export class BudgetManager {
         };
         
         this.firebaseManager.onExpenseDeleted = (expenseId) => {
+            Logger.debug(`🔔 FirebaseManager onExpenseDeleted callback triggered for: ${expenseId}`);
+            
+            // 🔄 ACTUALIZAR ESTADO LOCAL: Remover el gasto eliminado
+            const currentExpenses = stateManager.getState('expenses');
+            const filteredExpenses = currentExpenses.filter(exp => exp.id !== expenseId);
+            stateManager.updateState('expenses', filteredExpenses);
+            
+            Logger.debug(`📊 State updated after delete: ${currentExpenses.length} → ${filteredExpenses.length} expenses`);
+            
+            // 🚀 ACTUALIZAR UI
             this.updateSummaryCards();
+            this.showCategoryContent(); // Refresh category content if visible
+            
+            Logger.debug(`✅ onExpenseDeleted callback completed successfully`);
         };
         
         this.firebaseManager.onSyncStatusChanged = (status) => {
@@ -1383,17 +1396,9 @@ export class BudgetManager {
                                 
                                 Logger.success(`✅ DELETE CONFIRMED for expense ID: ${expenseId}`);
                                 
-                                // 🔄 ESPERAR Y RECARGAR DATOS DESDE FIREBASE
-                                Logger.debug('🔄 Waiting for Firebase propagation and reloading data...');
-                                await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar 1 segundo
-                                
-                                const freshExpenses = await this.firebaseManager.getAllExpenses();
-                                stateManager.updateState('expenses', freshExpenses);
-                                
-                                Logger.debug(`📊 Fresh data loaded: ${freshExpenses.length} expenses from Firebase`);
-                                
-                                // 🚀 ACTUALIZACIÓN INMEDIATA DE UI (sin setTimeout)
-                                this.updateSummaryCards();
+                                // 🎉 DELETE SUCCESSFUL - UI will be updated by onExpenseDeleted callback
+                                Logger.success(`✅ Expense ${expenseId} successfully deleted from Firebase`);
+                                this.showNotification('✅ Gasto eliminado correctamente', 'success');
                                 
                                 // 🔄 ACTUALIZAR CONTENIDO DE CATEGORÍAS SELECCIONADAS
                                 const selectedCategories = Array.from(document.querySelectorAll('.budget-filter-btn.ring-2'));

@@ -569,7 +569,11 @@ export class FirebaseManager {
             this.updateLocalStorage();
             
             if (this.onExpenseDeleted) {
+                Logger.debug(`🔔 Calling onExpenseDeleted callback for: ${expenseId}`);
                 this.onExpenseDeleted(expenseId);
+                Logger.debug(`🔔 onExpenseDeleted callback completed`);
+            } else {
+                Logger.debug(`🔔 No onExpenseDeleted callback registered`);
             }
             
             return true;
