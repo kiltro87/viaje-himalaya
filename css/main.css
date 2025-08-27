@@ -422,6 +422,18 @@ a:hover {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Estilos para botones de navegación */
+.nav-btn {
+    outline: none;
+    border: none;
+    background: none;
+}
+
+.nav-btn:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 /* Estilos para el botón activo */
 .nav-btn.active .material-symbols-outlined {
     font-variation-settings: 'FILL' 1;

@@ -74,7 +74,7 @@ export const tripConfig = {
             "country": "Nepal",
             "title": "Plaza Durbar y Encuentro WeRoad",
             "description": "Mañana libre para explorar el corazón histórico de Katmandú, la Plaza Durbar, antes de unirte al grupo de WeRoad por la tarde para la cena de bienvenida.",
-            "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+            "image": "https://www.lasociedadgeografica.com/blog/uploads/2020/09/katmandu-square-nepal-tourism.jpg",
             "coords": [
                 27.7048,
                 85.3074
@@ -92,7 +92,7 @@ export const tripConfig = {
             "country": "Nepal",
             "title": "Rafting en el Trisuli y Llegada a Pokhara",
             "description": "Viaje por carretera hacia Pokhara con una parada para una emocionante sesión de rafting en el río Trisuli. Tarde en el tranquilo barrio tibetano.",
-            "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+            "image": "https://cdn.getyourguide.com/image/format=auto,fit=contain,gravity=auto,quality=60,width=1440,height=650,dpr=1/tour_img/e4dc6366c7816be975f4947353bf8202ae7451d1c058c6ed928c49f9e870f54b.jpeg",
             "coords": [
                 28.2096,
                 83.9856
@@ -146,7 +146,7 @@ export const tripConfig = {
             "country": "Nepal",
             "title": "Aguas Termales y Regreso a Pokhara",
             "description": "Caminata corta de descenso (2-3h) para un baño en aguas termales en Jhimodanda y regreso en jeep a Pokhara.",
-            "image": "https://cdn.getyourguide.com/img/tour/4d032f9b41e3de55b58794f65eafe292beea2718366b16bab7fb83cfa48b9144.jpg/68.jpg",
+            "image": "https://media.tacdn.com/media/attractions-splice-spp-674x446/06/73/e2/fd.jpg",
             "coords": [
                 28.2096,
                 83.9856

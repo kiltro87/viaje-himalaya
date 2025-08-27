@@ -643,15 +643,14 @@ export class BudgetManager {
         }).join('');
 
         container.innerHTML = `
-            <!-- Encabezado Simplificado -->
+            <!-- Cabecera Presupuesto del Viaje -->
+            <div class="flex items-center gap-3 mb-8">
+                <span class="material-symbols-outlined text-3xl text-green-600 dark:text-green-400">account_balance_wallet</span>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Presupuesto del Viaje</h2>
+            </div>
+
+            <!-- Resumen de presupuesto -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-6">
-                <div class="flex items-center gap-4 mb-6">
-                    <span class="material-symbols-outlined text-3xl text-slate-600 dark:text-slate-400">account_balance_wallet</span>
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Presupuesto del Viaje</h1>
-                        <p class="text-slate-600 dark:text-slate-400">Gestiona y controla tus gastos</p>
-                    </div>
-                </div>
                 
                 <!-- Resumen General Simplificado -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

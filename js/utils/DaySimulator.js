@@ -105,8 +105,8 @@ export class DaySimulator {
      */
     simulateDay(dayNumber) {
         try {
-            if (dayNumber < 1 || dayNumber > 15) {
-                throw new Error('Day number must be between 1 and 15');
+            if (dayNumber < 1 || dayNumber > 18) {
+                throw new Error('Day number must be between 1 and 18');
             }
 
             this.simulatedDay = dayNumber;
@@ -229,7 +229,7 @@ export class DaySimulator {
                         </label>
                         <select id="day-selector" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
                             <option value="">Seleccionar día...</option>
-                            ${Array.from({length: 15}, (_, i) => {
+                            ${Array.from({length: 18}, (_, i) => {
                                 const dayNum = i + 1;
                                 const dayInfo = this.getDayInfo(dayNum);
                                 return `<option value="${dayNum}">Día ${dayNum}: ${dayInfo.title}</option>`;

@@ -5,11 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Aventura en el Himalaya</title>
     
-    <!-- Base path para GitHub Pages -->
-    <base href="/viaje-himalaya/">
+    <!-- Base path dinámico según entorno -->
+    <script>
+        // Detectar si estamos en localhost y ajustar base href
+        const isLocalhost = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1' || 
+                           window.location.protocol === 'file:';
+        
+        if (isLocalhost) {
+            document.write('<base href="/">');
+        } else {
+            document.write('<base href="/viaje-himalaya/">');
+        }
+    </script>
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/viaje-himalaya/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#3B82F6">
@@ -116,8 +127,13 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', async () => {
                 try {
-                    const registration = await navigator.serviceWorker.register('/viaje-himalaya/sw.js', {
-                        scope: '/viaje-himalaya/'
+                    // Detectar base path para Service Worker
+                    const isLocalhost = window.location.hostname === 'localhost' || 
+                                       window.location.hostname === '127.0.0.1' || 
+                                       window.location.protocol === 'file:';
+                    const basePath = isLocalhost ? '/' : '/viaje-himalaya/';
+                    const registration = await navigator.serviceWorker.register(`${basePath}sw.js`, {
+                        scope: basePath
                     });
                     console.log('✅ Service Worker registrado:', registration.scope);
                     
