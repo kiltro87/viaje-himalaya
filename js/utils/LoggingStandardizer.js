@@ -147,7 +147,7 @@ export class LoggingStandardizer {
             data: { url, status, error }
         }));
 
-        Logger.info(`📋 ${this.patterns.size} patrones de logging registrados`);
+        Logger.init(`📋 ${this.patterns.size} patrones de logging registrados`);
     }
 
     /**
@@ -276,7 +276,7 @@ export class LoggingStandardizer {
             }
         };
 
-        Logger.info('🔄 Console.log migration activated');
+        Logger.init('🔄 Console.log migration activated');
     }
 
     /**
