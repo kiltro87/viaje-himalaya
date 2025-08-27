@@ -58,7 +58,7 @@ export class BudgetManager {
         Logger.budget('Initializing budget management system');
         
         // Inicializar objetos globales necesarios
-        this.initializeGlobals();
+        this.initializeStateManager();
         
         // Inicializar Firebase para almacenamiento en la nube
         this.firebaseManager = new FirebaseManager();
@@ -349,7 +349,7 @@ export class BudgetManager {
             // Debounce más agresivo para mejor rendimiento
             updateTimeout = setTimeout(() => {
                 // Solo actualizar si realmente hay cambios
-                const currentExpenseIds = window.AppState.expenses.map(e => e.id).sort();
+                const currentExpenseIds = stateManager.getState('expenses').map(e => e.id).sort();
                 const newExpenseIds = expenses.map(e => e.id).sort();
                 
                 if (JSON.stringify(currentExpenseIds) !== JSON.stringify(newExpenseIds)) {
@@ -374,7 +374,7 @@ export class BudgetManager {
     processFirebaseUpdate(expenses) {
         try {
             // 🔥 REEMPLAZAR COMPLETAMENTE AppState.expenses (no añadir)
-            if (window.AppState) {
+            if (stateManager.getState('expenses')) {
                 // Convertir timestamps de Firebase a formato local
                 const processedExpenses = expenses.map(expense => {
                     const processed = { ...expense };
@@ -390,13 +390,14 @@ export class BudgetManager {
                     return processed;
                 });
                 
-                window.AppState.expenses = processedExpenses;
+                stateManager.getState('expenses') = processedExpenses;
                 if (!Logger.isMobile) {
                     console.log('🔥 DEBUG: AppState.expenses REPLACED with', processedExpenses.length, 'expenses');
                 }
                 
                 // 🚨 NO GUARDAR EN LOCALSTORAGE - Firebase es la fuente de verdad
-                // window.AppState.saveAllData(); // COMENTADO para evitar bucle infinito
+                // Save expenses to localStorage
+                this.saveExpensesToLocalStorage();
             }
             
             // Actualizar UI si está visible
@@ -587,6 +588,25 @@ export class BudgetManager {
         stateManager.updateState('instances.budgetManager', this);
     }
 
+    /**
+     * Inicializar datos del StateManager
+     * 
+     * Reemplaza initializeGlobals() - Solo maneja inicialización de datos
+     * en el StateManager centralizado sin contaminar window.*
+     */
+    initializeStateManager() {
+        // Inicializar expenses en StateManager si no existen
+        if (!stateManager.getState('expenses') || stateManager.getState('expenses').length === 0) {
+            const savedExpenses = JSON.parse(localStorage.getItem('tripExpensesV1')) || [];
+            stateManager.updateState('expenses', savedExpenses);
+            Logger.data('💾 Expenses loaded from localStorage into StateManager');
+        }
+
+        // Registrar esta instancia en StateManager
+        stateManager.updateState('instances.budgetManager', this);
+        Logger.ui('BudgetManager registered in StateManager');
+    }
+
     getCategoryIcon(category) {
         // Limpiar el nombre de la categoría eliminando emojis
         const cleanCategory = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
@@ -661,15 +681,15 @@ export class BudgetManager {
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
                         <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Presupuesto Total</p>
-                        <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="budget-total">${window.Utils.formatCurrency(window.Utils.calculateSubtotal(allExpenses), true)}</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="budget-total">${this.formatCurrency(this.calculateSubtotal(allExpenses), true)}</p>
                     </div>
                     <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
                         <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Gastado</p>
-                        <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="total-spent">${window.Utils.formatCurrency(window.AppState.expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0), true)}</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="total-spent">${this.formatCurrency(stateManager.getState('expenses').reduce((sum, exp) => sum + (exp.amount || 0), 0), true)}</p>
                     </div>
                     <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
                         <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Gastos Registrados</p>
-                        <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="expenses-count">${window.AppState.expenses.length}</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="expenses-count">${stateManager.getState('expenses').length}</p>
                     </div>
                 </div>
             </div>
@@ -799,8 +819,8 @@ export class BudgetManager {
                 
                 if (dropdownList.classList.contains('hidden')) {
                     const rect = dropdownBtn.getBoundingClientRect();
-                    const viewportWidth = window.innerWidth;
-                    const viewportHeight = window.innerHeight;
+                    const viewportWidth = stateManager.getState('ui.viewportWidth');
+                    const viewportHeight = stateManager.getState('ui.viewportHeight');
                     const dropdownHeight = 240; // max-h-60 = 240px aprox
                     
                     // 📱 RESPONSIVE: Diferentes posicionamientos según el tamaño de pantalla
@@ -908,14 +928,14 @@ export class BudgetManager {
                 
                 if (editId) {
                     // 🔄 ACTUALIZACIÓN OPTIMISTA
-                    const existingIndex = window.AppState.expenses.findIndex(exp => exp.id === editId);
+                    const existingIndex = stateManager.getState('expenses').findIndex(exp => exp.id === editId);
                     if (existingIndex !== -1) {
-                        window.AppState.expenses[existingIndex] = { ...window.AppState.expenses[existingIndex], ...newExpense };
+                        stateManager.getState('expenses')[existingIndex] = { ...stateManager.getState('expenses')[existingIndex], ...newExpense };
                     }
                     this.cancelEditMode();
                 } else {
                     // ➕ ADICIÓN OPTIMISTA
-                    window.AppState.expenses.unshift(newExpense);
+                    stateManager.getState('expenses').unshift(newExpense);
                 }
                 
                 // 🎯 ACTUALIZAR UI INMEDIATAMENTE (sin esperar Firebase)
@@ -929,14 +949,14 @@ export class BudgetManager {
                 try {
                     // 🔥 FIREBASE EN BACKGROUND (no bloquea UI)
                     if (editId) {
-                        await window.ExpenseManager.update(editId, { concept, amount, category });
+                        await this.firebaseManager.updateExpense(editId, { concept, amount, category });
                     } else {
-                        const firebaseId = await window.ExpenseManager.add(newExpense);
+                        const firebaseId = await this.firebaseManager.addExpense(newExpense);
                         // Actualizar el ID local con el ID de Firebase si es diferente
                         if (firebaseId && firebaseId !== newExpense.id) {
-                            const localIndex = window.AppState.expenses.findIndex(exp => exp.id === newExpense.id);
+                            const localIndex = stateManager.getState('expenses').findIndex(exp => exp.id === newExpense.id);
                             if (localIndex !== -1) {
-                                window.AppState.expenses[localIndex].id = firebaseId;
+                                stateManager.getState('expenses')[localIndex].id = firebaseId;
                             }
                         }
                     }
@@ -953,14 +973,14 @@ export class BudgetManager {
                         const originalExpense = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]')
                             .find(exp => exp.id === editId);
                         if (originalExpense) {
-                            const index = window.AppState.expenses.findIndex(exp => exp.id === editId);
+                            const index = stateManager.getState('expenses').findIndex(exp => exp.id === editId);
                             if (index !== -1) {
-                                window.AppState.expenses[index] = originalExpense;
+                                stateManager.getState('expenses')[index] = originalExpense;
                             }
                         }
                     } else {
                         // Revertir adición
-                        window.AppState.expenses = window.AppState.expenses.filter(exp => exp.id !== newExpense.id);
+                        stateManager.getState('expenses') = stateManager.getState('expenses').filter(exp => exp.id !== newExpense.id);
                     }
                     
                     // Actualizar UI para reflejar el rollback
@@ -995,7 +1015,7 @@ export class BudgetManager {
             // Obtener datos de todas las categorías seleccionadas
             const budgetData = this.tripConfig.budgetData.budgetData;
             const allCategoryItems = Object.values(budgetData).flat().filter(item => selectedCategories.includes(item.category));
-            const allCategoryExpenses = window.AppState.expenses.filter(exp => selectedCategories.includes(exp.category));
+            const allCategoryExpenses = stateManager.getState('expenses').filter(exp => selectedCategories.includes(exp.category));
             
             // 🔧 DEFINIR allCategories para el formulario inline (mismo código que en render())
             const allExpenses = Object.values(budgetData).flat();
@@ -1023,9 +1043,9 @@ export class BudgetManager {
                             <div class="flex-1">
                                 <h4 class="font-bold text-lg text-slate-900 dark:text-white">${cat}</h4>
                                 <div class="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                                    <span class="text-slate-600 dark:text-slate-400">${window.Utils.formatCurrency(expensesTotal, true)}</span>
+                                    <span class="text-slate-600 dark:text-slate-400">${this.formatCurrency(expensesTotal, true)}</span>
                                     <span class="text-slate-400 dark:text-slate-500 text-lg"> / </span>
-                                    <span class="text-slate-500 dark:text-slate-400 text-lg">${window.Utils.formatCurrency(budgetTotal, true)}</span>
+                                    <span class="text-slate-500 dark:text-slate-400 text-lg">${this.formatCurrency(budgetTotal, true)}</span>
                                 </div>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">${catItems.length} items presupuestados • ${catExpenses.length} gastos registrados</p>
                             </div>
@@ -1047,7 +1067,7 @@ export class BudgetManager {
                                                 <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-3">
                                                     <div class="flex justify-between items-center mb-2">
                                                         <span class="font-medium text-slate-800 dark:text-slate-200">${item.concept}</span>
-                                                        <span class="font-bold text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0, true)}</span>
+                                                        <span class="font-bold text-slate-900 dark:text-white">${this.formatCurrency(item.cost || 0, true)}</span>
                                                     </div>
                                                     <div class="space-y-1 ml-3">
                                                         ${item.subItems.map(subItem => {
@@ -1066,7 +1086,7 @@ export class BudgetManager {
                                                                             ${subItem.concept}
                                                                         </span>
                                                                         <div class="flex items-center gap-1">
-                                                                            <span>${window.Utils.formatCurrency(subItem.cost || 0, true)}</span>
+                                                                            <span>${this.formatCurrency(subItem.cost || 0, true)}</span>
                                                                             <span class="material-symbols-outlined text-xs text-slate-400">add_circle</span>
                                                                         </div>
                                                                     </div>
@@ -1146,7 +1166,7 @@ export class BudgetManager {
                                                          title="Click para crear gasto basado en este item">
                                                         <span class="text-slate-700 dark:text-slate-300">${item.concept}</span>
                                                         <div class="flex items-center gap-2">
-                                                            <span class="font-medium text-slate-900 dark:text-white">${window.Utils.formatCurrency(item.cost || 0, true)}</span>
+                                                            <span class="font-medium text-slate-900 dark:text-white">${this.formatCurrency(item.cost || 0, true)}</span>
                                                             <span class="material-symbols-outlined text-sm text-slate-400">add_circle</span>
                                                         </div>
                                                     </div>
@@ -1228,7 +1248,7 @@ export class BudgetManager {
                                             <div class="expense-item-category group flex justify-between items-center py-2 px-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-all duration-200" data-expense-id="${exp.id}">
                                                 <span class="text-slate-700 dark:text-slate-300 ${exp.paid ? 'line-through opacity-60' : ''}">${exp.concept}</span>
                                                 <div class="flex items-center gap-2">
-                                                    <span class="font-medium text-green-700 dark:text-green-400 ${exp.paid ? 'line-through opacity-60' : ''}">${window.Utils.formatCurrency(exp.amount, true)}</span>
+                                                    <span class="font-medium text-green-700 dark:text-green-400 ${exp.paid ? 'line-through opacity-60' : ''}">${this.formatCurrency(exp.amount, true)}</span>
                                                     <button class="delete-expense-btn opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-all duration-200" data-expense-id="${exp.id}" title="Eliminar gasto">
                                                         <span class="material-symbols-outlined text-xs">delete</span>
                                                     </button>
@@ -1339,7 +1359,7 @@ export class BudgetManager {
                         const expenseId = btn.dataset.expenseId;
                         if (confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
                             try {
-                                await window.ExpenseManager.remove(expenseId);
+                                await this.firebaseManager.removeExpense(expenseId);
                                 
                                 // 🚀 ACTUALIZACIÓN INMEDIATA DE UI (sin setTimeout)
                                 this.updateSummaryCards();
@@ -1418,8 +1438,8 @@ export class BudgetManager {
                             // Toggle del dropdown actual
                             if (dropdown.classList.contains('hidden')) {
                                 const rect = btn.getBoundingClientRect();
-                                const viewportWidth = window.innerWidth;
-                                const viewportHeight = window.innerHeight;
+                                const viewportWidth = stateManager.getState('ui.viewportWidth');
+                                const viewportHeight = stateManager.getState('ui.viewportHeight');
                                 
                                 // Posicionamiento responsive
                                 if (viewportWidth <= 640) {
@@ -1504,8 +1524,8 @@ export class BudgetManager {
                             // Toggle del dropdown actual
                             if (dropdown.classList.contains('hidden')) {
                                 const rect = btn.getBoundingClientRect();
-                                const viewportWidth = window.innerWidth;
-                                const viewportHeight = window.innerHeight;
+                                const viewportWidth = stateManager.getState('ui.viewportWidth');
+                                const viewportHeight = stateManager.getState('ui.viewportHeight');
                                 
                                 // Posicionamiento responsive
                                 if (viewportWidth <= 640) {
@@ -1635,10 +1655,10 @@ export class BudgetManager {
         if (concept && amount > 0 && category) {
             try {
                 // 🚀 ACTUALIZACIÓN OPTIMISTA INMEDIATA
-                const existingIndex = window.AppState.expenses.findIndex(exp => exp.id === expenseId);
+                const existingIndex = stateManager.getState('expenses').findIndex(exp => exp.id === expenseId);
                 if (existingIndex !== -1) {
-                    window.AppState.expenses[existingIndex] = {
-                        ...window.AppState.expenses[existingIndex],
+                    stateManager.getState('expenses')[existingIndex] = {
+                        ...stateManager.getState('expenses')[existingIndex],
                         concept,
                         amount,
                         category
@@ -1654,7 +1674,7 @@ export class BudgetManager {
                 this.updateSyncStatus('syncing');
 
                 // 🔥 FIREBASE EN BACKGROUND
-                await window.ExpenseManager.update(expenseId, { concept, amount, category });
+                await this.firebaseManager.updateExpense(expenseId, { concept, amount, category });
                 
                 // ✅ Sincronización completada
                 this.updateSyncStatus('connected');
@@ -1667,9 +1687,9 @@ export class BudgetManager {
                 const originalExpense = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]')
                     .find(exp => exp.id === expenseId);
                 if (originalExpense) {
-                    const index = window.AppState.expenses.findIndex(exp => exp.id === expenseId);
+                    const index = stateManager.getState('expenses').findIndex(exp => exp.id === expenseId);
                     if (index !== -1) {
-                        window.AppState.expenses[index] = originalExpense;
+                        stateManager.getState('expenses')[index] = originalExpense;
                     }
                 }
                 
@@ -1804,7 +1824,7 @@ export class BudgetManager {
                 };
 
                 // ➕ ADICIÓN OPTIMISTA INMEDIATA
-                window.AppState.expenses.unshift(newExpense);
+                stateManager.getState('expenses').unshift(newExpense);
 
                 // 🎯 ACTUALIZAR UI INMEDIATAMENTE
                 this.updateSummaryCards();
@@ -1815,25 +1835,25 @@ export class BudgetManager {
                 this.updateSyncStatus('syncing');
 
                 // 🔥 FIREBASE EN BACKGROUND
-                const firebaseId = await window.ExpenseManager.add(newExpense);
+                const firebaseId = await this.firebaseManager.addExpense(newExpense);
                 
                 // Actualizar el ID local con el ID de Firebase si es diferente
                 if (firebaseId && firebaseId !== newExpense.id) {
-                    const localIndex = window.AppState.expenses.findIndex(exp => exp.id === newExpense.id);
+                    const localIndex = stateManager.getState('expenses').findIndex(exp => exp.id === newExpense.id);
                     if (localIndex !== -1) {
-                        window.AppState.expenses[localIndex].id = firebaseId;
+                        stateManager.getState('expenses')[localIndex].id = firebaseId;
                     }
                 }
 
                 // ✅ Sincronización completada
                 this.updateSyncStatus('connected');
-                this.showNotification(`✅ Gasto creado: ${concept} - ${window.Utils.formatCurrency(amount, true)}`, 'success');
+                this.showNotification(`✅ Gasto creado: ${concept} - ${this.formatCurrency(amount, true)}`, 'success');
 
             } catch (error) {
                 Logger.error('Error creating expense from budget item:', error);
                 
                 // ❌ REVERTIR CAMBIOS OPTIMISTAS
-                window.AppState.expenses = window.AppState.expenses.filter(exp => 
+                stateManager.getState('expenses') = stateManager.getState('expenses').filter(exp => 
                     !(exp.concept === concept && exp.amount === amount && exp.category === category)
                 );
                 
@@ -1846,7 +1866,7 @@ export class BudgetManager {
     }
 
     editExpense(id) {
-        const expense = window.AppState.expenses.find(exp => exp.id === id);
+        const expense = stateManager.getState('expenses').find(exp => exp.id === id);
         if (!expense) return;
 
         // Llenar formulario con datos del gasto
@@ -1877,20 +1897,55 @@ export class BudgetManager {
         // Actualizar Presupuesto Total
         const budgetTotalElement = document.querySelector('[data-summary="budget-total"]');
         if (budgetTotalElement) {
-            budgetTotalElement.textContent = window.Utils.formatCurrency(window.Utils.calculateSubtotal(allExpenses), true);
+            budgetTotalElement.textContent = this.formatCurrency(this.calculateSubtotal(allExpenses), true);
         }
         
         // Actualizar Gastos Registrados
         const expensesCountElement = document.querySelector('[data-summary="expenses-count"]');
         if (expensesCountElement) {
-            expensesCountElement.textContent = window.AppState.expenses.length;
+            expensesCountElement.textContent = stateManager.getState('expenses').length;
         }
         
         // Actualizar Total Gastado
         const totalSpentElement = document.querySelector('[data-summary="total-spent"]');
         if (totalSpentElement) {
-            const totalSpent = window.AppState.expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-            totalSpentElement.textContent = window.Utils.formatCurrency(totalSpent, true);
+            const totalSpent = stateManager.getState('expenses').reduce((sum, exp) => sum + (exp.amount || 0), 0);
+            totalSpentElement.textContent = this.formatCurrency(totalSpent, true);
         }
+    }
+
+    /**
+     * 💾 HELPER: Save expenses to localStorage
+     */
+    saveExpensesToLocalStorage() {
+        try {
+            const expenses = stateManager.getState('expenses') || [];
+            localStorage.setItem('tripExpensesV1', JSON.stringify(expenses));
+            Logger.data('💾 Expenses saved to localStorage');
+        } catch (error) {
+            Logger.error('❌ Error saving expenses:', error);
+        }
+    }
+
+    /**
+     * 💰 HELPER: Format currency (migrated from window.Utils)
+     */
+    formatCurrency(amount, showSymbol = false) {
+        if (isNaN(amount)) return showSymbol ? '€0' : '0';
+        const formatted = parseFloat(amount).toFixed(2);
+        return showSymbol ? `€${formatted}` : formatted;
+    }
+
+    /**
+     * 🧮 HELPER: Calculate subtotal (migrated from window.Utils)
+     */
+    calculateSubtotal(items) {
+        if (!Array.isArray(items)) return 0;
+        return items.reduce((sum, item) => {
+            const cost = parseFloat(item.cost) || 0;
+            const subItems = item.subItems || [];
+            const subTotal = subItems.reduce((subSum, subItem) => subSum + (parseFloat(subItem.cost) || 0), 0);
+            return sum + cost + subTotal;
+        }, 0);
     }
 }
