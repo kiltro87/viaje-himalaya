@@ -476,10 +476,36 @@ export class FirebaseManager {
             const testDocSnap = await getDoc(testDocRef);
             Logger.debug(`🧪 DELETE TEST RESULT: Document exists with literal = ${testDocSnap.exists()}`);
             
-            // ADDITIONAL TEST: Verificar que la colección tiene documentos
+            if (testDocSnap.exists()) {
+                Logger.debug(`🧪 DOCUMENT DATA:`, testDocSnap.data());
+            }
+            
+            // ADDITIONAL TEST: Buscar documento en toda la colección
             const testCollectionRef = collection(this.db, 'expenses');
             const testCollectionSnap = await getDocs(testCollectionRef);
             Logger.debug(`🧪 DELETE COLLECTION TEST: Found ${testCollectionSnap.size} total documents`);
+            
+            // CRITICAL: Buscar el documento específico en toda la colección
+            let foundDocument = false;
+            let documentInfo = null;
+            testCollectionSnap.forEach((doc) => {
+                if (doc.id === expenseId) {
+                    foundDocument = true;
+                    documentInfo = {
+                        id: doc.id,
+                        data: doc.data()
+                    };
+                    Logger.debug(`🎯 FOUND TARGET DOCUMENT: ID="${doc.id}"`, doc.data());
+                }
+                Logger.debug(`📄 Document in collection: ID="${doc.id}", hasIdField="${doc.data().id || 'NO_ID_FIELD'}"`);
+            });
+            
+            if (!foundDocument) {
+                Logger.error(`🚨 CRITICAL: Document ${expenseId} NOT FOUND in collection despite user confirming it exists in Firebase`);
+                Logger.debug(`🔍 All document IDs:`, Array.from(testCollectionSnap.docs.map(d => d.id)));
+            } else {
+                Logger.success(`✅ Document found in collection scan but getDoc failed!`);
+            }
             
             // Verificar que el documento existe antes de eliminar (usando config)
             const docRef = doc(this.db, firestoreConfig.collections.expenses, expenseId);
