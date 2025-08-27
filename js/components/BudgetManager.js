@@ -1359,7 +1359,7 @@ export class BudgetManager {
                         const expenseId = btn.dataset.expenseId;
                         if (confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
                             try {
-                                await this.firebaseManager.removeExpense(expenseId);
+                                await this.firebaseManager.deleteExpense(expenseId);
                                 
                                 // 🚀 ACTUALIZACIÓN INMEDIATA DE UI (sin setTimeout)
                                 this.updateSummaryCards();
