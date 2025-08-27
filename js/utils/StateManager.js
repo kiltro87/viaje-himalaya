@@ -368,11 +368,18 @@ class StateManager {
     /**
      * 📅 OBTENER FECHA ACTUAL
      * 
-     * Obtiene la fecha actual o simulada.
+     * Obtiene la fecha actual o simulada del Day Simulator.
+     * Si hay un Day Simulator activo globalmente, lo usa.
      * 
      * @returns {Date} Fecha actual o simulada
      */
     getCurrentDate() {
+        // Verificar si hay un Day Simulator global activo
+        if (window.DaySimulator && window.DaySimulator.isSimulating) {
+            return window.DaySimulator.getSimulatedDate();
+        }
+        
+        // Usar estado interno como fallback
         const simulator = this.getState('daySimulator');
         return simulator.isSimulating ? simulator.simulatedDate : new Date();
     }

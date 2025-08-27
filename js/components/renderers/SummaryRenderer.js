@@ -521,23 +521,22 @@ export class SummaryRenderer {
             const internationalFlights = tripConfig.flightsData.filter(f => f.type === 'Internacional');
             const regionalFlights = tripConfig.flightsData.filter(f => f.type === 'Regional');
 
+            // Retornar solo el contenido sin el section wrapper extra
             return `
-                <section class="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 border border-slate-200 dark:border-slate-700 shadow-lg">
-                    <div class="flex items-center gap-3 mb-8">
-                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight_takeoff</span>
-                        <h3 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Información de Vuelos</h3>
-                    </div>
-                    
-                    <div class="space-y-8">
-                        ${internationalFlights.length > 0 ? flightCardHTML(internationalFlights[0]) : ''}
-                        ${regionalFlights.length > 0 ? `
-                            <div class="grid md:grid-cols-2 gap-6">
-                                ${regionalFlights.map(flightCardHTML).join('')}
-                            </div>
-                        ` : ''}
-                        ${internationalFlights.length > 1 ? flightCardHTML(internationalFlights[1]) : ''}
-                    </div>
-                </section>
+                <div class="flex items-center gap-3 mb-8">
+                    <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight_takeoff</span>
+                    <h3 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Información de Vuelos</h3>
+                </div>
+                
+                <div class="space-y-8">
+                    ${internationalFlights.length > 0 ? flightCardHTML(internationalFlights[0]) : ''}
+                    ${regionalFlights.length > 0 ? `
+                        <div class="grid md:grid-cols-2 gap-6">
+                            ${regionalFlights.map(flightCardHTML).join('')}
+                        </div>
+                    ` : ''}
+                    ${internationalFlights.length > 1 ? flightCardHTML(internationalFlights[1]) : ''}
+                </div>
             `;
             
         } catch (error) {
