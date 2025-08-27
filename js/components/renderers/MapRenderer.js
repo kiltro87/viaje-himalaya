@@ -113,8 +113,8 @@ export class MapRenderer {
                 const group = new L.featureGroup(markers);
                 const bounds = group.getBounds();
                 this.map.fitBounds(bounds, {
-                    padding: [20, 20], // Padding mínimo para mejor zoom
-                    maxZoom: 8 // Zoom más cercano para ver la región de interés
+                    padding: [5, 5], // Padding reducido para máximo aprovechamiento del espacio
+                    maxZoom: 10 // Zoom más cercano sin perder visión general
                 });
                 Logger.debug(`🗺️ Main map fitted to ${markers.length} markers with enhanced zoom`);
             }
@@ -481,14 +481,14 @@ export class MapRenderer {
             // Si hay múltiples coordenadas, ajustar vista para verlas todas
             const bounds = L.latLngBounds(validCoords);
             map.fitBounds(bounds, { 
-                padding: [20, 20], // Menos padding para mayor zoom
-                maxZoom: 11 // Zoom más cercano para mejor detalle
+                padding: [10, 10], // Padding mínimo para máxima proximidad
+                maxZoom: 13 // Zoom muy cercano para ver detalles del área
             });
             Logger.debug(`🗺️ Multiple coordinates: fitted bounds with zoom 11`);
         } else if (coords) {
             // Si solo hay una coordenada, zoom muy cercano para máximo detalle
-            map.setView(coords, 12); // Zoom más cercano
-            Logger.debug(`🗺️ Single coordinate: set view with zoom 12`);
+            map.setView(coords, 14); // Zoom muy cercano para ver el área específica
+            Logger.debug(`🗺️ Single coordinate: set view with zoom 14`);
         }
         
         // Forzar actualización del tamaño después de ajustar vista
@@ -497,10 +497,10 @@ export class MapRenderer {
             // Re-aplicar bounds después de invalidar tamaño con mejor zoom
             if (validCoords.length > 1) {
                 const bounds = L.latLngBounds(validCoords);
-                map.fitBounds(bounds, { padding: [20, 20], maxZoom: 11 });
+                map.fitBounds(bounds, { padding: [10, 10], maxZoom: 13 });
                 Logger.debug(`🔄 Re-applied bounds with enhanced zoom`);
             } else if (coords) {
-                map.setView(coords, 12);
+                map.setView(coords, 14);
                 Logger.debug(`🔄 Re-centered with enhanced zoom`);
             }
         }, 300);

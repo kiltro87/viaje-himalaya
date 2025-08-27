@@ -409,8 +409,10 @@ export class UIRenderer {
             }
             
             if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
-                const currentDayData = tripConfig.itineraryData[dayDiff];
-                Logger.debug(`📅 HOY DEBUG: dayDiff=${dayDiff}, accessing day ${dayDiff + 1}, data:`, currentDayData.title, `ID: ${currentDayData.id}`);
+                // CORRECCIÓN TEMPORAL: Ajustar índice por desfase de 2 días reportado por usuario
+                const adjustedIndex = Math.max(0, dayDiff - 2);
+                const currentDayData = tripConfig.itineraryData[adjustedIndex];
+                Logger.debug(`📅 HOY DEBUG CORREGIDO: dayDiff=${dayDiff}, adjustedIndex=${adjustedIndex}, accessing day ${adjustedIndex + 1}, data:`, currentDayData.title, `ID: ${currentDayData.id}`);
                 
                 // Determinar el icono y tipo de actividad
                 let activityIcon = 'hiking';
