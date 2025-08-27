@@ -518,26 +518,40 @@ export class FirebaseManager {
             
             if (!foundDocument) {
                 Logger.error(`🚨 CRITICAL: Target "${expenseId}" NOT FOUND in any document (firebase ID or id field)`);
-            } else {
-                Logger.success(`✅ Document found in collection but getDoc failed! This is a Firebase API bug.`);
-            }
-            
-            // Verificar que el documento existe antes de eliminar (usando config)
-            const docRef = doc(this.db, firestoreConfig.collections.expenses, expenseId);
-            Logger.debug(`🔍 DELETE: DocRef created with config path`);
-            
-            const docSnap = await getDoc(docRef);
-            Logger.debug(`🔍 DELETE: getDoc executed, exists = ${docSnap.exists()}`);
-            
-            if (!docSnap.exists()) {
-                Logger.warning(`🚨 Document ${expenseId} does not exist in Firebase using config path`);
-                Logger.warning(`🚨 But literal test showed: ${testDocSnap.exists()}`);
                 return false;
-            }
+            } else {
+                Logger.success(`✅ Document found in collection! Using correct Firebase Document ID.`);
+                
+                // Buscar el Firebase Document ID correcto
+                let correctFirebaseId = null;
+                testCollectionSnap.forEach((doc) => {
+                    if (doc.data().id === expenseId) {
+                        correctFirebaseId = doc.id;
+                    }
+                });
+                
+                if (!correctFirebaseId) {
+                    Logger.error(`🚨 Could not find Firebase Document ID for data.id: ${expenseId}`);
+                    return false;
+                }
+                
+                Logger.success(`🎯 USING CORRECT ID: Firebase Document ID="${correctFirebaseId}" for data.id="${expenseId}"`);
+                
+                // Usar el Firebase Document ID correcto
+                const docRef = doc(this.db, firestoreConfig.collections.expenses, correctFirebaseId);
+                Logger.debug(`🔍 DELETE: DocRef created with CORRECT Firebase ID: ${correctFirebaseId}`);
+                
+                const docSnap = await getDoc(docRef);
+                Logger.debug(`🔍 DELETE: getDoc executed with correct ID, exists = ${docSnap.exists()}`);
+                
+                if (!docSnap.exists()) {
+                    Logger.error(`🚨 Even with correct Firebase ID, document not found: ${correctFirebaseId}`);
+                    return false;
+                }
             
-            Logger.debug(`✅ Document ${expenseId} exists, proceeding with delete`);
+            Logger.debug(`✅ Document ${expenseId} exists, proceeding with delete using Firebase ID: ${correctFirebaseId}`);
             
-            // Eliminar el documento
+            // Eliminar el documento usando el ID correcto
             await deleteDoc(docRef);
             
             Logger.data('Expense deleted from Firebase:', expenseId);
