@@ -32,7 +32,6 @@ import { HeaderRenderer } from './renderers/HeaderRenderer.js';
 import RealtimeSync from '../utils/RealtimeSync.js';
 import { ExpenseOrchestrator } from '../utils/ExpenseOrchestrator.js';
 import { container } from '../core/DependencyContainer.js';
-import { LoggingStandardizer } from '../utils/LoggingStandardizer.js';
 
 export class BudgetManager {
     /**
@@ -51,9 +50,12 @@ export class BudgetManager {
             return window.budgetInstance;
         }
         
-        // Inicializar LoggingStandardizer
-        LoggingStandardizer.init();
-        LoggingStandardizer.systemInit('BudgetManager', '2.0.0');
+        // Temporalmente deshabilitado para evitar recursión infinita
+        // LoggingStandardizer.init();
+        // LoggingStandardizer.systemInit('BudgetManager', '2.0.0');
+        
+        Logger.init('BudgetManager constructor started');
+        Logger.budget('Initializing budget management system');
         
         // Inicializar objetos globales necesarios
         this.initializeGlobals();
@@ -82,7 +84,7 @@ export class BudgetManager {
         // Registrar en DependencyContainer para uso futuro
         container.registerSingleton('budgetManagerInstance', () => this);
         
-        LoggingStandardizer.systemInit('BudgetManager', '2.0.0');
+        Logger.success('✅ BudgetManager inicializado correctamente');
     }
 
     /**
@@ -116,7 +118,7 @@ export class BudgetManager {
             // 🔥 CONFIGURAR LISTENER CUANDO SE CONECTE
             if (status === 'connected' && !this.realtimeUnsubscribe) {
                 if (!Logger.isMobile) {
-                    LoggingStandardizer.firebaseOperation('setup realtime listener', 'expenses', null);
+                    Logger.data('🔥 Firebase conectado, configurando listener en tiempo real...');
                 }
                 this.setupRealtimeSync();
             }
@@ -298,7 +300,7 @@ export class BudgetManager {
      */
     async setupRealtimeSync() {
         if (!Logger.isMobile) {
-            LoggingStandardizer.firebaseOperation('realtime sync setup', 'expenses', {
+            Logger.data('🔄 Configurando sincronización en tiempo real', {
                 isConnected: this.firebaseManager.isConnected,
                 hasExistingListener: !!this.realtimeUnsubscribe 
             });

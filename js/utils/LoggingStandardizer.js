@@ -163,7 +163,10 @@ export class LoggingStandardizer {
     static log(patternName, ...args) {
         const pattern = this.patterns.get(patternName);
         if (!pattern) {
-            Logger.warning(`Patrón de logging no encontrado: ${patternName}`);
+            // Usar console original para evitar recursión
+            if (LoggingStandardizer.originalConsole) {
+                LoggingStandardizer.originalConsole.log(`⚠️ [LoggingStandardizer] Patrón no encontrado: ${patternName}`);
+            }
             return;
         }
 
@@ -174,8 +177,27 @@ export class LoggingStandardizer {
             config.action();
         }
 
-        // Log principal
-        Logger[config.level || 'info'](config.message, config.data);
+        // Mapear niveles a métodos disponibles de Logger
+        const levelMap = {
+            'info': 'init',
+            'debug': 'debug', 
+            'warn': 'warning',
+            'warning': 'warning',
+            'error': 'error',
+            'success': 'success'
+        };
+        
+        const loggerMethod = levelMap[config.level] || 'debug';
+        
+        // Prevenir recursión: usar Logger solo si no estamos procesando console.log
+        if (typeof window !== 'undefined' && !window.__processingLogStandardizer) {
+            window.__processingLogStandardizer = true;
+            try {
+                Logger[loggerMethod](config.message, config.data);
+            } finally {
+                window.__processingLogStandardizer = false;
+            }
+        }
 
         // Métricas
         this.metrics.standardized++;
@@ -253,26 +275,40 @@ export class LoggingStandardizer {
             warn: console.warn,
             error: console.error
         };
+        
+        // Hacer originalConsole accesible globalmente para métodos estáticos
+        LoggingStandardizer.originalConsole = originalConsole;
 
+        // Flag para prevenir recursión infinita
+        let isProcessingConsoleLog = false;
+        
         // Interceptar console.log
         console.log = (...args) => {
-            const message = args.join(' ');
-            
-            // Detectar patrones en el mensaje
-            const detectedPattern = this.detectPattern(message);
-            
-            if (detectedPattern) {
-                this.log(detectedPattern.pattern, ...detectedPattern.args);
-            } else {
-                // Usar Logger.debug para console.log genéricos
-                Logger.debug(`[MIGRATED] ${message}`, { originalArgs: args });
-            }
-
-            this.metrics.console_migrated++;
-            
-            // También llamar al console original en desarrollo
-            if (this.isDevelopment()) {
+            // Prevenir recursión infinita
+            if (isProcessingConsoleLog) {
                 originalConsole.log(...args);
+                return;
+            }
+            
+            isProcessingConsoleLog = true;
+            
+            try {
+                const message = args.join(' ');
+                
+                // Detectar patrones en el mensaje
+                const detectedPattern = this.detectPattern(message);
+                
+                if (detectedPattern) {
+                    this.log(detectedPattern.pattern, ...detectedPattern.args);
+                } else {
+                    // Usar console original directamente para evitar recursión
+                    originalConsole.log(`🔄 [MIGRATED] ${message}`, { originalArgs: args });
+                }
+
+                this.metrics.console_migrated++;
+                
+            } finally {
+                isProcessingConsoleLog = false;
             }
         };
 

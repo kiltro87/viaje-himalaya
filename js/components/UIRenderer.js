@@ -30,7 +30,6 @@ import { HeaderRenderer } from './renderers/HeaderRenderer.js';
 import { WeatherRenderer } from './renderers/WeatherRenderer.js';
 import { ItineraryRenderer } from './renderers/ItineraryRenderer.js';
 import { UIHelpers } from '../utils/UIHelpers.js';
-import { LoggingStandardizer } from '../utils/LoggingStandardizer.js';
 
 export class UIRenderer {
     /**
@@ -801,19 +800,19 @@ export class UIRenderer {
 
     // Renderizar la vista de itinerario usando ItineraryRenderer modular
     renderItinerary() {
-        LoggingStandardizer.renderStart('Itinerario');
+        Logger.ui('📅 Renderizando itinerario...');
         const mainContent = document.getElementById('main-content');
         if (!mainContent) {
-            LoggingStandardizer.renderError('Itinerario', new Error('Container not found'));
+            Logger.error('Container main-content no encontrado para Itinerario');
             return;
         }
 
         // Usar ItineraryRenderer modular en lugar de código inline
         try {
             ItineraryRenderer.renderItinerarySection(mainContent);
-            LoggingStandardizer.renderSuccess('Itinerario');
+            Logger.success('✅ Itinerario renderizado correctamente');
         } catch (error) {
-            LoggingStandardizer.renderError('Itinerario', error);
+            Logger.error('❌ Error renderizando Itinerario', error);
             // Fallback al método original si ItineraryRenderer falla
             this.renderItineraryFallback();
         }
