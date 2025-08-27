@@ -463,15 +463,34 @@ export class FirebaseManager {
         }
 
         try {
-            const { doc, deleteDoc, getDoc } = 
+            const { doc, deleteDoc, getDoc, collection, getDocs } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
-            // Verificar que el documento existe antes de eliminar
+            Logger.debug(`🔍 DELETE: Collection name: "${firestoreConfig.collections.expenses}"`);
+            Logger.debug(`🔍 DELETE: ExpenseId: "${expenseId}"`);
+            Logger.debug(`🔍 DELETE: Database:`, this.db);
+            
+            // CRITICAL TEST: Verificar si existe usando string literal
+            Logger.debug(`🧪 DELETE TEST: Using literal 'expenses' collection`);
+            const testDocRef = doc(this.db, 'expenses', expenseId);
+            const testDocSnap = await getDoc(testDocRef);
+            Logger.debug(`🧪 DELETE TEST RESULT: Document exists with literal = ${testDocSnap.exists()}`);
+            
+            // ADDITIONAL TEST: Verificar que la colección tiene documentos
+            const testCollectionRef = collection(this.db, 'expenses');
+            const testCollectionSnap = await getDocs(testCollectionRef);
+            Logger.debug(`🧪 DELETE COLLECTION TEST: Found ${testCollectionSnap.size} total documents`);
+            
+            // Verificar que el documento existe antes de eliminar (usando config)
             const docRef = doc(this.db, firestoreConfig.collections.expenses, expenseId);
+            Logger.debug(`🔍 DELETE: DocRef created with config path`);
+            
             const docSnap = await getDoc(docRef);
+            Logger.debug(`🔍 DELETE: getDoc executed, exists = ${docSnap.exists()}`);
             
             if (!docSnap.exists()) {
-                Logger.warning(`🚨 Document ${expenseId} does not exist in Firebase`);
+                Logger.warning(`🚨 Document ${expenseId} does not exist in Firebase using config path`);
+                Logger.warning(`🚨 But literal test showed: ${testDocSnap.exists()}`);
                 return false;
             }
             
