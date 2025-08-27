@@ -188,36 +188,36 @@ export class BudgetManager {
      * @private
      */
     handleRemoteExpenseChange(action, expense) {
+        // Obtener expenses una sola vez para evitar conflictos de declaración
+        let currentExpenses = stateManager.getState('expenses') || [];
+        
         switch (action) {
             case 'added':
                 // Verificar que no existe ya localmente
-                const expenses = stateManager.getState('expenses') || [];
-                const existingIndex = expenses.findIndex(e => e.id === expense.id);
+                const existingIndex = currentExpenses.findIndex(e => e.id === expense.id);
                 if (existingIndex === -1) {
-                    expenses.unshift(expense);
-                    stateManager.updateState('expenses', expenses);
+                    currentExpenses.unshift(expense);
+                    stateManager.updateState('expenses', currentExpenses);
                     this.updateBudgetUI();
                     this.showNotification(`💰 Nuevo gasto añadido: ${expense.concept}`, 'success');
                 }
                 break;
 
             case 'updated':
-                const expenses = stateManager.getState('expenses') || [];
-                const updateIndex = expenses.findIndex(e => e.id === expense.id);
+                const updateIndex = currentExpenses.findIndex(e => e.id === expense.id);
                 if (updateIndex !== -1) {
-                    expenses[updateIndex] = expense;
-                    stateManager.updateState('expenses', expenses);
+                    currentExpenses[updateIndex] = expense;
+                    stateManager.updateState('expenses', currentExpenses);
                     this.updateBudgetUI();
                     this.showNotification(`✏️ Gasto actualizado: ${expense.concept}`, 'info');
                 }
                 break;
 
             case 'deleted':
-                const expenses = stateManager.getState('expenses') || [];
-                const deleteIndex = expenses.findIndex(e => e.id === expense.id);
+                const deleteIndex = currentExpenses.findIndex(e => e.id === expense.id);
                 if (deleteIndex !== -1) {
-                    const deletedExpense = expenses.splice(deleteIndex, 1)[0];
-                    stateManager.updateState('expenses', expenses);
+                    const deletedExpense = currentExpenses.splice(deleteIndex, 1)[0];
+                    stateManager.updateState('expenses', currentExpenses);
                     this.updateBudgetUI();
                     this.showNotification(`🗑️ Gasto eliminado: ${deletedExpense.concept}`, 'warning');
                 }
@@ -337,7 +337,7 @@ export class BudgetManager {
         
         this.realtimeUnsubscribe = await this.firebaseManager.setupRealtimeListener((expenses) => {
             if (!Logger.isMobile) {
-                console.log('🔥 DEBUG: Realtime callback triggered with', expenses.length, 'expenses');
+                Logger.debug('🔥 DEBUG: Realtime callback triggered with', expenses.length, 'expenses');
             }
             Logger.budget(`Realtime update: ${expenses.length} expenses received`);
             
@@ -356,14 +356,14 @@ export class BudgetManager {
                     this.processFirebaseUpdate(expenses);
                 } else {
                     if (!Logger.isMobile) {
-                        console.log('🔥 DEBUG: No changes detected, skipping UI update');
+                        Logger.debug('🔥 DEBUG: No changes detected, skipping UI update');
                     }
                 }
             }, 300); // Aumentado a 300ms para mejor rendimiento
         });
         
         if (!Logger.isMobile) {
-            console.log('🔥 DEBUG: Realtime sync setup completed');
+            Logger.debug('🔥 DEBUG: Realtime sync setup completed');
         }
     }
     
@@ -392,7 +392,7 @@ export class BudgetManager {
                 
                 stateManager.getState('expenses') = processedExpenses;
                 if (!Logger.isMobile) {
-                    console.log('🔥 DEBUG: AppState.expenses REPLACED with', processedExpenses.length, 'expenses');
+                    Logger.debug('🔥 DEBUG: AppState.expenses REPLACED with', processedExpenses.length, 'expenses');
                 }
                 
                 // 🚨 NO GUARDAR EN LOCALSTORAGE - Firebase es la fuente de verdad
@@ -403,7 +403,7 @@ export class BudgetManager {
             // Actualizar UI si está visible
             if (document.getElementById('budget-container')) {
                 if (!Logger.isMobile) {
-                    console.log('🔥 DEBUG: Updating budget UI...');
+                    Logger.debug('🔥 DEBUG: Updating budget UI...');
                 }
                 this.updateSummaryCards();
                 
@@ -413,7 +413,7 @@ export class BudgetManager {
                     const activeCategory = document.querySelector('.category-btn.active')?.dataset.category;
                     if (activeCategory) {
                         if (!Logger.isMobile) {
-                            console.log('🔥 DEBUG: Updating category content for:', activeCategory);
+                            Logger.debug('🔥 DEBUG: Updating category content for:', activeCategory);
                         }
                         this.showCategoryContent(activeCategory);
                     }
@@ -422,7 +422,7 @@ export class BudgetManager {
         } catch (error) {
             Logger.error('Error processing Firebase update:', error);
             this.updateSyncStatus('error');
-            console.error('🔥 ERROR in processFirebaseUpdate:', error);
+            Logger.error('🔥 ERROR in processFirebaseUpdate:', error);
         }
     }
 
@@ -660,7 +660,7 @@ export class BudgetManager {
     }
 
     render(container, tripConfig) {
-        console.log('💰 Renderizando presupuesto...');
+        Logger.debug('💰 Renderizando presupuesto...');
         const budgetData = tripConfig.budgetData.budgetData;
         const allExpenses = Object.values(budgetData).flat();
         const allCategories = [...new Set(allExpenses.map(item => item.category))];
@@ -1377,7 +1377,7 @@ export class BudgetManager {
                                     }
                                 }
                             } catch (error) {
-                                console.error('Error al eliminar gasto:', error);
+                                Logger.error('Error al eliminar gasto:', error);
                                 this.showNotification('❌ Error al eliminar gasto', 'error');
                             }
                         }
@@ -1594,7 +1594,7 @@ export class BudgetManager {
             }, 100);
             
         } catch (error) {
-            console.error('Error al mostrar contenido de categorías:', error);
+            Logger.error('Error al mostrar contenido de categorías:', error);
         }
     }
 

@@ -1696,7 +1696,6 @@ export class UIRenderer {
         `;
         
         // Actualizar estadísticas (con delay para asegurar que DOM esté listo)
-        const packingManager = stateManager.getPackingListManager();
         if (packingManager) {
             setTimeout(() => {
                 packingManager.updatePackingStats();
@@ -1723,24 +1722,24 @@ export class UIRenderer {
                     }
                     
                     // Obtener PackingListManager del StateManager
-                    let packingManager = stateManager.getPackingListManager();
-                    if (!packingManager) {
+                    let currentPackingManager = stateManager.getPackingListManager();
+                    if (!currentPackingManager) {
                         const { getPackingListManager } = await import('../utils/PackingListManager.js');
-                        packingManager = getPackingListManager();
-                        stateManager.setPackingListManager(packingManager);
+                        currentPackingManager = getPackingListManager();
+                        stateManager.setPackingListManager(currentPackingManager);
                         
                         // Inicializar con FirebaseManager si está disponible
                         const firebaseManager = stateManager.getFirebaseManager();
                         if (firebaseManager) {
-                            await packingManager.initialize(firebaseManager);
+                            await currentPackingManager.initialize(firebaseManager);
                         }
                     }
                     
                     // Actualizar estado del item en el backend
-                    await packingManager.toggleItem(itemKey, e.target.checked);
+                    await currentPackingManager.toggleItem(itemKey, e.target.checked);
                     
                     // Actualizar estadísticas
-                    packingManager.updatePackingStats();
+                    currentPackingManager.updatePackingStats();
                 }
             }
         });
