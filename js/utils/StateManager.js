@@ -405,6 +405,80 @@ class StateManager {
     }
 
     // =================================================================
+    // 📦 MÉTODOS ESPECÍFICOS PARA PACKING LIST
+    // =================================================================
+
+    /**
+     * 📦 CONFIGURAR PACKING LIST MANAGER
+     * 
+     * Configura la instancia del PackingListManager.
+     * 
+     * @param {Object} manager - Instancia del manager
+     */
+    setPackingListManager(manager) {
+        this.updateState('packingList.manager', manager);
+        Logger.ui('PackingListManager instance set in StateManager');
+    }
+
+    /**
+     * 📦 OBTENER PACKING LIST MANAGER
+     * 
+     * Obtiene la instancia del PackingListManager.
+     * 
+     * @returns {Object|null} Instancia del manager
+     */
+    getPackingListManager() {
+        return this.getState('packingList.manager');
+    }
+
+    /**
+     * 🔥 CONFIGURAR FIREBASE MANAGER
+     * 
+     * Configura la instancia del FirebaseManager.
+     * 
+     * @param {Object} manager - Instancia del Firebase manager
+     */
+    setFirebaseManager(manager) {
+        this.updateState('firebase.manager', manager);
+        Logger.ui('FirebaseManager instance set in StateManager');
+    }
+
+    /**
+     * 🔥 OBTENER FIREBASE MANAGER
+     * 
+     * Obtiene la instancia del FirebaseManager.
+     * 
+     * @returns {Object|null} Instancia del manager
+     */
+    getFirebaseManager() {
+        return this.getState('firebase.manager');
+    }
+
+    /**
+     * ⚙️ CONFIGURAR TRIP CONFIG
+     * 
+     * Configura los datos del viaje.
+     * 
+     * @param {Object} config - Configuración del viaje
+     */
+    setTripConfig(config) {
+        this.updateState('config.tripConfig', config);
+        Logger.data('Trip config set in StateManager');
+    }
+
+    /**
+     * ✈️ CONFIGURAR FLIGHTS DATA
+     * 
+     * Configura los datos de vuelos.
+     * 
+     * @param {Array} flightsData - Datos de vuelos
+     */
+    setFlightsData(flightsData) {
+        this.updateState('config.flightsData', flightsData);
+        Logger.data('Flights data set in StateManager');
+    }
+
+    // =================================================================
     // 🔧 MÉTODOS DE UTILIDAD Y DEBUG
     // =================================================================
 

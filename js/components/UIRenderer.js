@@ -389,7 +389,7 @@ export class UIRenderer {
             
 
         } catch (error) {
-            console.error('Error al actualizar resumen de presupuesto:', error);
+            Logger.error('Error updating budget summary:', error);
         }
     }
 
@@ -521,7 +521,7 @@ export class UIRenderer {
     calculateTotalBudget() {
         try {
             // Acceder a la estructura correcta: budgetData.budgetData
-            const budgetDataSource = window.tripConfig?.budgetData?.budgetData || tripConfig?.budgetData?.budgetData || {};
+            const budgetDataSource = stateManager.getState('config.tripConfig')?.budgetData?.budgetData || tripConfig?.budgetData?.budgetData || {};
             let total = 0;
             
             // Sumar todas las categorías de presupuesto
@@ -534,7 +534,7 @@ export class UIRenderer {
             });
             return total;
         } catch (error) {
-            console.error('Error calculating total budget:', error);
+            Logger.error('Error calculating total budget:', error);
             return 4500; // Fallback solo si hay error
         }
     }
@@ -550,7 +550,7 @@ export class UIRenderer {
             totalSpent = stateManager.getTotalSpent();
             return totalSpent;
         } catch (error) {
-            console.error('Error calculating total spent:', error);
+            Logger.error('Error calculating total spent:', error);
             return 0; // Fallback si hay error
         }
     }
@@ -563,14 +563,12 @@ export class UIRenderer {
             // Usar fecha simulada si el Day Simulator está activo
             const today = stateManager.getCurrentDate();
             const tripStartDate = this.getTripStartDate();
-            console.log('📅 Fecha de inicio del viaje:', tripStartDate);
-            console.log('📅 Fecha de hoy:', today);
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
-            console.log('📅 Diferencia en días:', dayDiff);
+            Logger.data('📅 Trip dates calculated', { tripStartDate, today, dayDiff });
             
             if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
                 const currentDayData = tripConfig.itineraryData[dayDiff];
-                console.log('📅 Datos del día actual:', currentDayData);
+                Logger.data('📅 Current day data loaded', currentDayData);
                 
                 const todayDate = document.getElementById('today-date');
                 const todayDay = document.getElementById('today-day');
@@ -579,7 +577,7 @@ export class UIRenderer {
                 const todayActivity = document.getElementById('today-activity');
                 const todayWeather = document.getElementById('today-weather');
                 
-                console.log('📅 Elementos encontrados:', {
+                Logger.data('📅 DOM elements found', {
                     todayDate: !!todayDate,
                     todayDay: !!todayDay,
                     nextDestination: !!nextDestination,
@@ -637,12 +635,12 @@ export class UIRenderer {
                 }
             }
         } catch (error) {
-            console.error('Error actualizando información de hoy:', error);
+            Logger.error('Error updating today information:', error);
         }
     }
 
     updateTodayMainContent() {
-        console.log('📅 Actualizando contenido principal de Hoy...');
+        Logger.ui('📅 Updating main today content');
         try {
             const today = new Date();
             const tripStartDate = this.getTripStartDate();
@@ -650,13 +648,13 @@ export class UIRenderer {
             
             const mainContentContainer = document.querySelector('#today-main-content');
             if (!mainContentContainer) {
-                console.warn('⚠️ Contenedor #today-main-content no encontrado');
+                Logger.warning('⚠️ Container #today-main-content not found');
                 return;
             }
             
             if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
                 const currentDayData = tripConfig.itineraryData[dayDiff];
-                console.log('📅 Generando contenido para día:', dayDiff + 1, currentDayData.title);
+                Logger.data(`📅 Generating content for day: ${dayDiff + 1}`, currentDayData.title);
                 
                 // Determinar el icono y tipo de actividad
                 let activityIcon = 'hiking';
@@ -760,7 +758,7 @@ export class UIRenderer {
                 `;
             }
         } catch (error) {
-            console.error('Error al actualizar contenido principal de hoy:', error);
+            Logger.error('Error updating main today content:', error);
         }
     }
 
@@ -911,7 +909,7 @@ export class UIRenderer {
 
 
     renderToday() {
-        console.log('🌅 Renderizando hoy...');
+        Logger.ui('🌅 Rendering today view');
         const mainContent = document.getElementById('main-content');
         if (!mainContent) return;
 
@@ -936,7 +934,7 @@ export class UIRenderer {
         this.updateTodayInfo();
         this.updateTodayMainContent();
         
-        console.log('✅ Hoy renderizado correctamente');
+        Logger.success('✅ Today view rendered successfully');
     }
 
     /**
@@ -952,7 +950,7 @@ export class UIRenderer {
             const tripStartDate = this.getTripStartDate();
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
             
-            console.log(`📅 updateTodayMainContent: dayDiff=${dayDiff}, tripLength=${tripConfig.itineraryData.length}`);
+            Logger.data(`📅 updateTodayMainContent`, { dayDiff, tripLength: tripConfig.itineraryData.length });
 
             if (dayDiff < 0) {
                 // ANTES DEL VIAJE: Mostrar preparativos
@@ -965,7 +963,7 @@ export class UIRenderer {
                 this.renderPostTripContent(container);
             }
         } catch (error) {
-            console.error('Error updating today main content:', error);
+            Logger.error('Error updating today main content:', error);
             container.innerHTML = '<p class="text-slate-600 dark:text-slate-400">Error al cargar la información del día</p>';
         }
     }
@@ -1076,7 +1074,7 @@ export class UIRenderer {
      */
     getFlightForDay(dayNumber) {
         try {
-            const flightsData = window.tripConfig?.flightsData || tripConfig?.flightsData || [];
+            const flightsData = stateManager.getState('config.flightsData') || tripConfig?.flightsData || [];
             const tripStartDate = this.getTripStartDate();
             
             // Mapeo de códigos de aeropuerto a nombres legibles
@@ -1133,7 +1131,7 @@ export class UIRenderer {
             
             return null;
         } catch (error) {
-            console.error('Error getting flight for day:', error);
+            Logger.error('Error getting flight for day:', error);
             return null;
         }
     }
@@ -1171,7 +1169,7 @@ export class UIRenderer {
             
             return date;
         } catch (error) {
-            console.error('Error parsing Spanish date:', dateString, error);
+            Logger.error('Error parsing Spanish date:', { dateString, error });
             return null;
         }
     }
@@ -1314,7 +1312,7 @@ export class UIRenderer {
 
     // Renderizar sección de Gastos independiente
     renderGastos() {
-        console.log('💰 Renderizando sección de gastos...');
+        Logger.ui('💰 Rendering budget section');
         const mainContent = document.getElementById('main-content');
         if (!mainContent) return;
 
@@ -1347,7 +1345,7 @@ export class UIRenderer {
 
     // Renderizar sección de Extras independiente
     renderExtras() {
-        console.log('🎒 Renderizando sección de extras...');
+        Logger.ui('🎒 Rendering extras section');
         const mainContent = document.getElementById('main-content');
         if (!mainContent) return;
 
@@ -1394,10 +1392,10 @@ export class UIRenderer {
 
     // Renderizar información de agencias
     renderAgencies() {
-        console.log('🏢 Renderizando información de agencias');
+        Logger.ui('🏢 Rendering agencies information');
         const container = document.getElementById('agencies');
         if (!container) {
-            console.warn('⚠️ Contenedor #agencies no encontrado');
+            Logger.warning('⚠️ Container #agencies not found');
             return;
         }
 
@@ -1505,25 +1503,25 @@ export class UIRenderer {
         `;
 
         container.innerHTML = agenciesHTML;
-        console.log('✅ Información de agencias renderizada');
+        Logger.success('✅ Agencies information rendered');
     }
 
     // Renderizar presupuesto
     renderBudget() {
-        console.log('💰 Renderizando sección de presupuesto');
+        Logger.ui('💰 Rendering budget section');
         const container = document.getElementById('budget');
         if (!container) {
-            console.error('❌ Contenedor #budget no encontrado');
-            console.log('🔍 Elementos disponibles con ID:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+            Logger.error('❌ Container #budget not found');
+            Logger.debug('🔍 Available elements with ID:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
             return;
         }
-        console.log('✅ Contenedor #budget encontrado:', container);
+        Logger.debug('✅ Container #budget found:', container);
 
         // Usar la implementación del presupuesto
-        console.log('💰 Llamando budgetManager.render...');
+        Logger.ui('💰 Calling budgetManager.render...');
         this.budgetManager.render(container, tripConfig);
         
-        console.log('✅ Presupuesto renderizado completamente');
+        Logger.success('✅ Budget rendered completely');
     }
 
     renderBudgetItems(expenses) {
@@ -1628,27 +1626,30 @@ export class UIRenderer {
 
     // Renderizar lista de equipaje
     async renderPackingList() {
-        console.log('🎒 Renderizando lista de equipaje');
+        Logger.ui('🎒 Rendering packing list');
         const container = document.getElementById('packing-list');
         if (!container) {
-            console.error('❌ Contenedor #packing-list no encontrado');
-            console.log('🔍 Elementos disponibles con ID:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+            Logger.error('❌ Container #packing-list not found');
+            Logger.debug('🔍 Available elements with ID:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
             return;
         }
-        console.log('✅ Contenedor #packing-list encontrado');
+        Logger.debug('✅ Container #packing-list found');
 
         // Inicializar PackingListManager si no existe
-        if (!window.PackingListManager) {
+        let packingManager = stateManager.getPackingListManager();
+        if (!packingManager) {
             const { getPackingListManager } = await import('../utils/PackingListManager.js');
-            window.PackingListManager = getPackingListManager();
+            packingManager = getPackingListManager();
+            stateManager.setPackingListManager(packingManager);
             
             // Inicializar con FirebaseManager si está disponible
-            if (window.FirebaseManager) {
-                await window.PackingListManager.initialize(window.FirebaseManager);
+            const firebaseManager = stateManager.getFirebaseManager();
+            if (firebaseManager) {
+                await packingManager.initialize(firebaseManager);
             }
         }
 
-        const saved = window.PackingListManager.getItems();
+        const saved = packingManager.getItems();
         
         const listHTML = Object.entries(tripConfig.packingListData).map(([category, items]) => {
             const categoryIcon = this.getCategoryIcon(category);
@@ -1695,9 +1696,10 @@ export class UIRenderer {
         `;
         
         // Actualizar estadísticas (con delay para asegurar que DOM esté listo)
-        if (window.PackingListManager) {
+        const packingManager = stateManager.getPackingListManager();
+        if (packingManager) {
             setTimeout(() => {
-                window.PackingListManager.updatePackingStats();
+                packingManager.updatePackingStats();
             }, 100);
         }
         
@@ -1720,35 +1722,38 @@ export class UIRenderer {
                         }
                     }
                     
-                    // Inicializar PackingListManager si no existe
-                    if (!window.PackingListManager) {
+                    // Obtener PackingListManager del StateManager
+                    let packingManager = stateManager.getPackingListManager();
+                    if (!packingManager) {
                         const { getPackingListManager } = await import('../utils/PackingListManager.js');
-                        window.PackingListManager = getPackingListManager();
+                        packingManager = getPackingListManager();
+                        stateManager.setPackingListManager(packingManager);
                         
                         // Inicializar con FirebaseManager si está disponible
-                        if (window.FirebaseManager) {
-                            await window.PackingListManager.initialize(window.FirebaseManager);
+                        const firebaseManager = stateManager.getFirebaseManager();
+                        if (firebaseManager) {
+                            await packingManager.initialize(firebaseManager);
                         }
                     }
                     
                     // Actualizar estado del item en el backend
-                    await window.PackingListManager.toggleItem(itemKey, e.target.checked);
+                    await packingManager.toggleItem(itemKey, e.target.checked);
                     
                     // Actualizar estadísticas
-                    window.PackingListManager.updatePackingStats();
+                    packingManager.updatePackingStats();
                 }
             }
         });
         
-        console.log('✅ Lista de equipaje renderizada completamente');
+        Logger.success('✅ Packing list rendered completely');
     }
 
     // Renderizar información climática con WeatherRenderer modular
     async renderWeather() {
-        console.log('🌤️ Renderizando información climática');
+        Logger.ui('🌤️ Rendering weather information');
         const container = document.getElementById('weather');
         if (!container) {
-            console.error('❌ Contenedor #weather no encontrado');
+            Logger.error('❌ Container #weather not found');
             return;
         }
 
@@ -1757,7 +1762,7 @@ export class UIRenderer {
         
         // Asegurar que el contenedor sea visible
         container.style.opacity = '1 !important';
-        console.log('✅ Información climática renderizada con WeatherRenderer');
+        Logger.success('✅ Weather information rendered with WeatherRenderer');
     }
 
     // ⚠️ DEPRECADO: Método movido a WeatherRenderer.js - Eliminado para evitar duplicación
@@ -1793,7 +1798,7 @@ export class UIRenderer {
                 </div>
             `;
         } catch (error) {
-            console.error('Error al renderizar análisis de estilo de viaje:', error);
+            Logger.error('Error rendering travel style analysis:', error);
             return '';
         }
     }
@@ -1926,7 +1931,7 @@ export class UIRenderer {
                 </div>`;
 
         } catch (error) {
-            console.error('❌ Error al renderizar sección de vuelos:', error);
+            Logger.error('❌ Error rendering flights section:', error);
             return `
                 <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
                     <h3 class="font-semibold">Error al cargar los vuelos</h3>
@@ -1937,10 +1942,10 @@ export class UIRenderer {
 
     // Renderizar información de vuelos (mantenido para compatibilidad)
     renderFlights() {
-        console.log('✈️ Renderizando información de vuelos');
+        Logger.ui('✈️ Rendering flights information');
         const mainContent = document.getElementById('main-content');
         if (!mainContent) {
-            console.error('❌ Contenedor main-content no encontrado');
+            Logger.error('❌ Container main-content not found');
             return;
         }
 
@@ -2008,10 +2013,10 @@ export class UIRenderer {
                     </div>
                 </div>`;
 
-            console.log('✅ Información de vuelos renderizada correctamente');
+            Logger.success('✅ Flights information rendered successfully');
 
         } catch (error) {
-            console.error('❌ Error al renderizar vuelos:', error);
+            Logger.error('❌ Error rendering flights:', error);
             mainContent.innerHTML = `
                 <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
                     <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
@@ -2028,12 +2033,12 @@ export class UIRenderer {
 
     // Cambiar vista
     changeView(view) {
-        console.log(`🔄 Cambiando vista de '${this.currentView}' a '${view}'`);
+        Logger.ui(`🔄 Changing view from '${this.currentView}' to '${view}'`);
         this.currentView = view;
         
         // Log específico para herramientas
         if (view === 'herramientas') {
-            console.log('🛠️ Vista de herramientas detectada, llamando renderMainContent...');
+            Logger.ui('🛠️ Tools view detected, calling renderMainContent...');
         }
         
         this.renderMainContent();

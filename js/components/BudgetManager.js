@@ -25,6 +25,7 @@
  */
 
 import Logger from '../utils/Logger.js';
+import stateManager from '../utils/StateManager.js';
 import { FirebaseManager } from '../utils/FirebaseManager.js';
 import OptimisticUI from '../utils/OptimisticUI.js';
 import BatchManager from '../utils/BatchManager.js';
@@ -45,9 +46,10 @@ export class BudgetManager {
      */
     constructor() {
         // 🚨 PREVENIR MÚLTIPLES INSTANCIAS (Singleton pattern)
-        if (window.budgetInstance) {
+        const existingInstance = stateManager.getState('instances.budgetManager');
+        if (existingInstance) {
             Logger.warning('BudgetManager ya existe, retornando instancia existente');
-            return window.budgetInstance;
+            return existingInstance;
         }
         
         // ✅ LoggingStandardizer ELIMINADO - Usamos Logger directamente
@@ -63,7 +65,7 @@ export class BudgetManager {
         this.setupFirebaseIntegration();
         
         // Exponer FirebaseManager globalmente para otros componentes
-        window.FirebaseManager = this.firebaseManager;
+        stateManager.setFirebaseManager(this.firebaseManager);
         
         // 🚀 SISTEMAS AVANZADOS DE OPTIMIZACIÓN
         this.optimisticUI = OptimisticUI;
@@ -77,7 +79,7 @@ export class BudgetManager {
         this.setupAdvancedSyncCallbacks();
         
         // 🚨 ASIGNAR COMO INSTANCIA SINGLETON
-        window.budgetInstance = this;
+        stateManager.updateState('instances.budgetManager', this);
         
         // Registrar en DependencyContainer para uso futuro
         container.registerSingleton('budgetManagerInstance', () => this);
@@ -189,27 +191,33 @@ export class BudgetManager {
         switch (action) {
             case 'added':
                 // Verificar que no existe ya localmente
-                const existingIndex = window.AppState.expenses.findIndex(e => e.id === expense.id);
+                const expenses = stateManager.getState('expenses') || [];
+                const existingIndex = expenses.findIndex(e => e.id === expense.id);
                 if (existingIndex === -1) {
-                    window.AppState.expenses.unshift(expense);
+                    expenses.unshift(expense);
+                    stateManager.updateState('expenses', expenses);
                     this.updateBudgetUI();
                     this.showNotification(`💰 Nuevo gasto añadido: ${expense.concept}`, 'success');
                 }
                 break;
 
             case 'updated':
-                const updateIndex = window.AppState.expenses.findIndex(e => e.id === expense.id);
+                const expenses = stateManager.getState('expenses') || [];
+                const updateIndex = expenses.findIndex(e => e.id === expense.id);
                 if (updateIndex !== -1) {
-                    window.AppState.expenses[updateIndex] = expense;
+                    expenses[updateIndex] = expense;
+                    stateManager.updateState('expenses', expenses);
                     this.updateBudgetUI();
                     this.showNotification(`✏️ Gasto actualizado: ${expense.concept}`, 'info');
                 }
                 break;
 
             case 'deleted':
-                const deleteIndex = window.AppState.expenses.findIndex(e => e.id === expense.id);
+                const expenses = stateManager.getState('expenses') || [];
+                const deleteIndex = expenses.findIndex(e => e.id === expense.id);
                 if (deleteIndex !== -1) {
-                    const deletedExpense = window.AppState.expenses.splice(deleteIndex, 1)[0];
+                    const deletedExpense = expenses.splice(deleteIndex, 1)[0];
+                    stateManager.updateState('expenses', expenses);
                     this.updateBudgetUI();
                     this.showNotification(`🗑️ Gasto eliminado: ${deletedExpense.concept}`, 'warning');
                 }
@@ -480,19 +488,11 @@ export class BudgetManager {
      * - window.budgetInstance: Referencia a esta instancia
      */
     initializeGlobals() {
-        // Inicializar AppState si no existe
-        if (!window.AppState) {
-            window.AppState = {
-                expenses: JSON.parse(localStorage.getItem('tripExpensesV1')) || [],
-                saveAllData() {
-                    try {
-                        localStorage.setItem('tripExpensesV1', JSON.stringify(this.expenses));
-                        console.log('💾 Gastos guardados en localStorage');
-                    } catch (error) {
-                        console.error('❌ Error al guardar gastos:', error);
-                    }
-                }
-            };
+        // Inicializar expenses en StateManager si no existen
+        if (!stateManager.getState('expenses') || stateManager.getState('expenses').length === 0) {
+            const savedExpenses = JSON.parse(localStorage.getItem('tripExpensesV1')) || [];
+            stateManager.updateState('expenses', savedExpenses);
+            Logger.data('💾 Expenses loaded from localStorage into StateManager');
         }
 
         // 🚀 INICIALIZAR EXPENSE MANAGER ULTRA-OPTIMIZADO V4.0
@@ -584,7 +584,7 @@ export class BudgetManager {
         }
 
         // Registrar esta instancia globalmente
-        window.budgetInstance = this;
+        stateManager.updateState('instances.budgetManager', this);
     }
 
     getCategoryIcon(category) {
