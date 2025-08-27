@@ -1347,27 +1347,45 @@ export class BudgetManager {
                     });
                 });
                 
-                // 💾 GUARDAR EDICIÓN INLINE
-                document.querySelectorAll('.save-inline-edit').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
+                        // 💾 GUARDAR EDICIÓN INLINE (con limpieza de listeners anteriores)
+        document.querySelectorAll('.save-inline-edit').forEach(btn => {
+            // 🧹 LIMPIAR listeners anteriores para evitar duplicados
+            btn.replaceWith(btn.cloneNode(true));
+        });
+        
+        // 🆕 AÑADIR listeners frescos
+        document.querySelectorAll('.save-inline-edit').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const expenseId = btn.dataset.expenseId;
                         await this.saveInlineEdit(expenseId);
                     });
                 });
                 
-                // ❌ CANCELAR EDICIÓN INLINE
-                document.querySelectorAll('.cancel-inline-edit').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
+                        // ❌ CANCELAR EDICIÓN INLINE (con limpieza de listeners anteriores)
+        document.querySelectorAll('.cancel-inline-edit').forEach(btn => {
+            // 🧹 LIMPIAR listeners anteriores para evitar duplicados
+            btn.replaceWith(btn.cloneNode(true));
+        });
+        
+        // 🆕 AÑADIR listeners frescos
+        document.querySelectorAll('.cancel-inline-edit').forEach(btn => {
+            btn.addEventListener('click', (e) => {
                         e.preventDefault();
                         const expenseId = btn.dataset.expenseId;
                         this.hideInlineEdit(expenseId);
                     });
                 });
                 
-                // 🗑️ ELIMINAR GASTO
-                document.querySelectorAll('.delete-expense-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
+                        // 🗑️ ELIMINAR GASTO (con limpieza de listeners anteriores)
+        document.querySelectorAll('.delete-expense-btn').forEach(btn => {
+            // 🧹 LIMPIAR listeners anteriores para evitar duplicados
+            btn.replaceWith(btn.cloneNode(true));
+        });
+        
+        // 🆕 AÑADIR listeners frescos
+        document.querySelectorAll('.delete-expense-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         const expenseId = btn.dataset.expenseId;
