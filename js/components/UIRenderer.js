@@ -295,341 +295,260 @@ export class UIRenderer {
      * Renderizar vista "Hoy" (header estilo Itinerario) - ACTUALIZACIÓN DINÁMICA
      */
     renderToday() {
-        Logger.ui('📅 Rendering today view');
-        
+        Logger.ui('🌅 Renderizando hoy (versión original)...');
         const mainContent = document.getElementById('main-content');
         if (!mainContent) return;
 
-        try {
-            // Render estructura básica
-            mainContent.innerHTML = `
-                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                    <!-- Header de Hoy (estilo Itinerario) -->
-                    <div class="mb-12">
-                        <div class="flex items-center gap-4 mb-4">
-                            <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400">today</span>
-                            <div>
-                                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">¿Qué hacemos hoy?</h1>
-                                <p class="text-lg text-slate-600 dark:text-slate-400" id="today-current-date">Descubre las actividades y planes del día actual</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contenido dinámico -->
-                    <div id="today-dynamic-content" class="space-y-8">
-                        <!-- Se actualizará dinámicamente -->
-                    </div>
-                </div>
-            `;
-            
-            // Actualizar contenido dinámicamente
-            this.updateTodayDynamicContent();
-            
-            Logger.success('✅ Today view rendered successfully');
-        } catch (error) {
-            Logger.error('❌ Error rendering today view:', error);
-            this.renderErrorView(error);
-        }
-    }
-
-    /**
-     * 🌅 ACTUALIZAR CONTENIDO DINÁMICO DE HOY
-     */
-    updateTodayDynamicContent() {
-        const container = document.getElementById('today-dynamic-content');
-        const dateElement = document.getElementById('today-current-date');
-        
-        if (!container) return;
-
-        try {
-            // Usar fecha simulada si el Day Simulator está activo
-            const today = stateManager.getCurrentDate();
-            const tripStartDate = this.getTripStartDate();
-            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
-            
-            // Actualizar fecha en header
-            if (dateElement) {
-                const todayFormatted = DateUtils.formatMediumDate(today);
-                dateElement.textContent = `Fecha actual: ${todayFormatted}`;
-            }
-            
-            Logger.data('📅 Today dynamic update', { dayDiff, tripLength: tripConfig.itineraryData.length });
-            
-            if (dayDiff < 0) {
-                // ANTES DEL VIAJE
-                this.renderPreTripToday(container, Math.abs(dayDiff));
-            } else if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
-                // DURANTE EL VIAJE
-                this.renderDuringTripToday(container, dayDiff);
-            } else {
-                // DESPUÉS DEL VIAJE
-                this.renderPostTripToday(container);
-            }
-            
-        } catch (error) {
-            Logger.error('Error updating today dynamic content:', error);
-            container.innerHTML = '<p class="text-slate-600 dark:text-slate-400">Error al cargar información del día</p>';
-        }
-    }
-
-    /**
-     * 🚀 RENDERIZAR CONTENIDO PRE-VIAJE DE HOY
-     */
-    renderPreTripToday(container, daysUntil) {
-        container.innerHTML = `
-            <div class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-2xl p-8 border border-orange-200 dark:border-orange-800">
-                <div class="text-center mb-8">
-                    <div class="text-8xl font-black text-orange-600 dark:text-orange-400 mb-4">
-                        ${daysUntil}
-                    </div>
-                    <h2 class="text-3xl font-bold text-orange-800 dark:text-orange-200 mb-2">
-                        ${daysUntil === 1 ? 'día' : 'días'} para la aventura
-                    </h2>
-                    <p class="text-orange-700 dark:text-orange-300">
-                        ¡El Himalaya nos espera! Es momento de finalizar los preparativos.
-                    </p>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-4">
-                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-green-600">check_circle</span>
-                            Preparativos completados
-                        </h3>
-                        <ul class="space-y-1 text-sm text-slate-700 dark:text-slate-300">
-                            <li>✈️ Vuelos confirmados</li>
-                            <li>📄 Documentación en orden</li>
-                            <li>💉 Vacunas aplicadas</li>
-                            <li>💰 Presupuesto planificado</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-4">
-                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-orange-600">schedule</span>
-                            Tareas pendientes
-                        </h3>
-                        <ul class="space-y-1 text-sm text-slate-700 dark:text-slate-300">
-                            <li>🎒 Revisar equipaje</li>
-                            <li>📱 Descargar mapas offline</li>
-                            <li>💊 Preparar botiquín</li>
-                            <li>📞 Avisar familiares</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Información del día (4 cards como en la versión original) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                    <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">location_on</span>
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Origen</h3>
-                    <p class="text-slate-600 dark:text-slate-400">Madrid, España</p>
-                </div>
-                
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                    <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">flight_land</span>
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Destino</h3>
-                    <p class="text-slate-600 dark:text-slate-400">Katmandú, Nepal</p>
-                </div>
-                
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                    <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">schedule</span>
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Duración</h3>
-                    <p class="text-slate-600 dark:text-slate-400">8h 45m</p>
-                </div>
-                
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                    <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">airplane_ticket</span>
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Aerolínea</h3>
-                    <p class="text-slate-600 dark:text-slate-400">Qatar Airways</p>
-                </div>
-            </div>
-
-            <!-- Preparativos para el viaje (como en versión original) -->
-            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8 mt-8">
-                <div class="flex items-center gap-4 mb-6">
-                    <span class="material-symbols-outlined text-3xl text-emerald-600 dark:text-emerald-400">checklist</span>
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Preparativos para el Viaje</h2>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-4">
-                        <h3 class="font-semibold text-slate-900 dark:text-white">Documentos necesarios</h3>
-                        <div class="space-y-2">
-                            <div class="flex items-center gap-2 text-green-600">
-                                <span class="material-symbols-outlined text-sm">check_circle</span>
-                                <span class="text-sm">Pasaporte válido</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-green-600">
-                                <span class="material-symbols-outlined text-sm">check_circle</span>
-                                <span class="text-sm">Visa de Nepal (on arrival)</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-orange-600">
-                                <span class="material-symbols-outlined text-sm">pending</span>
-                                <span class="text-sm">Tarjeta de embarque</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <h3 class="font-semibold text-slate-900 dark:text-white">Equipaje de mano</h3>
-                        <div class="space-y-2">
-                            <div class="flex items-center gap-2 text-green-600">
-                                <span class="material-symbols-outlined text-sm">check_circle</span>
-                                <span class="text-sm">Documentos importantes</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-green-600">
-                                <span class="material-symbols-outlined text-sm">check_circle</span>
-                                <span class="text-sm">Medicamentos básicos</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-green-600">
-                                <span class="material-symbols-outlined text-sm">check_circle</span>
-                                <span class="text-sm">Cargador de móvil</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * 🏔️ RENDERIZAR CONTENIDO DURANTE EL VIAJE DE HOY
-     */
-    renderDuringTripToday(container, dayIndex) {
-        const currentDay = tripConfig.itineraryData[dayIndex];
-        if (!currentDay) return;
-
-        const dayNumber = dayIndex + 1;
-        const totalDays = tripConfig.itineraryData.length;
-
-        container.innerHTML = `
-            <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-8 border border-green-200 dark:border-green-800">
-                <div class="flex items-start gap-6 mb-6">
-                    <div class="text-center">
-                        <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400">${currentDay.icon || 'hiking'}</span>
-                        <div class="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
-                            Día ${dayNumber}/${totalDays}
-                        </div>
-                    </div>
-                    
-                    <div class="flex-1">
-                        <h2 class="text-3xl font-bold text-green-800 dark:text-green-200 mb-2">${currentDay.title}</h2>
-                        <p class="text-green-700 dark:text-green-300 text-lg leading-relaxed">
-                            ${currentDay.description}
-                        </p>
-                        
-                        <div class="flex gap-3 mt-4">
-                            <span class="px-3 py-1 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
-                                📍 ${currentDay.location || 'En ruta'}
-                            </span>
-                            ${currentDay.country ? 
-                                `<span class="px-3 py-1 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
-                                    🏳️ ${currentDay.country}
-                                </span>` : ''
-                            }
+        mainContent.innerHTML = `
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+                <!-- Header de Hoy -->
+                <div class="mb-12 hidden md:block">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="material-symbols-outlined text-6xl text-orange-600 dark:text-orange-400">today</span>
+                        <div>
+                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Hoy en tu Viaje</h1>
+                            <p id="today-current-date" class="text-lg text-slate-600 dark:text-slate-400">Cargando información del día...</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Información del día (4 cards como en la versión original) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <!-- Resumen del día -->
+                <div id="today-main-content" class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
+                    <!-- El contenido se generará dinámicamente -->
+                </div>
+
+                <!-- Información del día -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
                         <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">location_on</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Ubicación</h3>
-                        <p class="text-slate-600 dark:text-slate-400">${currentDay.location || currentDay.country || 'En ruta'}</p>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Origen</h3>
+                        <p class="text-slate-600 dark:text-slate-400">Madrid, España</p>
                     </div>
                     
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">hotel</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Alojamiento</h3>
-                        <p class="text-slate-600 dark:text-slate-400">${currentDay.accommodation || 'No especificado'}</p>
+                        <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">flight_land</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Destino</h3>
+                        <p class="text-slate-600 dark:text-slate-400">Katmandú, Nepal</p>
                     </div>
                     
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">hiking</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Actividad</h3>
-                        <p class="text-slate-600 dark:text-slate-400">${currentDay.icon === '🏔️' ? 'Trekking' : currentDay.icon === '🏛️' ? 'Cultural' : currentDay.icon === '✈️' ? 'Vuelo' : 'Aventura'}</p>
+                        <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">schedule</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Duración</h3>
+                        <p class="text-slate-600 dark:text-slate-400">8h 45m</p>
                     </div>
                     
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">restaurant</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Comida</h3>
-                        <p class="text-slate-600 dark:text-slate-400">${currentDay.bocado || 'Local tradicional'}</p>
+                        <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">airplane_ticket</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Aerolínea</h3>
+                        <p class="text-slate-600 dark:text-slate-400">Qatar Airways</p>
                     </div>
                 </div>
 
-                ${currentDay.activities && currentDay.activities.length > 0 ? `
-                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-6 mb-6">
-                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-blue-600">event_note</span>
-                            Actividades del día
-                        </h3>
-                        <div class="grid gap-3">
-                            ${currentDay.activities.map(activity => `
-                                <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                                    <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${activity.icon || 'star'}</span>
-                                    <span class="text-slate-700 dark:text-slate-300">${activity.name || activity}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-
-                <!-- Detalles adicionales del día -->
-                <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-6">
+                <!-- Preparativos para el viaje -->
+                <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
                     <div class="flex items-center gap-4 mb-6">
-                        <span class="material-symbols-outlined text-2xl text-emerald-600 dark:text-emerald-400">info</span>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Detalles del Día</h3>
+                        <span class="material-symbols-outlined text-3xl text-emerald-600 dark:text-emerald-400">checklist</span>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Preparativos para el Viaje</h2>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-4">
-                            <h4 class="font-semibold text-slate-900 dark:text-white">Plan Principal</h4>
-                            <p class="text-slate-600 dark:text-slate-400 text-sm">${currentDay.planA || 'Disfrutar de la experiencia al máximo'}</p>
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Documentos necesarios</h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    <span class="text-sm">Pasaporte válido</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    <span class="text-sm">Visa de Nepal (on arrival)</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-orange-600">
+                                    <span class="material-symbols-outlined text-sm">pending</span>
+                                    <span class="text-sm">Tarjeta de embarque</span>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="space-y-4">
-                            <h4 class="font-semibold text-slate-900 dark:text-white">Consejos del Día</h4>
-                            <p class="text-slate-600 dark:text-slate-400 text-sm">${currentDay.consejo || 'Mantente hidratado y disfruta cada momento'}</p>
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Equipaje de mano</h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    <span class="text-sm">Documentos importantes</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    <span class="text-sm">Medicamentos básicos</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-green-600">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    <span class="text-sm">Cargador de móvil</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+
             </div>
         `;
+
+        // Actualizar información dinámica
+        this.updateTodayDynamicContent();
     }
 
     /**
-     * 🏁 RENDERIZAR CONTENIDO POST-VIAJE DE HOY
+     * 🌅 ACTUALIZAR CONTENIDO DINÁMICO DE HOY (VERSIÓN ORIGINAL)
      */
-    renderPostTripToday(container) {
-        container.innerHTML = `
-            <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-8 border border-purple-200 dark:border-purple-800 text-center">
-                <div class="text-8xl mb-6">🏔️</div>
-                <h2 class="text-3xl font-bold text-purple-800 dark:text-purple-200 mb-4">¡Misión cumplida!</h2>
-                <p class="text-purple-700 dark:text-purple-300 text-lg mb-6">
-                    Has conquistado el Himalaya y vivido una aventura inolvidable. 
-                    ¡Seguro que tienes miles de historias que contar!
-                </p>
-                
-                <div class="grid md:grid-cols-3 gap-4">
-                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-4">
-                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">${tripConfig.itineraryData.length}</div>
-                        <div class="text-sm text-purple-700 dark:text-purple-300">Días completados</div>
-                    </div>
-                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-4">
-                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">2</div>
-                        <div class="text-sm text-purple-700 dark:text-purple-300">Países visitados</div>
-                    </div>
-                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-4">
-                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">∞</div>
-                        <div class="text-sm text-purple-700 dark:text-purple-300">Recuerdos creados</div>
-                    </div>
-                </div>
-            </div>
-        `;
+    updateTodayDynamicContent() {
+        Logger.ui('📅 Updating today dynamic content (original implementation)');
+        
+        // Actualizar contenido del today-main-content (como en la versión original)
+        this.updateTodayMainContent();
+        
+        // Actualizar fecha en header
+        const dateElement = document.getElementById('today-current-date');
+        if (dateElement) {
+            const today = stateManager.getCurrentDate();
+            const todayFormatted = DateUtils.formatMediumDate(today);
+            dateElement.textContent = `Fecha actual: ${todayFormatted}`;
+        }
     }
+
+    /**
+     * 🏔️ ACTUALIZAR CONTENIDO PRINCIPAL DE HOY (IMPLEMENTACIÓN ORIGINAL)
+     */
+    updateTodayMainContent() {
+        Logger.ui('📅 Actualizando contenido principal de Hoy (versión original)...');
+        try {
+            const today = stateManager.getCurrentDate();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            
+            const mainContentContainer = document.querySelector('#today-main-content');
+            if (!mainContentContainer) {
+                Logger.warning('⚠️ Contenedor #today-main-content no encontrado');
+                return;
+            }
+            
+            if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
+                const currentDayData = tripConfig.itineraryData[dayDiff];
+                Logger.debug('📅 Generando contenido para día:', dayDiff + 1, currentDayData.title);
+                
+                // Determinar el icono y tipo de actividad
+                let activityIcon = 'hiking';
+                let activityType = 'Actividades del día';
+                
+                if (currentDayData.icon === '✈️') {
+                    activityIcon = 'flight_takeoff';
+                    activityType = 'Vuelo';
+                } else if (currentDayData.icon === '🏛️') {
+                    activityIcon = 'temple_buddhist';
+                    activityType = 'Visita cultural';
+                } else if (currentDayData.icon === '🏔️') {
+                    activityIcon = 'hiking';
+                    activityType = 'Trekking';
+                } else if (currentDayData.icon === '🚣') {
+                    activityIcon = 'kayaking';
+                    activityType = 'Aventura';
+                } else if (currentDayData.icon === '♨️') {
+                    activityIcon = 'hot_tub';
+                    activityType = 'Relajación';
+                } else if (currentDayData.icon === '🛬') {
+                    activityIcon = 'flight_land';
+                    activityType = 'Llegada';
+                }
+                
+                let contentHTML = `
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">${activityIcon}</span>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">${activityType}</h2>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800 mb-6">
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">${currentDayData.title}</h3>
+                        <p class="text-slate-600 dark:text-slate-400 mb-4">${currentDayData.description}</p>`;
+                        
+                if (currentDayData.planA) {
+                    contentHTML += `
+                        <div class="space-y-3">
+                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3">
+                                <h4 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm text-blue-600">schedule</span>
+                                    Plan Principal
+                                </h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.planA}</p>
+                            </div>`;
+                    
+                    if (currentDayData.planB) {
+                        contentHTML += `
+                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3">
+                                <h4 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm text-green-600">alt_route</span>
+                                    Plan Alternativo
+                                </h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.planB}</p>
+                            </div>`;
+                    }
+                    contentHTML += `</div>`;
+                }
+                
+                contentHTML += `
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">`;
+                
+                if (currentDayData.consejo) {
+                    contentHTML += `
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-outlined text-lg text-blue-600 dark:text-blue-400">lightbulb</span>
+                                <h4 class="font-semibold text-slate-900 dark:text-white">Consejo</h4>
+                            </div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.consejo}</p>
+                        </div>`;
+                }
+                
+                if (currentDayData.bocado) {
+                    contentHTML += `
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-outlined text-lg text-green-600 dark:text-green-400">restaurant</span>
+                                <h4 class="font-semibold text-slate-900 dark:text-white">Bocado</h4>
+                            </div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.bocado}</p>
+                        </div>`;
+                }
+                
+                contentHTML += `</div>`;
+                mainContentContainer.innerHTML = contentHTML;
+            } else {
+                // Antes o después del viaje
+                const statusTitle = dayDiff < 0 ? 'Preparando el viaje' : 'Viaje completado';
+                const statusMessage = dayDiff < 0 ? 
+                    `Faltan ${Math.abs(dayDiff)} días para comenzar la aventura` : 
+                    'El viaje ha terminado. ¡Esperamos que hayas disfrutado!';
+                    
+                mainContentContainer.innerHTML = `
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-slate-600 dark:text-slate-400">event</span>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información del Viaje</h2>
+                    </div>
+                    
+                    <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 text-center">
+                        <span class="material-symbols-outlined text-6xl text-slate-400 dark:text-slate-500 mb-4 block">schedule</span>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">${statusTitle}</h3>
+                        <p class="text-slate-600 dark:text-slate-400">${statusMessage}</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            Logger.error('Error al actualizar contenido principal de hoy:', error);
+        }
+    }
+
+
 
     /**
      * Generar contenido para el día actual
