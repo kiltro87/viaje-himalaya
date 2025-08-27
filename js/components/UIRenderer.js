@@ -31,6 +31,7 @@ import { WeatherRenderer } from './renderers/WeatherRenderer.js';
 import { mapRenderer } from './renderers/MapRenderer.js';
 import { itineraryRenderer } from './renderers/ItineraryRenderer.js';
 import { UIHelpers } from '../utils/UIHelpers.js';
+import stateManager from '../utils/StateManager.js';
 
 export class UIRenderer {
     /**
@@ -361,9 +362,7 @@ export class UIRenderer {
         try {
             // Obtener gastos del localStorage si existe AppState
             let totalSpent = 0;
-            if (window.AppState && window.AppState.expenses) {
-                totalSpent = window.AppState.expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-            }
+            totalSpent = stateManager.getTotalSpent();
             
             // Calcular presupuesto total
             const budgetData = tripConfig.budgetData.budgetData;
@@ -548,9 +547,7 @@ export class UIRenderer {
             let totalSpent = 0;
             
             // Obtener gastos del localStorage si existe AppState
-            if (window.AppState && window.AppState.expenses && Array.isArray(window.AppState.expenses)) {
-                totalSpent = window.AppState.expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-            }
+            totalSpent = stateManager.getTotalSpent();
             return totalSpent;
         } catch (error) {
             console.error('Error calculating total spent:', error);
@@ -564,9 +561,7 @@ export class UIRenderer {
         Logger.ui('📅 Updating today information');
         try {
             // Usar fecha simulada si el Day Simulator está activo
-            const today = window.DaySimulator && window.DaySimulator.isSimulating 
-                ? window.DaySimulator.getSimulatedDate() 
-                : new Date();
+            const today = stateManager.getCurrentDate();
             const tripStartDate = this.getTripStartDate();
             console.log('📅 Fecha de inicio del viaje:', tripStartDate);
             console.log('📅 Fecha de hoy:', today);
@@ -953,9 +948,7 @@ export class UIRenderer {
 
         try {
             // Usar fecha simulada si el Day Simulator está activo
-            const today = window.DaySimulator && window.DaySimulator.isSimulating 
-                ? window.DaySimulator.getSimulatedDate() 
-                : new Date();
+            const today = stateManager.getCurrentDate();
             const tripStartDate = this.getTripStartDate();
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
             
