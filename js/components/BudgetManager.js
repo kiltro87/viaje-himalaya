@@ -50,9 +50,7 @@ export class BudgetManager {
             return window.budgetInstance;
         }
         
-        // Temporalmente deshabilitado para evitar recursión infinita
-        // LoggingStandardizer.init();
-        // LoggingStandardizer.systemInit('BudgetManager', '2.0.0');
+        // ✅ LoggingStandardizer ELIMINADO - Usamos Logger directamente
         
         Logger.init('BudgetManager constructor started');
         Logger.budget('Initializing budget management system');
@@ -1206,9 +1204,31 @@ export class BudgetManager {
                                                     </div>
                                                     <div>
                                                         <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Categoría</label>
-                                                        <select class="inline-category w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
-                                                            ${allCategories.map(cat => `<option value="${cat}" ${cat === exp.category ? 'selected' : ''}>${cat}</option>`).join('')}
-                                                        </select>
+                                                        <!-- Dropdown personalizado con iconos -->
+                                                        <div class="relative">
+                                                            <button type="button" class="inline-category-btn w-full px-2 py-1 pl-8 pr-8 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-left cursor-pointer" data-expense-id="${exp.id}">
+                                                                <span class="inline-category-text">${exp.category}</span>
+                                                            </button>
+                                                            <span class="inline-category-icon absolute left-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-sm text-slate-500 pointer-events-none">
+                                                                ${this.getCategoryIcon(exp.category)}
+                                                            </span>
+                                                            <span class="absolute right-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-sm text-slate-500 pointer-events-none">
+                                                                expand_more
+                                                            </span>
+                                                            
+                                                            <!-- Lista desplegable -->
+                                                            <div class="inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-expense-id="${exp.id}">
+                                                                ${allCategories.map(cat => `
+                                                                    <div class="inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-sm" data-value="${cat}" data-expense-id="${exp.id}">
+                                                                        <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${this.getCategoryIcon(cat)}</span>
+                                                                        <span class="text-slate-900 dark:text-white">${cat}</span>
+                                                                    </div>
+                                                                `).join('')}
+                                                            </div>
+                                                            
+                                                            <!-- Input oculto para el valor -->
+                                                            <input type="hidden" class="inline-category" value="${exp.category}">
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="flex gap-2 justify-end">
@@ -1336,6 +1356,92 @@ export class BudgetManager {
                         const itemId = item.closest('.budget-subitem-wrapper').dataset.itemId;
                         this.toggleBudgetInlineForm(itemId);
                     });
+                });
+
+                // 🎨 DROPDOWNS PERSONALIZADOS DE CATEGORÍAS EN EDICIÓN
+                document.querySelectorAll('.inline-category-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const expenseId = btn.dataset.expenseId;
+                        const dropdown = document.querySelector(`.inline-category-dropdown[data-expense-id="${expenseId}"]`);
+                        
+                        if (dropdown) {
+                            // Cerrar otros dropdowns abiertos
+                            document.querySelectorAll('.inline-category-dropdown').forEach(d => {
+                                if (d !== dropdown) d.classList.add('hidden');
+                            });
+                            
+                            // Toggle del dropdown actual
+                            if (dropdown.classList.contains('hidden')) {
+                                const rect = btn.getBoundingClientRect();
+                                const viewportWidth = window.innerWidth;
+                                const viewportHeight = window.innerHeight;
+                                
+                                // Posicionamiento responsive
+                                if (viewportWidth <= 640) {
+                                    // Móvil: centrado y ancho completo
+                                    dropdown.style.top = `${rect.bottom + 4}px`;
+                                    dropdown.style.left = '1rem';
+                                    dropdown.style.right = '1rem';
+                                    dropdown.style.width = 'calc(100vw - 2rem)';
+                                } else {
+                                    // Desktop: alineado con el botón
+                                    dropdown.style.top = `${rect.bottom + 4}px`;
+                                    dropdown.style.left = `${rect.left}px`;
+                                    dropdown.style.width = `${Math.max(rect.width, 200)}px`;
+                                    
+                                    // Verificar si se sale por la derecha
+                                    if (rect.left + 200 > viewportWidth - 20) {
+                                        dropdown.style.left = `${viewportWidth - 220}px`;
+                                    }
+                                }
+                                
+                                // Verificar si se sale por abajo
+                                if (rect.bottom + 192 > viewportHeight - 20) {
+                                    dropdown.style.top = `${rect.top - 192 - 4}px`;
+                                }
+                                
+                                dropdown.classList.remove('hidden');
+                            } else {
+                                dropdown.classList.add('hidden');
+                            }
+                        }
+                    });
+                });
+
+                // ✅ SELECCIÓN DE CATEGORÍA EN EDICIÓN
+                document.querySelectorAll('.inline-category-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const expenseId = option.dataset.expenseId;
+                        const category = option.dataset.value;
+                        const icon = this.getCategoryIcon(category);
+                        
+                        // Actualizar UI del dropdown
+                        const btn = document.querySelector(`.inline-category-btn[data-expense-id="${expenseId}"]`);
+                        const text = btn?.querySelector('.inline-category-text');
+                        const iconEl = document.querySelector(`.inline-category-icon[data-expense-id="${expenseId}"]`) || 
+                                      btn?.parentElement.querySelector('.inline-category-icon');
+                        const input = document.querySelector(`.inline-category[value="${category}"]`) ||
+                                     btn?.parentElement.querySelector('.inline-category');
+                        
+                        if (text) text.textContent = category;
+                        if (iconEl) iconEl.textContent = icon;
+                        if (input) input.value = category;
+                        
+                        // Cerrar dropdown
+                        const dropdown = document.querySelector(`.inline-category-dropdown[data-expense-id="${expenseId}"]`);
+                        if (dropdown) dropdown.classList.add('hidden');
+                    });
+                });
+
+                // 🖱️ CERRAR DROPDOWNS AL HACER CLICK FUERA
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.inline-category-btn') && !e.target.closest('.inline-category-dropdown')) {
+                        document.querySelectorAll('.inline-category-dropdown').forEach(dropdown => {
+                            dropdown.classList.add('hidden');
+                        });
+                    }
                 });
             }, 100);
             

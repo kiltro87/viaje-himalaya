@@ -1138,47 +1138,71 @@ export class UIRenderer {
     createModalMap(dayId, coords, title) {
         console.log(`🗺️ Creando mapa del modal para: ${dayId}`);
         
-        const mapContainer = document.getElementById(`modal-map-${dayId}`);
-        if (!mapContainer) {
-            console.error(`Contenedor del mapa no encontrado: modal-map-${dayId}`);
-            return;
-        }
-        
-        try {
-            // Limpiar el contenedor
-            mapContainer.innerHTML = '';
+        // ⏱️ ESPERAR A QUE EL MODAL SEA VISIBLE
+        setTimeout(() => {
+            const mapContainer = document.getElementById(`modal-map-${dayId}`);
+            if (!mapContainer) {
+                console.error(`Contenedor del mapa no encontrado: modal-map-${dayId}`);
+                return;
+            }
             
-            // Crear el mapa
-            const map = L.map(`modal-map-${dayId}`, { 
-                closePopupOnClick: false,
-                zoomControl: false,
-                attributionControl: false
-            }).setView(coords, 12);
+            // ✅ VERIFICAR QUE LEAFLET ESTÉ DISPONIBLE
+            if (typeof L === 'undefined') {
+                console.error('❌ Leaflet no está cargado');
+                mapContainer.innerHTML = `
+                    <div class="flex items-center justify-center h-full p-4 text-center">
+                        <div class="text-slate-600 dark:text-slate-400">
+                            <span class="material-symbols-outlined text-4xl mb-2 opacity-50">map</span>
+                            <p>Cargando mapa...</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
             
-            // Añadir capa de tiles con estilo consistente
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
-                attribution: '&copy; OpenStreetMap &copy; CARTO' 
-            }).addTo(map);
-            
-            // Marcador principal del día
-            const mainIcon = L.divIcon({
-                className: 'custom-div-icon',
-                html: `<div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
-                    ${this.getActivityIconHTML('📍', 'text-lg').replace('text-blue-600', 'text-white')}
-                </div>`,
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
-            });
-            
-            L.marker(coords, { icon: mainIcon })
-                .addTo(map)
-                .bindPopup(`<b>${title}</b><br><small>Ubicación principal del día</small>`, { closeButton: false });
-            
-            // Obtener lugares cercanos
-            const nearbyPlaces = tripConfig.placesByDay[dayId] || [];
-            const markers = [];
-            
-            nearbyPlaces.forEach(place => {
+            try {
+                // 🧹 LIMPIAR EL CONTENEDOR
+                mapContainer.innerHTML = '';
+                
+                // 📏 ASEGURAR DIMENSIONES CORRECTAS
+                mapContainer.style.height = '300px';
+                mapContainer.style.width = '100%';
+                
+                // 🗺️ CREAR EL MAPA
+                const map = L.map(`modal-map-${dayId}`, { 
+                    closePopupOnClick: false,
+                    zoomControl: true,
+                    attributionControl: true,
+                    preferCanvas: true
+                }).setView(coords, 12);
+                
+                // 🎨 AÑADIR CAPA DE TILES
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    subdomains: 'abcd',
+                    maxZoom: 19
+                }).addTo(map);
+                
+                // 📍 MARCADOR PRINCIPAL DEL DÍA
+                const mainIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                        📍
+                    </div>`,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                });
+                
+                L.marker(coords, { icon: mainIcon })
+                    .addTo(map)
+                    .bindPopup(`<b>${title}</b><br><small>Ubicación principal del día</small>`, { closeButton: false })
+                    .openPopup();
+                
+                // 🎯 OBTENER LUGARES CERCANOS
+                const nearbyPlaces = tripConfig.placesByDay[dayId] || [];
+                const markers = [];
+                
+                nearbyPlaces.forEach(place => {
                 const placeIcon = L.divIcon({
                     className: 'custom-div-icon',
                     html: `<div class="w-8 h-8 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-200 dark:border-slate-600">
@@ -1202,16 +1226,28 @@ export class UIRenderer {
                 map.fitBounds(bounds, { padding: [20, 20] });
             }
             
-            // Forzar redibujado del mapa
+            // 🔄 FORZAR REDIBUJADO DEL MAPA
             setTimeout(() => {
                 map.invalidateSize();
             }, 100);
             
-            console.log(`✅ Mapa del modal ${dayId} creado exitosamente`);
+            // 📊 LOG DE ÉXITO
+            console.log(`✅ Mapa del modal creado exitosamente para día: ${dayId}`);
+            
         } catch (error) {
-            console.error(`Error al crear mapa del modal ${dayId}:`, error);
-            mapContainer.innerHTML = '<div class="h-full flex items-center justify-center text-slate-500">Error al cargar el mapa</div>';
+            console.error(`❌ Error creando mapa del modal para día ${dayId}:`, error);
+            mapContainer.innerHTML = `
+                <div class="flex items-center justify-center h-full p-4 text-center">
+                    <div class="text-slate-600 dark:text-slate-400">
+                        <span class="material-symbols-outlined text-4xl mb-2 opacity-50">error</span>
+                        <p class="text-sm">Error al cargar el mapa</p>
+                        <p class="text-xs mt-1">${title}</p>
+                        <p class="text-xs text-slate-500">${coords[0]?.toFixed(4)}, ${coords[1]?.toFixed(4)}</p>
+                    </div>
+                </div>
+            `;
         }
+    }, 200); // Timeout reducido para mejor UX
     }
 
     renderToday() {

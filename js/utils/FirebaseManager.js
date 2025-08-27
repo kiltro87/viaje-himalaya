@@ -88,8 +88,22 @@ export class FirebaseManager {
             const { getFirestore, initializeFirestore, connectFirestoreEmulator, enableNetwork, disableNetwork } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
-            // Inicializar app
-            const app = initializeApp(firebaseConfig);
+            // ✅ CONFIGURACIÓN SOLO FIRESTORE - Sin Realtime Database
+            const configOnlyFirestore = {
+                ...firebaseConfig,
+                // Remover databaseURL para evitar warnings de Realtime Database
+                databaseURL: undefined
+            };
+            
+            // Limpiar configuración de propiedades undefined
+            Object.keys(configOnlyFirestore).forEach(key => {
+                if (configOnlyFirestore[key] === undefined) {
+                    delete configOnlyFirestore[key];
+                }
+            });
+
+            // Inicializar app SIN Realtime Database
+            const app = initializeApp(configOnlyFirestore);
             
             // ✅ NUEVA API: Configurar Firestore con cache settings
             try {

@@ -29,7 +29,9 @@ export const firebaseConfig = {
     projectId: "viaje-himalaya",
     storageBucket: "viaje-himalaya.firebasestorage.app",
     messagingSenderId: "89001303026",
-    appId: "1:89001303026:web:93e11085df1213a865296b"
+    appId: "1:89001303026:web:93e11085df1213a865296b",
+    // ❌ NO USAR REALTIME DATABASE - Solo Firestore
+    // databaseURL: "https://viaje-himalaya-default-rtdb.firebaseio.com"  // COMENTADO
     
     // EJEMPLO DE CONFIGURACIÓN REAL:
     // apiKey: "AIzaSyC...",

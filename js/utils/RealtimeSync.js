@@ -264,25 +264,25 @@ export class RealtimeSync {
     }
 
     /**
-     * Envía notificación por Firebase Realtime
+     * ❌ DESHABILITADO: Firebase Realtime Database
+     * 
+     * Solo usamos Firestore para evitar warnings y simplificar la arquitectura.
+     * Las notificaciones en tiempo real se manejan a través de Firestore listeners.
      */
     async sendFirebaseRealtimeNotification(message) {
-        try {
-            const { getDatabase, ref, push } = 
-                await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
-
-            const db = getDatabase();
-            const changesRef = ref(db, 'expense_changes');
-            
-            await push(changesRef, {
-                ...message,
-                timestamp: Date.now()
-            });
-
-            if (Logger && Logger.data) Logger.data('Firebase Realtime notification sent:', message.type);
-
-        } catch (error) {
-            if (Logger && Logger.error) Logger.error('Failed to send Firebase Realtime notification:', error);
+        if (Logger && Logger.info) Logger.info('Firebase Realtime Database disabled - Using Firestore listeners only');
+        
+        // Las notificaciones en tiempo real se manejan automáticamente
+        // a través de los listeners de Firestore en FirebaseManager
+        
+        // Fallback a WebSocket si está disponible
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            try {
+                this.ws.send(JSON.stringify(message));
+                if (Logger && Logger.data) Logger.data('WebSocket notification sent as fallback');
+            } catch (error) {
+                if (Logger && Logger.warning) Logger.warning('WebSocket fallback failed:', error);
+            }
         }
     }
 
