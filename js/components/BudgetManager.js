@@ -390,7 +390,7 @@ export class BudgetManager {
                     return processed;
                 });
                 
-                stateManager.getState('expenses') = processedExpenses;
+                stateManager.updateState('expenses', processedExpenses);
                 if (!Logger.isMobile) {
                     Logger.debug('🔥 DEBUG: AppState.expenses REPLACED with', processedExpenses.length, 'expenses');
                 }
