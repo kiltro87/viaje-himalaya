@@ -292,7 +292,7 @@ export class UIRenderer {
     // =============================
 
     /**
-     * Renderizar vista "Hoy" (header estilo Itinerario)
+     * Renderizar vista "Hoy" (header estilo Itinerario) - ACTUALIZACIÓN DINÁMICA
      */
     renderToday() {
         Logger.ui('📅 Rendering today view');
@@ -301,29 +301,7 @@ export class UIRenderer {
         if (!mainContent) return;
 
         try {
-            // Usar fecha simulada si el Day Simulator está activo
-            const today = stateManager.getCurrentDate();
-            const tripStartDate = this.getTripStartDate();
-            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
-            
-            Logger.data('📅 Trip dates calculated', { tripStartDate, today, dayDiff, totalDays: tripConfig.itineraryData.length });
-            
-            let contentHTML = '';
-            
-            if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
-                const currentDayData = tripConfig.itineraryData[dayDiff];
-                Logger.data('📅 Current day data loaded', currentDayData);
-                contentHTML = this.generateTodayContent(currentDayData, dayDiff);
-            } else {
-                // Antes o después del viaje
-                const statusTitle = dayDiff < 0 ? 'Preparando el viaje' : 'Viaje completado';
-                const statusMessage = dayDiff < 0 ? 
-                    `Faltan ${Math.abs(dayDiff)} días para comenzar la aventura` : 
-                    'El viaje ha terminado. ¡Esperamos que hayas disfrutado!';
-                contentHTML = this.generatePrePostTripContent(statusTitle, statusMessage);
-            }
-            
-            // Envolver con header estilo Itinerario
+            // Render estructura básica
             mainContent.innerHTML = `
                 <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                     <!-- Header de Hoy (estilo Itinerario) -->
@@ -332,20 +310,205 @@ export class UIRenderer {
                             <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400">today</span>
                             <div>
                                 <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">¿Qué hacemos hoy?</h1>
-                                <p class="text-lg text-slate-600 dark:text-slate-400">Descubre las actividades y planes del día actual</p>
+                                <p class="text-lg text-slate-600 dark:text-slate-400" id="today-current-date">Descubre las actividades y planes del día actual</p>
                             </div>
                         </div>
                     </div>
 
-                    ${contentHTML}
+                    <!-- Contenido dinámico -->
+                    <div id="today-dynamic-content" class="space-y-8">
+                        <!-- Se actualizará dinámicamente -->
+                    </div>
                 </div>
             `;
+            
+            // Actualizar contenido dinámicamente
+            this.updateTodayDynamicContent();
             
             Logger.success('✅ Today view rendered successfully');
         } catch (error) {
             Logger.error('❌ Error rendering today view:', error);
             this.renderErrorView(error);
         }
+    }
+
+    /**
+     * 🌅 ACTUALIZAR CONTENIDO DINÁMICO DE HOY
+     */
+    updateTodayDynamicContent() {
+        const container = document.getElementById('today-dynamic-content');
+        const dateElement = document.getElementById('today-current-date');
+        
+        if (!container) return;
+
+        try {
+            // Usar fecha simulada si el Day Simulator está activo
+            const today = stateManager.getCurrentDate();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            
+            // Actualizar fecha en header
+            if (dateElement) {
+                const todayFormatted = DateUtils.formatMediumDate(today);
+                dateElement.textContent = `Fecha actual: ${todayFormatted}`;
+            }
+            
+            Logger.data('📅 Today dynamic update', { dayDiff, tripLength: tripConfig.itineraryData.length });
+            
+            if (dayDiff < 0) {
+                // ANTES DEL VIAJE
+                this.renderPreTripToday(container, Math.abs(dayDiff));
+            } else if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
+                // DURANTE EL VIAJE
+                this.renderDuringTripToday(container, dayDiff);
+            } else {
+                // DESPUÉS DEL VIAJE
+                this.renderPostTripToday(container);
+            }
+            
+        } catch (error) {
+            Logger.error('Error updating today dynamic content:', error);
+            container.innerHTML = '<p class="text-slate-600 dark:text-slate-400">Error al cargar información del día</p>';
+        }
+    }
+
+    /**
+     * 🚀 RENDERIZAR CONTENIDO PRE-VIAJE DE HOY
+     */
+    renderPreTripToday(container, daysUntil) {
+        container.innerHTML = `
+            <div class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-2xl p-8 border border-orange-200 dark:border-orange-800">
+                <div class="text-center mb-8">
+                    <div class="text-8xl font-black text-orange-600 dark:text-orange-400 mb-4">
+                        ${daysUntil}
+                    </div>
+                    <h2 class="text-3xl font-bold text-orange-800 dark:text-orange-200 mb-2">
+                        ${daysUntil === 1 ? 'día' : 'días'} para la aventura
+                    </h2>
+                    <p class="text-orange-700 dark:text-orange-300">
+                        ¡El Himalaya nos espera! Es momento de finalizar los preparativos.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-4">
+                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-green-600">check_circle</span>
+                            Preparativos completados
+                        </h3>
+                        <ul class="space-y-1 text-sm text-slate-700 dark:text-slate-300">
+                            <li>✈️ Vuelos confirmados</li>
+                            <li>📄 Documentación en orden</li>
+                            <li>💉 Vacunas aplicadas</li>
+                            <li>💰 Presupuesto planificado</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-4">
+                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-orange-600">schedule</span>
+                            Tareas pendientes
+                        </h3>
+                        <ul class="space-y-1 text-sm text-slate-700 dark:text-slate-300">
+                            <li>🎒 Revisar equipaje</li>
+                            <li>📱 Descargar mapas offline</li>
+                            <li>💊 Preparar botiquín</li>
+                            <li>📞 Avisar familiares</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 🏔️ RENDERIZAR CONTENIDO DURANTE EL VIAJE DE HOY
+     */
+    renderDuringTripToday(container, dayIndex) {
+        const currentDay = tripConfig.itineraryData[dayIndex];
+        if (!currentDay) return;
+
+        const dayNumber = dayIndex + 1;
+        const totalDays = tripConfig.itineraryData.length;
+
+        container.innerHTML = `
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-8 border border-green-200 dark:border-green-800">
+                <div class="flex items-start gap-6 mb-6">
+                    <div class="text-center">
+                        <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400">${currentDay.icon || 'hiking'}</span>
+                        <div class="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
+                            Día ${dayNumber}/${totalDays}
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <h2 class="text-3xl font-bold text-green-800 dark:text-green-200 mb-2">${currentDay.title}</h2>
+                        <p class="text-green-700 dark:text-green-300 text-lg leading-relaxed">
+                            ${currentDay.description}
+                        </p>
+                        
+                        <div class="flex gap-3 mt-4">
+                            <span class="px-3 py-1 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
+                                📍 ${currentDay.location || 'En ruta'}
+                            </span>
+                            ${currentDay.country ? 
+                                `<span class="px-3 py-1 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
+                                    🏳️ ${currentDay.country}
+                                </span>` : ''
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                ${currentDay.activities && currentDay.activities.length > 0 ? `
+                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-6">
+                        <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-600">event_note</span>
+                            Actividades del día
+                        </h3>
+                        <div class="grid gap-3">
+                            ${currentDay.activities.map(activity => `
+                                <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                                    <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${activity.icon || 'star'}</span>
+                                    <span class="text-slate-700 dark:text-slate-300">${activity.name || activity}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    /**
+     * 🏁 RENDERIZAR CONTENIDO POST-VIAJE DE HOY
+     */
+    renderPostTripToday(container) {
+        container.innerHTML = `
+            <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-8 border border-purple-200 dark:border-purple-800 text-center">
+                <div class="text-8xl mb-6">🏔️</div>
+                <h2 class="text-3xl font-bold text-purple-800 dark:text-purple-200 mb-4">¡Misión cumplida!</h2>
+                <p class="text-purple-700 dark:text-purple-300 text-lg mb-6">
+                    Has conquistado el Himalaya y vivido una aventura inolvidable. 
+                    ¡Seguro que tienes miles de historias que contar!
+                </p>
+                
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-4">
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">${tripConfig.itineraryData.length}</div>
+                        <div class="text-sm text-purple-700 dark:text-purple-300">Días completados</div>
+                    </div>
+                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-4">
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">2</div>
+                        <div class="text-sm text-purple-700 dark:text-purple-300">Países visitados</div>
+                    </div>
+                    <div class="bg-white/70 dark:bg-slate-800/70 rounded-xl p-4">
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">∞</div>
+                        <div class="text-sm text-purple-700 dark:text-purple-300">Recuerdos creados</div>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     /**

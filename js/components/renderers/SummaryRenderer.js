@@ -216,6 +216,11 @@ export class SummaryRenderer {
         // Actualizar fechas dinámicamente después del render
         this.updateDynamicContent();
         
+        // Actualizar contenido dinámico "Hoy" 
+        setTimeout(() => {
+            this.updateTodaySummaryContent();
+        }, 150);
+        
         Logger.success('📊 Summary view rendered successfully');
     }
 

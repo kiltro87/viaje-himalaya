@@ -108,10 +108,15 @@ export class MapRenderer {
             // Crear ruta si hay coordenadas
             this.createRoute();
             
-            // Ajustar vista para mostrar todos los marcadores
+            // Ajustar vista para mostrar todos los marcadores con zoom óptimo
             if (markers.length > 0) {
                 const group = new L.featureGroup(markers);
-                this.map.fitBounds(group.getBounds().pad(0.1));
+                const bounds = group.getBounds();
+                this.map.fitBounds(bounds, {
+                    padding: [20, 20], // Padding mínimo para mejor zoom
+                    maxZoom: 8 // Zoom más cercano para ver la región de interés
+                });
+                Logger.debug(`🗺️ Main map fitted to ${markers.length} markers with enhanced zoom`);
             }
             
             Logger.success('Main map initialized successfully');
