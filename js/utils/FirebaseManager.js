@@ -629,10 +629,10 @@ export class FirebaseManager {
                 });
             });
             
-            // Si hay documentos, intentar ordenar por timestamp
+            // Si hay documentos, intentar ordenar por createdAt (timestamp real de Firebase)
             if (expenses.length > 0) {
                 try {
-                    const q = query(collectionRef, orderBy('timestamp', 'desc'));
+                    const q = query(collectionRef, orderBy('createdAt', 'desc'));
                     const orderedSnapshot = await getDocs(q);
                     expenses.length = 0; // Clear array
                     orderedSnapshot.forEach((doc) => {
@@ -641,7 +641,7 @@ export class FirebaseManager {
                             ...doc.data()
                         });
                     });
-                    Logger.debug(`✅ Successfully ordered ${expenses.length} expenses by timestamp`);
+                    Logger.debug(`✅ Successfully ordered ${expenses.length} expenses by createdAt`);
                 } catch (orderError) {
                     Logger.warning(`⚠️ OrderBy failed, using unordered results: ${orderError.message}`);
                 }
