@@ -487,24 +487,39 @@ export class FirebaseManager {
             
             // CRITICAL: Buscar el documento específico en toda la colección
             let foundDocument = false;
-            let documentInfo = null;
+            let allDocumentIds = [];
+            let documentsWithIdField = [];
+            
+            Logger.debug(`🔍 SCANNING ALL ${testCollectionSnap.size} DOCUMENTS:`);
+            
             testCollectionSnap.forEach((doc) => {
-                if (doc.id === expenseId) {
-                    foundDocument = true;
-                    documentInfo = {
-                        id: doc.id,
-                        data: doc.data()
-                    };
-                    Logger.debug(`🎯 FOUND TARGET DOCUMENT: ID="${doc.id}"`, doc.data());
+                const docId = doc.id;
+                const docData = doc.data();
+                const docIdField = docData.id;
+                
+                allDocumentIds.push(docId);
+                if (docIdField) {
+                    documentsWithIdField.push({firebaseId: docId, idField: docIdField});
                 }
-                Logger.debug(`📄 Document in collection: ID="${doc.id}", hasIdField="${doc.data().id || 'NO_ID_FIELD'}"`);
+                
+                Logger.debug(`📄 Doc: firebaseId="${docId}", data.id="${docIdField || 'NONE'}", concept="${docData.concept || 'NONE'}"`);
+                
+                // Buscar tanto por Firebase ID como por campo ID
+                if (docId === expenseId || docIdField === expenseId) {
+                    foundDocument = true;
+                    Logger.success(`🎯 FOUND TARGET! firebaseId="${docId}", data.id="${docIdField}", target="${expenseId}"`);
+                    Logger.debug(`🎯 DOCUMENT DATA:`, docData);
+                }
             });
             
+            Logger.debug(`🔍 ALL FIREBASE IDs: ${allDocumentIds.join(', ')}`);
+            Logger.debug(`🔍 ALL ID FIELDS: ${documentsWithIdField.map(d => `${d.firebaseId}→${d.idField}`).join(', ')}`);
+            Logger.debug(`🔍 TARGET: "${expenseId}"`);
+            
             if (!foundDocument) {
-                Logger.error(`🚨 CRITICAL: Document ${expenseId} NOT FOUND in collection despite user confirming it exists in Firebase`);
-                Logger.debug(`🔍 All document IDs:`, Array.from(testCollectionSnap.docs.map(d => d.id)));
+                Logger.error(`🚨 CRITICAL: Target "${expenseId}" NOT FOUND in any document (firebase ID or id field)`);
             } else {
-                Logger.success(`✅ Document found in collection scan but getDoc failed!`);
+                Logger.success(`✅ Document found in collection but getDoc failed! This is a Firebase API bug.`);
             }
             
             // Verificar que el documento existe antes de eliminar (usando config)
