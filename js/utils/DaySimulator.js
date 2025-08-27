@@ -6,7 +6,7 @@
  * en diferentes días del itinerario.
  * 
  * Funcionalidades:
- * - Simular cualquier día del viaje (1-15)
+ * - Simular cualquier día del viaje (1-18)
  * - Ver información contextual del día
  * - Probar recomendaciones climáticas
  * - Verificar análisis de estilo de viaje

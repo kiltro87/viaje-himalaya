@@ -25,6 +25,9 @@ import { DOMUtils } from '../utils/DOMUtils.js';
 import { FormatUtils, DateUtils } from '../utils/FormatUtils.js';
 import { ResponsiveUtils } from '../utils/ResponsiveUtils.js';
 import { BudgetManager } from './BudgetManager.js';
+import { HeaderRenderer } from './renderers/HeaderRenderer.js';
+import { WeatherRenderer } from './renderers/WeatherRenderer.js';
+import { UIHelpers } from '../utils/UIHelpers.js';
 
 export class UIRenderer {
     /**
@@ -428,10 +431,7 @@ export class UIRenderer {
                 </header>
 
                 <!-- Cabecera Estado del viaje -->
-                <div class="flex items-center gap-3 mb-8">
-                    <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">event_available</span>
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Estado del viaje</h2>
-                </div>
+                ${HeaderRenderer.renderPresetHeader('status')}
 
                 <!-- Panel Estado del viaje -->
                 <section class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
@@ -893,15 +893,7 @@ export class UIRenderer {
         mainContent.innerHTML = `
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
                 <!-- Header del itinerario -->
-                <div class="mb-12 hidden md:block">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="material-symbols-outlined text-6xl text-blue-600 dark:text-blue-400">list_alt</span>
-                        <div>
-                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Itinerario del Viaje</h1>
-                            <p class="text-lg text-slate-600 dark:text-slate-400">Descubre día a día la aventura que te espera en Nepal y Bután</p>
-                        </div>
-                    </div>
-                </div>
+                ${HeaderRenderer.renderPresetHeader('itinerary')}
 
                 <!-- Timeline del itinerario -->
                 <div class="relative">
@@ -1207,10 +1199,7 @@ export class UIRenderer {
         mainContent.innerHTML = `
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
                 <!-- Header de Hoy -->
-                <div class="flex items-center gap-3 mb-8">
-                    <span class="material-symbols-outlined text-3xl text-orange-600 dark:text-orange-400">today</span>
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Hoy en tu Viaje</h2>
-                </div>
+                ${HeaderRenderer.renderPresetHeader('today')}
 
                 <!-- Resumen del día -->
                 <div id="today-main-content" class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
@@ -1612,15 +1601,7 @@ export class UIRenderer {
             mainContent.innerHTML = `
                 <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                     <!-- Header del mapa -->
-                    <div class="mb-12 hidden md:block">
-                        <div class="flex items-center gap-4 mb-4">
-                            <span class="material-symbols-outlined text-6xl text-blue-600 dark:text-blue-400">map</span>
-                            <div>
-                                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Ruta del Viaje</h1>
-                                <p class="text-lg text-slate-600 dark:text-slate-400">Explora el recorrido completo por Nepal y Bután</p>
-                            </div>
-                        </div>
-                    </div>
+                    ${HeaderRenderer.renderPresetHeader('map')}
 
                     <!-- Contenedor del mapa -->
                     <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden" style="height: 70vh; min-height: 500px;">
@@ -2212,200 +2193,24 @@ export class UIRenderer {
         console.log('✅ Lista de equipaje renderizada completamente');
     }
 
-    // Renderizar información climática
-    // Renderizar información climática con WeatherManager
+    // Renderizar información climática con WeatherRenderer modular
     async renderWeather() {
         console.log('🌤️ Renderizando información climática');
         const container = document.getElementById('weather');
-        if (!container) return;
+        if (!container) {
+            console.error('❌ Contenedor #weather no encontrado');
+            return;
+        }
 
-        // Usar siempre el método estático mejorado para consistencia visual
-        this.renderStaticWeather();
+        // Usar el nuevo WeatherRenderer modular
+        WeatherRenderer.renderWeatherSection(container);
         
         // Asegurar que el contenedor sea visible
         container.style.opacity = '1 !important';
+        console.log('✅ Información climática renderizada con WeatherRenderer');
     }
 
-    // Fallback: Renderizar información climática estática
-    renderStaticWeather() {
-        console.log('🌤️ Renderizando información climática estática (fallback)');
-        const container = document.getElementById('weather');
-        if (!container) return;
-
-        // Agregar información meteorológica más detallada
-        const enhancedWeatherData = tripConfig.weatherLocations.map(weather => ({
-            ...weather,
-            feelsLike: weather.location === 'Katmandú' ? '25-28°C' : 
-                      weather.location === 'Pokhara' ? '24-27°C' :
-                      weather.location === 'Chitwan' ? '28-32°C' :
-                      weather.location === 'Thimphu' ? '12-18°C' :
-                      weather.location === 'Paro' ? '10-16°C' : '20-25°C',
-            humidity: weather.location === 'Chitwan' ? '85%' : 
-                     weather.location === 'Katmandú' ? '70%' :
-                     weather.location === 'Pokhara' ? '75%' : '60%',
-            windSpeed: weather.location === 'Paro' ? '15 km/h' : '8 km/h',
-            condition: weather.location === 'Chitwan' ? 'Soleado y húmedo' :
-                      weather.location === 'Thimphu' ? 'Parcialmente nublado' :
-                      weather.location === 'Paro' ? 'Fresco de montaña' : 'Despejado',
-            forecast: [
-                { day: 'Mañana', temp: '22-26°C', condition: 'Soleado', icon: '☀️' },
-                { day: 'Pasado', temp: '20-24°C', condition: 'Nublado', icon: '☁️' },
-                { day: 'Viernes', temp: '23-27°C', condition: 'Despejado', icon: '🌤️' }
-            ]
-        }));
-
-        const weatherHTML = enhancedWeatherData.map(weather => `
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h4 class="text-lg font-bold text-slate-900 dark:text-white">${weather.location}</h4>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">${weather.condition}</p>
-                    </div>
-                    <div class="text-3xl">${weather.location === 'Chitwan' ? '☀️' : 
-                                           weather.location === 'Thimphu' ? '⛅' :
-                                           weather.location === 'Paro' ? '❄️' : '☀️'}</div>
-                </div>
-                
-                <!-- Temperaturas principales -->
-                <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div class="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl">
-                        <span class="text-sm text-slate-600 dark:text-slate-400 block">Día</span>
-                        <span class="text-lg font-bold text-slate-900 dark:text-white">${weather.dayTemp}</span>
-                    </div>
-                    <div class="text-center p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
-                        <span class="text-sm text-slate-600 dark:text-slate-400 block">Noche</span>
-                        <span class="text-lg font-bold text-slate-900 dark:text-white">${weather.nightTemp}</span>
-                    </div>
-                </div>
-                
-                <!-- Información adicional -->
-                <div class="space-y-2 mb-4 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-slate-600 dark:text-slate-400">Sensación térmica:</span>
-                        <span class="font-medium text-slate-900 dark:text-white">${weather.feelsLike}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-600 dark:text-slate-400">Humedad:</span>
-                        <span class="font-medium text-slate-900 dark:text-white">${weather.humidity}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-600 dark:text-slate-400">Viento:</span>
-                        <span class="font-medium text-slate-900 dark:text-white">${weather.windSpeed}</span>
-                    </div>
-                </div>
-                
-                <!-- Pronóstico de 3 días -->
-                <div class="border-t border-slate-200 dark:border-slate-700 pt-3">
-                    <h5 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Próximos días</h5>
-                    <div class="space-y-1">
-                        ${weather.forecast.map(day => `
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="text-slate-600 dark:text-slate-400">${day.day}</span>
-                                <div class="flex items-center gap-2">
-                                    <span>${day.icon}</span>
-                                    <span class="font-medium text-slate-900 dark:text-white">${day.temp}</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-        `).join('');
-
-        container.innerHTML = `
-            <div class="flex items-center gap-3 mb-8">
-                <span class="material-symbols-outlined text-3xl text-yellow-600 dark:text-yellow-400">wb_sunny</span>
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información Climática</h2>
-            </div>
-            
-            <!-- Clima contextual del día actual -->
-            <div class="mb-8 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-2xl border border-blue-200 dark:border-blue-700">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">location_on</span>
-                        <div>
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Katmandú - Clima Actual</h3>
-                            <p class="text-sm text-slate-600 dark:text-slate-400">Octubre 2025 - Temporada ideal</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">23°C</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">Despejado</div>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-3 gap-4 mb-4">
-                    <div class="text-center p-3 bg-white/50 dark:bg-slate-800/50 rounded-xl">
-                        <div class="text-sm text-slate-600 dark:text-slate-400">Sensación</div>
-                        <div class="font-semibold text-slate-900 dark:text-white">26°C</div>
-                    </div>
-                    <div class="text-center p-3 bg-white/50 dark:bg-slate-800/50 rounded-xl">
-                        <div class="text-sm text-slate-600 dark:text-slate-400">Humedad</div>
-                        <div class="font-semibold text-slate-900 dark:text-white">68%</div>
-                    </div>
-                    <div class="text-center p-3 bg-white/50 dark:bg-slate-800/50 rounded-xl">
-                        <div class="text-sm text-slate-600 dark:text-slate-400">Viento</div>
-                        <div class="font-semibold text-slate-900 dark:text-white">12 km/h</div>
-                    </div>
-                </div>
-
-                <div class="pt-3 border-t border-blue-200 dark:border-blue-700">
-                    <h4 class="font-semibold text-slate-900 dark:text-white mb-2">💡 Recomendaciones para hoy</h4>
-                    <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-1">
-                        <li>• Perfecto para explorar templos al aire libre</li>
-                        <li>• Lleva una chaqueta ligera para la noche</li>
-                        <li>• Excelente visibilidad para fotografía</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- Información general del clima -->
-            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl p-6 mb-8 border border-blue-200 dark:border-blue-800">
-                <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
-                        <span class="material-symbols-outlined text-white">info</span>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-blue-900 dark:text-blue-100 mb-2">Clima General del Himalaya</h3>
-                        <p class="text-blue-800 dark:text-blue-200 mb-3">
-                            Octubre es la época ideal para visitar Nepal y Bután: días soleados y secos, cielos despejados, 
-                            temperaturas agradables durante el día y noches frescas. Perfecto para trekking y actividades al aire libre.
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="inline-flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm font-medium">
-                                <span class="material-symbols-outlined text-sm">check_circle</span>
-                                Temporada seca
-                            </span>
-                            <span class="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium">
-                                <span class="material-symbols-outlined text-sm">visibility</span>
-                                Vistas despejadas
-                            </span>
-                            <span class="inline-flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 px-3 py-1 rounded-full text-sm font-medium">
-                                <span class="material-symbols-outlined text-sm">hiking</span>
-                                Ideal para trekking
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Grid de ciudades -->
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                ${weatherHTML}
-            </div>
-            
-            <!-- Tip para API real -->
-            <div class="mt-8 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-amber-600 dark:text-amber-400">lightbulb</span>
-                    <div>
-                        <h4 class="font-semibold text-amber-800 dark:text-amber-200">¿Quieres datos en tiempo real?</h4>
-                        <p class="text-sm text-amber-700 dark:text-amber-300">Configura una API key de OpenWeatherMap para obtener pronósticos actualizados y alertas meteorológicas.</p>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
+    // ⚠️ DEPRECADO: Método movido a WeatherRenderer.js - Eliminado para evitar duplicación
 
     // Renderizar análisis de estilo de viaje
     renderTripStyleAnalysis() {
