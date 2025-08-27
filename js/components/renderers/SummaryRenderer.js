@@ -368,16 +368,8 @@ export class SummaryRenderer {
             const tripEndDate = new Date(tripStartDate);
             tripEndDate.setDate(tripStartDate.getDate() + tripConfig.itineraryData.length - 1);
             
-            const startDateFormatted = DateUtils.formatDate(tripStartDate, { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            });
-            const endDateFormatted = DateUtils.formatDate(tripEndDate, { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            });
+            const startDateFormatted = DateUtils.formatMediumDate(tripStartDate);
+            const endDateFormatted = DateUtils.formatMediumDate(tripEndDate);
             
             // Actualizar elementos del DOM
             const tripDatesElement = document.getElementById('trip-dates');
