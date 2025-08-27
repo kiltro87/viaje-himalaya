@@ -522,20 +522,43 @@ export class FirebaseManager {
             const { collection, getDocs, orderBy, query } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
-            const q = query(
-                collection(this.db, firestoreConfig.collections.expenses),
-                orderBy('timestamp', 'desc')
-            );
+            Logger.debug(`🔍 Querying Firebase collection: ${firestoreConfig.collections.expenses}`);
+            Logger.debug(`🔍 Database instance:`, this.db);
             
-            const querySnapshot = await getDocs(q);
+            // Primero intentar consulta simple sin orderBy
+            let collectionRef = collection(this.db, firestoreConfig.collections.expenses);
+            Logger.debug(`🔍 Collection reference created`);
+            
+            let querySnapshot = await getDocs(collectionRef);
+            Logger.debug(`🔍 Query executed. Size: ${querySnapshot.size} documents`);
+            
             const expenses = [];
             
             querySnapshot.forEach((doc) => {
+                Logger.debug(`📄 Document found: ${doc.id}`, doc.data());
                 expenses.push({
                     id: doc.id,
                     ...doc.data()
                 });
             });
+            
+            // Si hay documentos, intentar ordenar por timestamp
+            if (expenses.length > 0) {
+                try {
+                    const q = query(collectionRef, orderBy('timestamp', 'desc'));
+                    const orderedSnapshot = await getDocs(q);
+                    expenses.length = 0; // Clear array
+                    orderedSnapshot.forEach((doc) => {
+                        expenses.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    Logger.debug(`✅ Successfully ordered ${expenses.length} expenses by timestamp`);
+                } catch (orderError) {
+                    Logger.warning(`⚠️ OrderBy failed, using unordered results: ${orderError.message}`);
+                }
+            }
             
             Logger.data(`Retrieved ${expenses.length} expenses from Firebase`);
             Logger.debug(`🔍 Expense IDs retrieved: ${expenses.map(e => e.id).join(', ')}`);
