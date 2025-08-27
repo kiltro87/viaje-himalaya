@@ -28,6 +28,7 @@ import Logger from '../utils/Logger.js';
 import { FirebaseManager } from '../utils/FirebaseManager.js';
 import OptimisticUI from '../utils/OptimisticUI.js';
 import BatchManager from '../utils/BatchManager.js';
+import { HeaderRenderer } from './renderers/HeaderRenderer.js';
 import RealtimeSync from '../utils/RealtimeSync.js';
 import OptimizedExpenseManager from '../utils/OptimizedExpenseManager.js';
 
@@ -642,13 +643,11 @@ export class BudgetManager {
             return `<option value="${cat}" data-icon="${icon}">${cat}</option>`;
         }).join('');
 
-        container.innerHTML = `
-            <!-- Cabecera Presupuesto del Viaje -->
-            <div class="flex items-center gap-3 mb-8">
-                <span class="material-symbols-outlined text-3xl text-green-600 dark:text-green-400">account_balance_wallet</span>
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Presupuesto del Viaje</h2>
-            </div>
+        // Renderizar cabecera estandarizada ANTES del contenido
+        const headerHTML = HeaderRenderer.renderPresetHeader('budget');
 
+        container.innerHTML = `
+            ${headerHTML}
             <!-- Resumen de presupuesto -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-6">
                 
