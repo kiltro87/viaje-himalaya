@@ -81,19 +81,37 @@ export class UIRenderer {
      * @private
      */
     setupResponsiveObserver() {
-        ResponsiveUtils.addBreakpointObserver((breakpoint, viewportInfo) => {
-            Logger.responsive(`Breakpoint changed in UIRenderer: ${breakpoint}`, viewportInfo);
+        // Implementación simple del observer responsive
+        let currentBreakpoint = ResponsiveUtils.getCurrentBreakpoint();
+        
+        const handleResize = () => {
+            const newBreakpoint = ResponsiveUtils.getCurrentBreakpoint();
+            const viewportInfo = ResponsiveUtils.getViewportInfo();
             
-            // Actualizar estado global del viewport
-            stateManager.updateState('ui.isMobile', ResponsiveUtils.isMobile());
-            stateManager.updateState('ui.viewportWidth', viewportInfo.width);
-            stateManager.updateState('ui.viewportHeight', viewportInfo.height);
-            
-            // Re-renderizar vista actual si es necesaria
-            if (this.currentView === VIEWS.BUDGET) {
-                this.budgetManager.render();
+            if (newBreakpoint !== currentBreakpoint) {
+                Logger.responsive(`Breakpoint changed in UIRenderer: ${currentBreakpoint} → ${newBreakpoint}`, viewportInfo);
+                currentBreakpoint = newBreakpoint;
+                
+                // Actualizar estado global del viewport
+                stateManager.updateState('ui.isMobile', ResponsiveUtils.isMobile());
+                stateManager.updateState('ui.viewportWidth', viewportInfo.width);
+                stateManager.updateState('ui.viewportHeight', viewportInfo.height);
+                
+                // Re-renderizar vista actual si es necesaria
+                if (this.currentView === VIEWS.BUDGET) {
+                    this.budgetManager.render();
+                }
             }
+        };
+        
+        // Throttled resize listener para performance
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(handleResize, 150);
         });
+        
+        Logger.debug('Responsive observer configured successfully');
     }
 
     /**
