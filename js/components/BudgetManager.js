@@ -1091,9 +1091,31 @@ export class BudgetManager {
                                                                             </div>
                                                                             <div>
                                                                                 <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Categoría</label>
-                                                                                <select class="budget-inline-category w-full px-2 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
-                                                                                    ${allCategories.map(category => `<option value="${category}" ${category === cat ? 'selected' : ''}>${this.getCategoryIcon(category)} ${category}</option>`).join('')}
-                                                                                </select>
+                                                                                <!-- Dropdown personalizado con iconos -->
+                                                                                <div class="relative">
+                                                                                    <button type="button" class="budget-inline-category-btn w-full px-2 py-1 pl-8 pr-8 text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-left cursor-pointer" data-item-id="${subItemId}">
+                                                                                        <span class="budget-inline-category-text">${cat}</span>
+                                                                                    </button>
+                                                                                    <span class="budget-inline-category-icon absolute left-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-xs text-slate-500 pointer-events-none">
+                                                                                        ${this.getCategoryIcon(cat)}
+                                                                                    </span>
+                                                                                    <span class="absolute right-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-xs text-slate-500 pointer-events-none">
+                                                                                        expand_more
+                                                                                    </span>
+                                                                                    
+                                                                                    <!-- Lista desplegable -->
+                                                                                    <div class="budget-inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-item-id="${subItemId}">
+                                                                                        ${allCategories.map(category => `
+                                                                                            <div class="budget-inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-xs" data-value="${category}" data-item-id="${subItemId}">
+                                                                                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${this.getCategoryIcon(category)}</span>
+                                                                                                <span class="text-slate-900 dark:text-white">${category}</span>
+                                                                                            </div>
+                                                                                        `).join('')}
+                                                                                    </div>
+                                                                                    
+                                                                                    <!-- Input oculto para el valor -->
+                                                                                    <input type="hidden" class="budget-inline-category" value="${cat}">
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                         <div class="flex gap-2 justify-end">
@@ -1149,9 +1171,31 @@ export class BudgetManager {
                                                             </div>
                                                             <div>
                                                                 <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Categoría</label>
-                                                                <select class="budget-inline-category w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
-                                                                    ${allCategories.map(category => `<option value="${category}" ${category === cat ? 'selected' : ''}>${this.getCategoryIcon(category)} ${category}</option>`).join('')}
-                                                                </select>
+                                                                <!-- Dropdown personalizado con iconos -->
+                                                                <div class="relative">
+                                                                    <button type="button" class="budget-inline-category-btn w-full px-2 py-1 pl-8 pr-8 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-left cursor-pointer" data-item-id="${itemId}">
+                                                                        <span class="budget-inline-category-text">${cat}</span>
+                                                                    </button>
+                                                                    <span class="budget-inline-category-icon absolute left-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-sm text-slate-500 pointer-events-none">
+                                                                        ${this.getCategoryIcon(cat)}
+                                                                    </span>
+                                                                    <span class="absolute right-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-sm text-slate-500 pointer-events-none">
+                                                                        expand_more
+                                                                    </span>
+                                                                    
+                                                                    <!-- Lista desplegable -->
+                                                                    <div class="budget-inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-item-id="${itemId}">
+                                                                        ${allCategories.map(category => `
+                                                                            <div class="budget-inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-sm" data-value="${category}" data-item-id="${itemId}">
+                                                                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${this.getCategoryIcon(category)}</span>
+                                                                                <span class="text-slate-900 dark:text-white">${category}</span>
+                                                                            </div>
+                                                                        `).join('')}
+                                                                    </div>
+                                                                    
+                                                                    <!-- Input oculto para el valor -->
+                                                                    <input type="hidden" class="budget-inline-category" value="${cat}">
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div class="flex gap-2 justify-end">
@@ -1439,6 +1483,90 @@ export class BudgetManager {
                 document.addEventListener('click', (e) => {
                     if (!e.target.closest('.inline-category-btn') && !e.target.closest('.inline-category-dropdown')) {
                         document.querySelectorAll('.inline-category-dropdown').forEach(dropdown => {
+                            dropdown.classList.add('hidden');
+                        });
+                    }
+                });
+
+                // 🎨 DROPDOWNS PERSONALIZADOS DE CATEGORÍAS EN FORMULARIOS INLINE DE PRESUPUESTO
+                document.querySelectorAll('.budget-inline-category-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const itemId = btn.dataset.itemId;
+                        const dropdown = document.querySelector(`.budget-inline-category-dropdown[data-item-id="${itemId}"]`);
+                        
+                        if (dropdown) {
+                            // Cerrar otros dropdowns abiertos
+                            document.querySelectorAll('.budget-inline-category-dropdown').forEach(d => {
+                                if (d !== dropdown) d.classList.add('hidden');
+                            });
+                            
+                            // Toggle del dropdown actual
+                            if (dropdown.classList.contains('hidden')) {
+                                const rect = btn.getBoundingClientRect();
+                                const viewportWidth = window.innerWidth;
+                                const viewportHeight = window.innerHeight;
+                                
+                                // Posicionamiento responsive
+                                if (viewportWidth <= 640) {
+                                    // Móvil: centrado y ancho completo
+                                    dropdown.style.top = `${rect.bottom + 4}px`;
+                                    dropdown.style.left = '1rem';
+                                    dropdown.style.right = '1rem';
+                                    dropdown.style.width = 'calc(100vw - 2rem)';
+                                } else {
+                                    // Desktop: alineado con el botón
+                                    dropdown.style.top = `${rect.bottom + 4}px`;
+                                    dropdown.style.left = `${rect.left}px`;
+                                    dropdown.style.width = `${Math.max(rect.width, 200)}px`;
+                                    
+                                    // Verificar si se sale por la derecha
+                                    if (rect.left + 200 > viewportWidth - 20) {
+                                        dropdown.style.left = `${viewportWidth - 220}px`;
+                                    }
+                                }
+                                
+                                // Verificar si se sale por abajo
+                                if (rect.bottom + 192 > viewportHeight - 20) {
+                                    dropdown.style.top = `${rect.top - 192 - 4}px`;
+                                }
+                                
+                                dropdown.classList.remove('hidden');
+                            } else {
+                                dropdown.classList.add('hidden');
+                            }
+                        }
+                    });
+                });
+
+                // ✅ SELECCIÓN DE CATEGORÍA EN FORMULARIOS INLINE DE PRESUPUESTO
+                document.querySelectorAll('.budget-inline-category-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const itemId = option.dataset.itemId;
+                        const category = option.dataset.value;
+                        const icon = this.getCategoryIcon(category);
+                        
+                        // Actualizar UI del dropdown
+                        const btn = document.querySelector(`.budget-inline-category-btn[data-item-id="${itemId}"]`);
+                        const text = btn?.querySelector('.budget-inline-category-text');
+                        const iconEl = btn?.parentElement.querySelector('.budget-inline-category-icon');
+                        const input = btn?.parentElement.querySelector('.budget-inline-category');
+                        
+                        if (text) text.textContent = category;
+                        if (iconEl) iconEl.textContent = icon;
+                        if (input) input.value = category;
+                        
+                        // Cerrar dropdown
+                        const dropdown = document.querySelector(`.budget-inline-category-dropdown[data-item-id="${itemId}"]`);
+                        if (dropdown) dropdown.classList.add('hidden');
+                    });
+                });
+
+                // 🖱️ CERRAR DROPDOWNS DE PRESUPUESTO AL HACER CLICK FUERA
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.budget-inline-category-btn') && !e.target.closest('.budget-inline-category-dropdown')) {
+                        document.querySelectorAll('.budget-inline-category-dropdown').forEach(dropdown => {
                             dropdown.classList.add('hidden');
                         });
                     }
