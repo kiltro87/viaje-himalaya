@@ -1367,7 +1367,17 @@ export class BudgetManager {
                                 
                                 if (!deleteResult) {
                                     Logger.error(`🚨 DELETE FAILED for expense ID: ${expenseId}`);
-                                    this.showNotification('❌ Error: No se pudo eliminar el gasto', 'error');
+                                    
+                                    // Si el documento no existe en Firebase, pero existe localmente,
+                                    // eliminar del estado local (desincronización)
+                                    Logger.warning(`🔄 Document doesn't exist in Firebase, removing from local state`);
+                                    const currentExpenses = stateManager.getState('expenses');
+                                    const filteredExpenses = currentExpenses.filter(exp => exp.id !== expenseId);
+                                    stateManager.updateState('expenses', filteredExpenses);
+                                    
+                                    this.updateSummaryCards();
+                                    this.showCategoryContent();
+                                    this.showNotification('⚠️ Gasto eliminado (era solo local)', 'warning');
                                     return;
                                 }
                                 

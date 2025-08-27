@@ -524,7 +524,7 @@ export class FirebaseManager {
 
             const q = query(
                 collection(this.db, firestoreConfig.collections.expenses),
-                orderBy('createdAt', 'desc')
+                orderBy('timestamp', 'desc')
             );
             
             const querySnapshot = await getDocs(q);
@@ -538,6 +538,7 @@ export class FirebaseManager {
             });
             
             Logger.data(`Retrieved ${expenses.length} expenses from Firebase`);
+            Logger.debug(`🔍 Expense IDs retrieved: ${expenses.map(e => e.id).join(', ')}`);
             
             // Actualizar localStorage como backup
             localStorage.setItem('tripExpensesV1', JSON.stringify(expenses));
