@@ -12,15 +12,68 @@
                            window.location.hostname === '127.0.0.1' || 
                            window.location.protocol === 'file:';
         
+        const basePath = isLocalhost ? '/' : '/viaje-himalaya/';
+        
         if (isLocalhost) {
             document.write('<base href="/">');
         } else {
             document.write('<base href="/viaje-himalaya/">');
         }
+        
+        // Crear manifest dinámico
+        const manifestContent = {
+            "name": "Mi Aventura en el Himalaya",
+            "short_name": "Viaje Himalaya",
+            "description": "Aplicación completa para gestionar tu viaje a Nepal y Bután",
+            "start_url": basePath,
+            "display": "standalone",
+            "orientation": "portrait-primary",
+            "theme_color": "#3B82F6",
+            "background_color": "#F8FAFC",
+            "scope": basePath,
+            "lang": "es",
+            "categories": ["travel", "lifestyle", "productivity"],
+            "icons": [
+                {
+                    "src": basePath + "assets/icon-72x72.png",
+                    "sizes": "72x72",
+                    "type": "image/png",
+                    "purpose": "any"
+                },
+                {
+                    "src": basePath + "assets/icon-96x96.png",
+                    "sizes": "96x96", 
+                    "type": "image/png",
+                    "purpose": "any"
+                },
+                {
+                    "src": basePath + "assets/icon-144x144.png",
+                    "sizes": "144x144",
+                    "type": "image/png", 
+                    "purpose": "any"
+                },
+                {
+                    "src": basePath + "assets/icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png",
+                    "purpose": "any maskable"
+                },
+                {
+                    "src": basePath + "assets/icon-512x512.png",
+                    "sizes": "512x512",
+                    "type": "image/png",
+                    "purpose": "any maskable"
+                }
+            ]
+        };
+        
+        // Crear blob URL para el manifest
+        const manifestBlob = new Blob([JSON.stringify(manifestContent)], {type: 'application/json'});
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        
+        // Inyectar link al manifest dinámico
+        document.write('<link rel="manifest" href="' + manifestUrl + '">');
     </script>
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="./manifest.json">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#3B82F6">

@@ -9,11 +9,15 @@
  * @since 2024
  */
 
-const CACHE_NAME = 'viaje-himalaya-v4.6.0-UNIVERSAL-DAY-SIMULATOR';
-const DATA_CACHE = 'viaje-data-v4.6.0-UNIVERSAL-DAY-SIMULATOR';
+const CACHE_NAME = 'viaje-himalaya-v4.7.0-LOCALHOST-FIXED';
+const DATA_CACHE = 'viaje-data-v4.7.0-LOCALHOST-FIXED';
 
-// Base path para GitHub Pages
-const BASE_PATH = '/viaje-himalaya';
+// Base path dinámico según entorno
+const isLocalhost = self.location.hostname === 'localhost' || 
+                   self.location.hostname === '127.0.0.1' || 
+                   self.location.protocol === 'file:';
+
+const BASE_PATH = isLocalhost ? '' : '/viaje-himalaya';
 
 // Recursos críticos para el funcionamiento offline
 const CORE_RESOURCES = [
@@ -60,7 +64,7 @@ const EXTERNAL_RESOURCES = [
 // ============================================================================
 
 self.addEventListener('install', event => {
-  console.log('🔧 Service Worker: Instalando v3.0.1 - Firebase Sync Fixed...');
+  console.log('🔧 Service Worker: Instalando v4.7.0 - Localhost Path Fixed...');
   
   event.waitUntil(
     Promise.all([
@@ -421,4 +425,4 @@ async function getOfflineActions() { return []; }
 async function processOfflineAction(action) { console.log('Processing action:', action.type); }
 async function removeOfflineAction(id) { console.log('Removing action:', id); }
 
-console.log('🔧 Service Worker v4.5.1 cargado - LOGGER FIX: Corregidas importaciones + Firebase equipaje + Fechas dinámicas');
+console.log('🔧 Service Worker v4.7.0 cargado - LOCALHOST FIX: Rutas dinámicas + DateUtils import corregido');
