@@ -141,9 +141,35 @@ export class UIRenderer {
                 this.renderToday();
             },
             [VIEWS.MAP]: () => {
-                Logger.ui('Rendering map view - delegating to MapRenderer');
+                Logger.ui('Rendering map view with consistent header');
                 const mainContent = document.getElementById('main-content');
-                mapRenderer.renderMap(mainContent);
+                
+                // Aplicar header consistente con Itinerario
+                mainContent.innerHTML = `
+                    <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                        <!-- Header del Mapa (estilo Itinerario) -->
+                        <div class="mb-12">
+                            <div class="flex items-center gap-4 mb-4">
+                                <span class="material-symbols-outlined text-6xl text-blue-600 dark:text-blue-400">map</span>
+                                <div>
+                                    <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Mapa del Viaje</h1>
+                                    <p class="text-lg text-slate-600 dark:text-slate-400">Explora todos los destinos y lugares que visitarás en tu aventura</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contenedor del Mapa -->
+                        <div id="map-container" class="w-full h-[70vh] min-h-[500px] rounded-2xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700">
+                            <!-- El mapa se renderizará aquí -->
+                        </div>
+                    </div>
+                `;
+                
+                // Renderizar el mapa en el contenedor específico
+                const mapContainer = document.getElementById('map-container');
+                if (mapContainer) {
+                    mapRenderer.renderMap(mapContainer);
+                }
             },
             [VIEWS.BUDGET]: () => {
                 Logger.ui('💰 Rendering budget view');
