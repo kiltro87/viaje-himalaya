@@ -516,36 +516,6 @@ export class BudgetManager {
         // ✅ WINDOW.UTILS ELIMINADO COMPLETAMENTE
         // Todas las utilidades son métodos de clase
         Logger.data('🛠️ Utils methods available as class methods (NO MORE WINDOW.*)');
-                formatCurrency(amount, showSymbol = false) {
-                    if (typeof amount !== 'number' || isNaN(amount)) {
-                        return showSymbol ? '0,00 €' : '0,00';
-                    }
-                    
-                    if (showSymbol) {
-                        // Usar Intl.NumberFormat para formato correcto español (€ al final)
-                        return new Intl.NumberFormat('es-ES', {
-                            style: 'currency',
-                            currency: 'EUR',
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }).format(amount);
-                    } else {
-                        return amount.toLocaleString('es-ES', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        });
-                    }
-                },
-                calculateSubtotal(expenses) {
-                    return expenses.reduce((sum, item) => {
-                        if (item.cost) return sum + item.cost;
-                        if (item.subItems) return sum + item.subItems.reduce((subSum, subItem) => subSum + (subItem.cost || 0), 0);
-                        return sum;
-                    }, 0);
-                }
-            };
-        }
-
         // Registrar esta instancia globalmente
         stateManager.updateState('instances.budgetManager', this);
     }
