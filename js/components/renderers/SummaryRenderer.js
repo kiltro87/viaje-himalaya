@@ -140,48 +140,48 @@ export class SummaryRenderer {
                             <span class="material-symbols-outlined text-white text-xl">trending_up</span>
                         </div>
                         <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">€${costPerDay.toFixed(0)}</p>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm">por día</p>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">coste por día</p>
                     </div>
                 </section>
 
-                <!-- Sección de Estilo eliminada - se usa renderTripStyleAnalysis() con gráficos circulares -->
-                <section class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+                <!-- Análisis de Estilo de Viaje -->
+                <section class="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
                     ${this.renderTripStyleAnalysis()}
                 </section>
 
-                <!-- Cards de información (exacto del original) -->
-                <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+                <!-- Información del Viaje y Progreso -->
+                <section class="grid md:grid-cols-2 gap-6 lg:gap-8">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
                         <div class="flex items-center gap-3 mb-6">
-                            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
                                 <span class="material-symbols-outlined text-white text-xl">info</span>
                             </div>
                             <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Información del Viaje</h3>
                         </div>
                         <div class="space-y-4">
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-600 dark:text-slate-400">Fechas</span>
-                                <span class="font-medium text-slate-800 dark:text-slate-200" id="summary-dates">Calculando...</span>
+                                <span class="text-slate-600 dark:text-slate-400">Fechas del viaje</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" id="summary-dates">Calculando fechas...</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-600 dark:text-slate-400">Duración</span>
+                                <span class="text-slate-600 dark:text-slate-400">Duración total</span>
                                 <span class="font-medium text-slate-800 dark:text-slate-200">${totalDays} días</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-600 dark:text-slate-400">Países</span>
+                                <span class="text-slate-600 dark:text-slate-400">Países visitados</span>
                                 <span class="font-medium text-slate-800 dark:text-slate-200">Nepal, Bután</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-600 dark:text-slate-400">Tipo de viaje</span>
-                                <span class="font-medium text-slate-800 dark:text-slate-200">Aventura y cultura</span>
+                                <span class="text-slate-600 dark:text-slate-400">Estilo de viaje</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200">Aventura cultural</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
                         <div class="flex items-center gap-3 mb-6">
-                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg">
-                                <span class="material-symbols-outlined text-white text-xl">insights</span>
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                                <span class="material-symbols-outlined text-white text-xl">trending_up</span>
                             </div>
                             <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Progreso del Viaje</h3>
                         </div>
@@ -244,26 +244,30 @@ export class SummaryRenderer {
                     });
                 }
             });
+            
+            Logger.data(`💰 Total budget calculated: €${total}`);
             return total;
+            
         } catch (error) {
             Logger.error('Error calculating total budget:', error);
-            return 4500; // Fallback solo si hay error
+            return 0; // Fallback si hay error
         }
     }
 
     /**
-     * 💸 CALCULAR TOTAL GASTADO
+     * 📊 CALCULAR TOTAL GASTADO
      * 
-     * Suma todos los gastos reales del AppState
+     * Suma todos los gastos reales registrados
      * @returns {number} Total gastado
      */
     calculateTotalSpent() {
         try {
-            let totalSpent = 0;
+            const expenses = stateManager.getState('expenses') || [];
+            const total = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
             
-            // Obtener gastos del localStorage si existe AppState
-            totalSpent = stateManager.getTotalSpent();
-            return totalSpent;
+            Logger.data(`📊 Total spent calculated: €${total}`);
+            return total;
+
         } catch (error) {
             Logger.error('Error calculating total spent:', error);
             return 0; // Fallback si hay error
@@ -314,53 +318,58 @@ export class SummaryRenderer {
      * @returns {Array} Array de objetos con estilos de viaje y porcentajes
      */
     calculateTripStyles() {
-        // Definir categorías de actividades exactamente como las pasó el usuario
-        const activityCategories = {
-            'naturaleza': { keywords: ['trekking', 'rafting', 'parque', 'montaña', 'selva', 'río', 'lago'], icon: 'nature', color: 'text-green-500' },
-            'cultura': { keywords: ['templo', 'monasterio', 'museo', 'plaza', 'durbar', 'dzong', 'estupa'], icon: 'temple_buddhist', color: 'text-amber-500' },
-            'ciudad': { keywords: ['thamel', 'pokhara', 'thimphu', 'paro', 'katmandú', 'mercado', 'restaurante'], icon: 'location_city', color: 'text-red-500' },
-            'aventura': { keywords: ['parapente', 'rafting', 'trekking', 'safari'], icon: 'hiking', color: 'text-purple-500' },
-            'relax': { keywords: ['aguas termales', 'spa', 'descanso', 'tarde libre'], icon: 'spa', color: 'text-sky-500' }
-        };
-        
-        // Contar actividades por categoría
-        const categoryCounts = {};
-        const totalDays = tripConfig.itineraryData.length;
-        
-        // Inicializar contadores
-        Object.keys(activityCategories).forEach(category => {
-            categoryCounts[category] = 0;
-        });
-        
-        // Contar actividades en todo el itinerario
-        tripConfig.itineraryData.forEach(day => {
-            const dayText = `${day.title} ${day.activities} ${day.descripcion}`.toLowerCase();
-            
-            Object.keys(activityCategories).forEach(category => {
-                const keywords = activityCategories[category].keywords;
-                keywords.forEach(keyword => {
-                    if (dayText.includes(keyword.toLowerCase())) {
-                        categoryCounts[category]++;
-                    }
-                });
-            });
-        });
-        
-        // Convertir a porcentajes y crear objetos para renderizado
-        const styles = Object.keys(activityCategories).map(category => {
-            const count = categoryCounts[category];
-            const percentage = Math.round((count / totalDays) * 100);
-            
-            return {
-                title: category.charAt(0).toUpperCase() + category.slice(1),
-                percentage: Math.min(percentage, 100), // Cap at 100%
-                icon: activityCategories[category].icon,
-                color: activityCategories[category].color
+        try {
+            const activityCategories = {
+                cultural: { icon: 'temple_buddhist', color: 'text-purple-600', name: 'Cultural' },
+                adventure: { icon: 'hiking', color: 'text-green-600', name: 'Aventura' },
+                nature: { icon: 'landscape', color: 'text-blue-600', name: 'Naturaleza' },
+                relaxation: { icon: 'spa', color: 'text-orange-600', name: 'Relax' }
             };
-        });
-        
-        // Ordenar por porcentaje descendente y tomar solo los top 4
-        return styles.sort((a, b) => b.percentage - a.percentage).slice(0, 4);
+
+            const activityCounts = {
+                cultural: 0,
+                adventure: 0,
+                nature: 0,
+                relaxation: 0
+            };
+
+            // Contar actividades por categoría basándose en palabras clave
+            tripConfig.itineraryData.forEach(day => {
+                const text = (day.title + ' ' + day.description).toLowerCase();
+                
+                if (text.includes('templo') || text.includes('monasterio') || text.includes('cultura') || text.includes('tradición')) {
+                    activityCounts.cultural++;
+                }
+                if (text.includes('trekking') || text.includes('senderismo') || text.includes('aventura') || text.includes('montaña')) {
+                    activityCounts.adventure++;
+                }
+                if (text.includes('naturaleza') || text.includes('paisaje') || text.includes('valle') || text.includes('bosque')) {
+                    activityCounts.nature++;
+                }
+                if (text.includes('relajación') || text.includes('descanso') || text.includes('spa') || text.includes('relax')) {
+                    activityCounts.relaxation++;
+                }
+            });
+
+            const totalActivities = Object.values(activityCounts).reduce((sum, count) => sum + count, 0);
+            
+            // Convertir conteos a porcentajes y generar estilos
+            const styles = Object.entries(activityCounts).map(([category, count]) => {
+                const percentage = totalActivities > 0 ? (count / totalActivities) * 100 : 0;
+                return {
+                    title: activityCategories[category].name,
+                    percentage: Math.min(percentage, 100), // Cap at 100%
+                    icon: activityCategories[category].icon,
+                    color: activityCategories[category].color
+                };
+            });
+            
+            // Ordenar por porcentaje descendente y tomar solo los top 4
+            return styles.sort((a, b) => b.percentage - a.percentage).slice(0, 4);
+        } catch (error) {
+            Logger.error('Error calculating trip styles:', error);
+            return [];
+        }
     }
 
     /**
@@ -403,31 +412,57 @@ export class SummaryRenderer {
     }
 
     /**
-     * 📅 OBTENER FECHA DE INICIO DEL VIAJE
+     * 📅 OBTENER FECHA DE INICIO DEL VIAJE (CALCULADO DESDE VUELOS)
      * 
-     * @returns {Date} Fecha de inicio del viaje
+     * @returns {Date} Fecha de inicio del viaje basada en datos reales de vuelos
      */
     getTripStartDate() {
         try {
+            // 1. Intentar obtener desde datos de vuelos (fuente más confiable)
+            if (tripConfig.flightsData && tripConfig.flightsData.length > 0) {
+                const firstFlight = tripConfig.flightsData.find(f => f.type === 'Internacional' && f.title.includes('Ida'));
+                if (firstFlight && firstFlight.segments && firstFlight.segments.length > 0) {
+                    const departureDate = firstFlight.segments[0].fromDateTime;
+                    // Parsear "9 de Octubre 22:45" para obtener año actual
+                    const currentYear = new Date().getFullYear();
+                    const months = {
+                        'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3, 'Mayo': 4, 'Junio': 5,
+                        'Julio': 6, 'Agosto': 7, 'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
+                    };
+                    
+                    const match = departureDate.match(/(\d+) de (\w+)/);
+                    if (match) {
+                        const day = parseInt(match[1]);
+                        const monthName = match[2];
+                        const month = months[monthName];
+                        if (month !== undefined) {
+                            return new Date(currentYear, month, day);
+                        }
+                    }
+                }
+            }
+            
+            // 2. Intentar desde calendarData
             const calendarData = tripConfig.calendarData;
             if (calendarData && calendarData.tripStartDate) {
                 return new Date(calendarData.tripStartDate);
             }
             
-            // Fallback: usar primera fecha del itinerario si está disponible
-            if (tripConfig.itineraryData && tripConfig.itineraryData.length > 0) {
+            // 3. Intentar desde primer día del itinerario
+            if (tripConfig.itineraryData && tripConfig.itineraryData[0]) {
                 const firstDay = tripConfig.itineraryData[0];
                 if (firstDay.date) {
                     return new Date(firstDay.date);
                 }
             }
             
-            // Fallback final: fecha predeterminada
-            return new Date('2024-12-19');
+            // 4. Fallback: Calculado desde datos de vuelos (octubre)
+            Logger.warning('Using fallback date calculated from flight data');
+            return new Date(2024, 9, 9); // 9 de octubre 2024 (mes 9 = octubre)
             
         } catch (error) {
             Logger.error('Error getting trip start date:', error);
-            return new Date('2024-12-19');
+            return new Date(2024, 9, 9); // Fallback consistente con datos de vuelos
         }
     }
 
@@ -466,6 +501,151 @@ export class SummaryRenderer {
         } catch (error) {
             Logger.error('Error updating trip progress:', error);
         }
+    }
+
+    /**
+     * 🌅 ACTUALIZAR CONTENIDO DINÁMICO DE "HOY"
+     * 
+     * Actualiza el panel "Hoy" basado en la fecha actual o simulada
+     */
+    updateTodaySummaryContent() {
+        const container = document.getElementById('today-summary-content');
+        const todayDateElement = document.getElementById('today-date');
+        
+        if (!container) return;
+
+        try {
+            // Usar fecha simulada si el Day Simulator está activo
+            const today = stateManager.getCurrentDate();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            
+            // Actualizar fecha mostrada
+            if (todayDateElement) {
+                const todayFormatted = DateUtils.formatMediumDate(today);
+                todayDateElement.textContent = todayFormatted;
+            }
+            
+            Logger.data(`📅 Today summary update`, { dayDiff, tripLength: tripConfig.itineraryData.length });
+
+            if (dayDiff < 0) {
+                // ANTES DEL VIAJE
+                this.renderPreTripSummary(container, Math.abs(dayDiff));
+            } else if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
+                // DURANTE EL VIAJE
+                this.renderDuringTripSummary(container, dayDiff);
+            } else {
+                // DESPUÉS DEL VIAJE
+                this.renderPostTripSummary(container);
+            }
+            
+        } catch (error) {
+            Logger.error('Error updating today summary content:', error);
+            container.innerHTML = '<p class="text-slate-600 dark:text-slate-400">Error al cargar información del día</p>';
+        }
+    }
+
+    /**
+     * 🚀 RENDERIZAR RESUMEN PRE-VIAJE
+     */
+    renderPreTripSummary(container, daysUntil) {
+        container.innerHTML = `
+            <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="material-symbols-outlined text-orange-600 dark:text-orange-400">schedule</span>
+                    <h3 class="font-semibold text-orange-800 dark:text-orange-200">¡El viaje está por comenzar!</h3>
+                </div>
+                <p class="text-orange-700 dark:text-orange-300">
+                    Faltan <strong>${daysUntil} días</strong> para partir hacia el Himalaya. 
+                    Es momento de finalizar los preparativos y revisar el equipaje.
+                </p>
+                <div class="mt-3 flex gap-2">
+                    <span class="px-2 py-1 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded text-sm">
+                        ✈️ Vuelo confirmado
+                    </span>
+                    <span class="px-2 py-1 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded text-sm">
+                        🎒 Revisar equipaje
+                    </span>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 🏔️ RENDERIZAR RESUMEN DURANTE EL VIAJE
+     */
+    renderDuringTripSummary(container, dayIndex) {
+        const currentDay = tripConfig.itineraryData[dayIndex];
+        if (!currentDay) return;
+
+        const dayNumber = dayIndex + 1;
+        const totalDays = tripConfig.itineraryData.length;
+        const progressPercentage = ((dayNumber - 1) / totalDays) * 100;
+
+        container.innerHTML = `
+            <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="material-symbols-outlined text-green-600 dark:text-green-400">${currentDay.icon || 'hiking'}</span>
+                    <div>
+                        <h3 class="font-semibold text-green-800 dark:text-green-200">Día ${dayNumber} de ${totalDays}</h3>
+                        <p class="text-sm text-green-600 dark:text-green-400">${currentDay.title}</p>
+                    </div>
+                </div>
+                
+                <p class="text-green-700 dark:text-green-300 mb-3">
+                    ${currentDay.description}
+                </p>
+                
+                <!-- Barra de progreso -->
+                <div class="mb-3">
+                    <div class="flex justify-between text-xs text-green-600 dark:text-green-400 mb-1">
+                        <span>Progreso del viaje</span>
+                        <span>${Math.round(progressPercentage)}%</span>
+                    </div>
+                    <div class="w-full bg-green-200 dark:bg-green-800 rounded-full h-2">
+                        <div class="bg-green-600 h-2 rounded-full transition-all duration-500" 
+                             style="width: ${progressPercentage}%"></div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <span class="px-2 py-1 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded text-sm">
+                        📍 ${currentDay.location || 'En ruta'}
+                    </span>
+                    ${currentDay.country ? 
+                        `<span class="px-2 py-1 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded text-sm">
+                            🏳️ ${currentDay.country}
+                        </span>` : ''
+                    }
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 🏁 RENDERIZAR RESUMEN POST-VIAJE
+     */
+    renderPostTripSummary(container) {
+        container.innerHTML = `
+            <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="material-symbols-outlined text-purple-600 dark:text-purple-400">celebration</span>
+                    <h3 class="font-semibold text-purple-800 dark:text-purple-200">¡Viaje completado!</h3>
+                </div>
+                <p class="text-purple-700 dark:text-purple-300 mb-3">
+                    Has completado tu increíble aventura por el Himalaya. 
+                    ¡Seguro que tienes miles de recuerdos y experiencias únicas!
+                </p>
+                <div class="flex gap-2">
+                    <span class="px-2 py-1 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded text-sm">
+                        ✅ ${tripConfig.itineraryData.length} días completados
+                    </span>
+                    <span class="px-2 py-1 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded text-sm">
+                        🏔️ Himalaya conquistado
+                    </span>
+                </div>
+            </div>
+        `;
     }
 
     /**
