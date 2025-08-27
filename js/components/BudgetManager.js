@@ -980,7 +980,8 @@ export class BudgetManager {
                         }
                     } else {
                         // Revertir adición
-                        stateManager.getState('expenses') = stateManager.getState('expenses').filter(exp => exp.id !== newExpense.id);
+                        const filteredExpenses = stateManager.getState('expenses').filter(exp => exp.id !== newExpense.id);
+                        stateManager.updateState('expenses', filteredExpenses);
                     }
                     
                     // Actualizar UI para reflejar el rollback
@@ -1357,9 +1358,18 @@ export class BudgetManager {
                         e.preventDefault();
                         e.stopPropagation();
                         const expenseId = btn.dataset.expenseId;
+                        Logger.debug(`🗑️ Delete button clicked for expense ID: ${expenseId}`);
+                        
                         if (confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
                             try {
+                                Logger.debug(`🔥 Calling Firebase deleteExpense for ID: ${expenseId}`);
                                 await this.firebaseManager.deleteExpense(expenseId);
+                                
+                                // 🔄 ACTUALIZACIÓN OPTIMISTA: REMOVER DEL ESTADO LOCAL
+                                Logger.debug('🔄 Removing expense from local state optimistically');
+                                const currentExpenses = stateManager.getState('expenses');
+                                const filteredExpenses = currentExpenses.filter(exp => exp.id !== expenseId);
+                                stateManager.updateState('expenses', filteredExpenses);
                                 
                                 // 🚀 ACTUALIZACIÓN INMEDIATA DE UI (sin setTimeout)
                                 this.updateSummaryCards();

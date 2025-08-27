@@ -367,10 +367,17 @@ export class MapRenderer {
         // Ajustar vista
         this.adjustModalMapView(map, coords, markers);
         
-        // Forzar redibujado
+        // Forzar redibujado múltiple para asegurar renderizado
         setTimeout(() => {
             map.invalidateSize();
+            Logger.debug(`🗺️ Map invalidated for day: ${dayId}`);
         }, 100);
+        
+        // Segundo invalidate por si el modal aún no está completamente renderizado
+        setTimeout(() => {
+            map.invalidateSize();
+            Logger.debug(`🗺️ Map second invalidation for day: ${dayId}`);
+        }, 300);
         
         Logger.success(`Modal map created successfully for day: ${dayId}`);
     }
@@ -446,15 +453,19 @@ export class MapRenderer {
      * @private
      */
     adjustModalMapView(map, coords, markers) {
-        if (markers.length > 0) {
-            const nearbyPlaces = tripConfig.placesByDay || {};
-            const allCoords = [coords, ...Object.values(nearbyPlaces).flat().map(p => p.coords)].filter(Boolean);
-            
-            if (allCoords.length > 1) {
-                const bounds = L.latLngBounds(allCoords);
-                map.fitBounds(bounds, { padding: [20, 20] });
-            }
+        const nearbyPlaces = tripConfig.placesByDay || {};
+        const allCoords = [coords, ...Object.values(nearbyPlaces).flat().map(p => p.coords)].filter(Boolean);
+        
+        if (allCoords.length > 1) {
+            // Si hay múltiples coordenadas, ajustar a todas
+            const bounds = L.latLngBounds(allCoords);
+            map.fitBounds(bounds, { padding: [20, 20] });
+        } else {
+            // Si solo hay una coordenada, centrar con zoom apropiado
+            map.setView(coords, 14); // Zoom más cercano para una sola ubicación
         }
+        
+        Logger.debug(`Modal map view adjusted: ${allCoords.length} coordinates`);
     }
 
     /**
