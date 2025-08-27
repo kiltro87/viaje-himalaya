@@ -409,10 +409,8 @@ export class UIRenderer {
             }
             
             if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
-                // CORRECCIÓN TEMPORAL: Ajustar índice por desfase de 2 días reportado por usuario
-                const adjustedIndex = Math.max(0, dayDiff - 2);
-                const currentDayData = tripConfig.itineraryData[adjustedIndex];
-                Logger.debug(`📅 HOY DEBUG CORREGIDO: dayDiff=${dayDiff}, adjustedIndex=${adjustedIndex}, accessing day ${adjustedIndex + 1}, data:`, currentDayData.title, `ID: ${currentDayData.id}`);
+                const currentDayData = tripConfig.itineraryData[dayDiff];
+                Logger.debug(`📅 HOY DEBUG: dayDiff=${dayDiff}, accessing day ${dayDiff + 1}, data:`, currentDayData.title, `ID: ${currentDayData.id}`);
                 
                 // Determinar el icono y tipo de actividad
                 let activityIcon = 'hiking';
@@ -632,14 +630,25 @@ export class UIRenderer {
             if (firstInternationalFlight && firstInternationalFlight.segments && firstInternationalFlight.segments.length > 0) {
                 const firstSegment = firstInternationalFlight.segments[0];
                 // Extraer la fecha del string "9 de Octubre 22:45"
-                const dateString = firstSegment.fromDateTime;
+                const departureDate = firstSegment.fromDateTime;
                 const year = tripConfig.tripInfo.year; // Usar el año del tripConfig
                 
                 // Parsear la fecha (ej. "9 de Octubre 22:45" en 2025)
-                const parsedDate = DateUtils.parseDateWithMonthName(dateString, year);
-                if (parsedDate) {
-                    Logger.debug(`📅 Trip start date parsed from flight data: ${parsedDate}`);
-                    return parsedDate;
+                const months = {
+                    'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3, 'Mayo': 4, 'Junio': 5,
+                    'Julio': 6, 'Agosto': 7, 'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
+                };
+                
+                const match = departureDate.match(/(\d+) de (\w+)/);
+                if (match) {
+                    const day = parseInt(match[1]);
+                    const monthName = match[2];
+                    const month = months[monthName];
+                    if (month !== undefined) {
+                        const parsedDate = new Date(year, month, day);
+                        Logger.debug(`📅 Trip start date parsed from flight data: ${parsedDate}`);
+                        return parsedDate;
+                    }
                 }
             }
             
