@@ -317,32 +317,8 @@ export class UIRenderer {
                     <!-- El contenido se generará dinámicamente -->
                 </div>
 
-                <!-- Información del día -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">location_on</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Origen</h3>
-                        <p class="text-slate-600 dark:text-slate-400">Madrid, España</p>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">flight_land</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Destino</h3>
-                        <p class="text-slate-600 dark:text-slate-400">Katmandú, Nepal</p>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">schedule</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Duración</h3>
-                        <p class="text-slate-600 dark:text-slate-400">8h 45m</p>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">airplane_ticket</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Aerolínea</h3>
-                        <p class="text-slate-600 dark:text-slate-400">Qatar Airways</p>
-                    </div>
-                </div>
+                <!-- Información del día (solo si hay vuelos) -->
+                ${this.renderFlightInfoForToday()}
 
                 <!-- Preparativos para el viaje -->
                 <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
@@ -434,7 +410,7 @@ export class UIRenderer {
             
             if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
                 const currentDayData = tripConfig.itineraryData[dayDiff];
-                Logger.debug('📅 Generando contenido para día:', dayDiff + 1, currentDayData.title);
+                Logger.debug(`📅 HOY DEBUG: dayDiff=${dayDiff}, accessing day ${dayDiff + 1}, data:`, currentDayData.title, `ID: ${currentDayData.id}`);
                 
                 // Determinar el icono y tipo de actividad
                 let activityIcon = 'hiking';
@@ -1292,11 +1268,11 @@ export class UIRenderer {
                         
                         <!-- Previsión 3 días -->
                         <div class="border-t border-slate-200 dark:border-slate-700 pt-3">
-                            <div class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Próximos 3 días:</div>
+                            <div class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Previsión:</div>
                             <div class="flex justify-between">
                                 ${location.forecast.map((day, index) => `
                                     <div class="text-center">
-                                        <div class="text-xs text-slate-500 dark:text-slate-500">D+${index + 1}</div>
+                                        <div class="text-xs text-slate-500 dark:text-slate-500">${index === 0 ? 'Hoy' : index === 1 ? 'Mañana' : 'Pasado'}</div>
                                         <div class="text-sm">${day}</div>
                                     </div>
                                 `).join('')}
@@ -1335,6 +1311,170 @@ export class UIRenderer {
 
         container.innerHTML = weatherHTML;
         Logger.success('✅ Enhanced weather information rendered');
+    }
+
+    /**
+     * 🛫 RENDERIZAR INFORMACIÓN DE VUELOS PARA HOY (solo si hay vuelos)
+     */
+    renderFlightInfoForToday() {
+        try {
+            const today = stateManager.getCurrentDate();
+            const todayFormatted = DateUtils.formatMediumDate(today);
+            
+            // Buscar si hay vuelos en la fecha actual
+            const flightForToday = this.getFlightForDate(today);
+            
+            if (!flightForToday) {
+                Logger.debug('📅 No flights for today, skipping flight info cards');
+                return '';
+            }
+            
+            Logger.debug(`✈️ Flight found for today: ${flightForToday.title}`);
+            
+            // Obtener información específica del vuelo
+            const flightInfo = this.getFlightDetails(flightForToday);
+            
+            return `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">location_on</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Origen</h3>
+                        <p class="text-slate-600 dark:text-slate-400">${flightInfo.origin}</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">flight_land</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Destino</h3>
+                        <p class="text-slate-600 dark:text-slate-400">${flightInfo.destination}</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">schedule</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Horario</h3>
+                        <p class="text-slate-600 dark:text-slate-400">${flightInfo.time}</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">airplane_ticket</span>
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Aerolínea</h3>
+                        <p class="text-slate-600 dark:text-slate-400">${flightInfo.airline}</p>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            Logger.error('Error rendering flight info for today:', error);
+            return '';
+        }
+    }
+
+    /**
+     * 🔍 OBTENER VUELO PARA UNA FECHA ESPECÍFICA
+     */
+    getFlightForDate(date) {
+        try {
+            const targetDateFormatted = DateUtils.formatMediumDate(date);
+            Logger.debug(`🔍 Looking for flights on: ${targetDateFormatted}`);
+            
+            // Buscar en todos los vuelos
+            for (const flight of tripConfig.flightsData) {
+                if (flight.segments) {
+                    for (const segment of flight.segments) {
+                        if (segment.fromDateTime) {
+                            // Extraer fecha del formato "9 de Octubre 22:45"
+                            const flightDate = this.parseFlightDate(segment.fromDateTime);
+                            if (flightDate && this.isSameDay(date, flightDate)) {
+                                Logger.debug(`✈️ Found matching flight: ${flight.title} on ${segment.fromDateTime}`);
+                                return flight;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return null;
+        } catch (error) {
+            Logger.error('Error getting flight for date:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 📅 PARSEAR FECHA DE VUELO
+     */
+    parseFlightDate(dateTimeString) {
+        try {
+            // Parsear "9 de Octubre 22:45" a Date object
+            const months = {
+                'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3, 'Mayo': 4, 'Junio': 5,
+                'Julio': 6, 'Agosto': 7, 'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
+            };
+            
+            const parts = dateTimeString.split(' ');
+            const day = parseInt(parts[0]);
+            const monthName = parts[2];
+            const monthIndex = months[monthName];
+            
+            if (monthIndex !== undefined) {
+                const year = tripConfig.tripInfo?.year || 2025;
+                return new Date(year, monthIndex, day);
+            }
+            
+            return null;
+        } catch (error) {
+            Logger.error('Error parsing flight date:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 📅 VERIFICAR SI DOS FECHAS SON EL MISMO DÍA
+     */
+    isSameDay(date1, date2) {
+        return date1.getFullYear() === date2.getFullYear() &&
+               date1.getMonth() === date2.getMonth() &&
+               date1.getDate() === date2.getDate();
+    }
+
+    /**
+     * ✈️ OBTENER DETALLES DEL VUELO
+     */
+    getFlightDetails(flight) {
+        try {
+            if (!flight.segments || flight.segments.length === 0) {
+                return {
+                    origin: 'No especificado',
+                    destination: 'No especificado',
+                    time: 'Por confirmar',
+                    airline: flight.airline || 'No especificado'
+                };
+            }
+            
+            const firstSegment = flight.segments[0];
+            const lastSegment = flight.segments[flight.segments.length - 1];
+            
+            // Mapear códigos de aeropuerto a nombres
+            const airportNames = {
+                'MAD': 'Madrid, España',
+                'DOH': 'Doha, Qatar',
+                'KTM': 'Katmandú, Nepal',
+                'PBH': 'Paro, Bután'
+            };
+            
+            return {
+                origin: airportNames[firstSegment.from] || firstSegment.from,
+                destination: airportNames[lastSegment.to] || lastSegment.to,
+                time: firstSegment.fromDateTime,
+                airline: flight.airline || 'No especificado'
+            };
+        } catch (error) {
+            Logger.error('Error getting flight details:', error);
+            return {
+                origin: 'Error',
+                destination: 'Error',
+                time: 'Error',
+                airline: 'Error'
+            };
+        }
     }
 
     /**
