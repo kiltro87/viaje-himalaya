@@ -27,7 +27,9 @@ import { ResponsiveUtils } from '../utils/ResponsiveUtils.js';
 import { BudgetManager } from './BudgetManager.js';
 import { HeaderRenderer } from './renderers/HeaderRenderer.js';
 import { WeatherRenderer } from './renderers/WeatherRenderer.js';
+import { ItineraryRenderer } from './renderers/ItineraryRenderer.js';
 import { UIHelpers } from '../utils/UIHelpers.js';
+import { LoggingStandardizer } from '../utils/LoggingStandardizer.js';
 
 export class UIRenderer {
     /**
@@ -796,9 +798,28 @@ export class UIRenderer {
         return `${weather.condition}, ${weather.temperature}`;
     }
 
-    // Renderizar la vista de itinerario (exacta del original Viaje.html)
+    // Renderizar la vista de itinerario usando ItineraryRenderer modular
     renderItinerary() {
-        console.log('📅 Renderizando itinerario...');
+        LoggingStandardizer.renderStart('Itinerario');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) {
+            LoggingStandardizer.renderError('Itinerario', new Error('Container not found'));
+            return;
+        }
+
+        // Usar ItineraryRenderer modular en lugar de código inline
+        try {
+            ItineraryRenderer.renderItinerarySection(mainContent);
+            LoggingStandardizer.renderSuccess('Itinerario');
+        } catch (error) {
+            LoggingStandardizer.renderError('Itinerario', error);
+            // Fallback al método original si ItineraryRenderer falla
+            this.renderItineraryFallback();
+        }
+    }
+
+    // Fallback del itinerario original (reducido)
+    renderItineraryFallback() {
         const mainContent = document.getElementById('main-content');
         if (!mainContent) return;
 
