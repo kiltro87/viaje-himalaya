@@ -414,52 +414,53 @@ export class UIRenderer {
     }
 
     /**
-     * Renderizar vista de extras
+     * Renderizar vista de extras completa
      */
     renderExtras() {
-        Logger.ui('🎁 Rendering extras view');
-        
+        Logger.ui('🎒 Rendering extras section');
         const mainContent = document.getElementById('main-content');
         if (!mainContent) return;
 
         try {
+            // Seguir el mismo patrón que renderItinerary()
             mainContent.innerHTML = `
-                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                    <div class="flex items-center gap-4 mb-8">
-                        <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400">extension</span>
-                        <div>
-                            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Extras del Viaje</h1>
-                            <p class="text-lg text-slate-600 dark:text-slate-400">Información adicional y herramientas útiles</p>
+                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                    <!-- Header de Extras -->
+                    <div class="mb-12 hidden md:block">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="material-symbols-outlined text-6xl text-purple-600 dark:text-purple-400">inventory_2</span>
+                            <div>
+                                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Extras del Viaje</h1>
+                                <p class="text-lg text-slate-600 dark:text-slate-400">Equipaje, clima y toda la información práctica para tu aventura</p>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-                            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                                <span class="material-symbols-outlined text-green-600">info</span>
-                                Información General
-                            </h2>
-                            <div class="space-y-4 text-slate-600 dark:text-slate-400">
-                                <p>Esta sección contiene información adicional sobre el viaje, agencias, contactos de emergencia y más.</p>
-                                <p>Próximamente se añadirá más contenido útil para el viaje.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-                            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                                <span class="material-symbols-outlined text-blue-600">settings</span>
-                                Herramientas
-                            </h2>
-                            <div class="space-y-4 text-slate-600 dark:text-slate-400">
-                                <p>Herramientas útiles para gestionar y personalizar la experiencia del viaje.</p>
-                                <p>Funciones de exportación, simulador de fechas y más.</p>
-                            </div>
-                        </div>
+
+                    <!-- Lista de equipaje -->
+                    <div id="packing-list" class="space-y-6 md:space-y-8">
+                        <!-- El contenido se generará dinámicamente -->
+                    </div>
+
+                    <!-- Información climática -->
+                    <div id="weather" class="space-y-6 md:space-y-8">
+                        <!-- El contenido se generará dinámicamente -->
+                    </div>
+
+                    <!-- Información de Agencias -->
+                    <div id="agencies" class="space-y-6 md:space-y-8">
+                        <!-- El contenido se generará dinámicamente -->
                     </div>
                 </div>
             `;
             
-            Logger.success('✅ Extras view rendered successfully');
+            // Renderizar cada sección inmediatamente
+            setTimeout(async () => {
+                await this.renderPackingList();
+                await this.renderWeather();
+                this.renderAgencies();
+            }, 100);
+            
+            Logger.success('✅ Extras structure rendered');
         } catch (error) {
             Logger.error('❌ Error rendering extras view:', error);
             this.renderErrorView(error);
@@ -623,6 +624,199 @@ export class UIRenderer {
      */
     getActivityIconHTML(icon, size = 'text-xl') {
         return `<span class="material-symbols-outlined ${size} text-blue-600 dark:text-blue-400">${icon}</span>`;
+    }
+
+    /**
+     * Renderizar información de agencias
+     */
+    renderAgencies() {
+        Logger.ui('🏢 Rendering agencies information');
+        const container = document.getElementById('agencies');
+        if (!container) {
+            Logger.warning('⚠️ Container #agencies not found');
+            return;
+        }
+
+        const agencies = tripConfig.agenciesData;
+        
+        const agenciesHTML = `
+            <div class="flex items-center gap-3 mb-8">
+                <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">business</span>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información de Agencias</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- WeRoad Nepal -->
+                <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-2xl ${agencies.weroad.color}">${agencies.weroad.icon}</span>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${agencies.weroad.name}</h3>
+                    </div>
+                    <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">tour</span>
+                            <span>Tour: "${agencies.weroad.tour}"</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">language</span>
+                            <span>${agencies.weroad.website}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">info</span>
+                            <span>${agencies.weroad.description}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Best of Bhutan -->
+                <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-2xl ${agencies.bhutan.color}">${agencies.bhutan.icon}</span>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${agencies.bhutan.name}</h3>
+                    </div>
+                    <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">tour</span>
+                            <span>Tour: "${agencies.bhutan.tour}"</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">info</span>
+                            <span>${agencies.bhutan.description}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">phone</span>
+                            <span>Contacto: ${agencies.bhutan.contact}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seguro de Viaje -->
+                <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-2xl ${agencies.insurance.color}">${agencies.insurance.icon}</span>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${agencies.insurance.name}</h3>
+                    </div>
+                    <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">info</span>
+                            <span>${agencies.insurance.description}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">pending</span>
+                            <span>Estado: ${agencies.insurance.status}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información de Emergencia -->
+                <div class="bg-red-50 dark:bg-red-900/20 rounded-2xl p-6 border border-red-200 dark:border-red-800">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-2xl text-red-600 dark:text-red-400">emergency</span>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Información de Emergencia</h3>
+                    </div>
+                    <div class="space-y-4 text-sm text-slate-600 dark:text-slate-400">
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-sm mt-0.5">emergency</span>
+                            <div>
+                                <div class="font-medium text-slate-900 dark:text-white">Emergencias</div>
+                                <div>${agencies.emergency.embassy}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-sm mt-0.5">local_hospital</span>
+                            <div>
+                                <div class="font-medium text-slate-900 dark:text-white">Hospital Recomendado</div>
+                                <div>${agencies.emergency.hospital}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-sm mt-0.5">schedule</span>
+                            <div>
+                                <div class="font-medium text-slate-900 dark:text-white">Zona Horaria</div>
+                                <div>${agencies.emergency.timezone}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = agenciesHTML;
+        Logger.success('✅ Agencies information rendered');
+    }
+
+    /**
+     * Renderizar lista de equipaje
+     */
+    async renderPackingList() {
+        Logger.ui('🎒 Rendering packing list');
+        const container = document.getElementById('packing-list');
+        if (!container) {
+            Logger.warning('⚠️ Container #packing-list not found');
+            return;
+        }
+        Logger.debug('✅ Container #packing-list found');
+
+        // Placeholder básico por ahora
+        const listHTML = `
+            <div class="flex items-center gap-3 mb-8">
+                <span class="material-symbols-outlined text-3xl text-purple-600 dark:text-purple-400">luggage</span>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Lista de Equipaje</h2>
+            </div>
+            
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+                <p class="text-slate-600 dark:text-slate-400">
+                    La funcionalidad completa de lista de equipaje se restaurará próximamente.
+                    Incluirá checkboxes interactivos y categorías detalladas.
+                </p>
+            </div>
+        `;
+        
+        container.innerHTML = listHTML;
+        Logger.success('✅ Packing list placeholder rendered');
+    }
+
+    /**
+     * Renderizar información del clima
+     */
+    async renderWeather() {
+        Logger.ui('🌤️ Rendering weather information');
+        const container = document.getElementById('weather');
+        if (!container) {
+            Logger.warning('⚠️ Container #weather not found');
+            return;
+        }
+
+        const weatherHTML = `
+            <div class="flex items-center gap-3 mb-8">
+                <span class="material-symbols-outlined text-3xl text-orange-600 dark:text-orange-400">wb_sunny</span>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información Climática</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                ${tripConfig.weatherLocations.map(location => `
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-lg border border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="material-symbols-outlined ${location.color}">${location.icon}</span>
+                            <h3 class="font-semibold text-slate-900 dark:text-white">${location.location}</h3>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">Día:</span>
+                                <span class="font-medium text-slate-900 dark:text-white">${location.dayTemp}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">Noche:</span>
+                                <span class="font-medium text-slate-900 dark:text-white">${location.nightTemp}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        container.innerHTML = weatherHTML;
+        Logger.success('✅ Weather information rendered');
     }
 
     /**
