@@ -806,24 +806,10 @@ export class UIRenderer {
         return `${weather.condition}, ${weather.temperature}`;
     }
 
-    // Renderizar la vista de itinerario usando ItineraryRenderer modular
+    // Renderizar la vista de itinerario (restaurado a método original)
     renderItinerary() {
         Logger.ui('📅 Renderizando itinerario...');
-        const mainContent = document.getElementById('main-content');
-        if (!mainContent) {
-            Logger.error('Container main-content no encontrado para Itinerario');
-            return;
-        }
-
-        // Usar ItineraryRenderer modular en lugar de código inline
-        try {
-            ItineraryRenderer.renderItinerarySection(mainContent);
-            Logger.success('✅ Itinerario renderizado correctamente');
-        } catch (error) {
-            Logger.error('❌ Error renderizando Itinerario', error);
-            // Fallback al método original si ItineraryRenderer falla
-            this.renderItineraryFallback();
-        }
+        this.renderItineraryFallback();
     }
 
     // Fallback del itinerario original (reducido)

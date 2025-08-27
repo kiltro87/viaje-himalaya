@@ -514,7 +514,7 @@ export class BudgetManager {
                     if (!budgetInstance?.expenseOrchestrator) {
                         throw new Error('ExpenseOrchestrator not available');
                     }
-                    return await budgetInstance.optimizedExpenseManager.update(id, updates);
+                    return await budgetInstance.expenseOrchestrator.update(id, updates);
                 },
                 
                 remove: async (id) => {
@@ -522,7 +522,7 @@ export class BudgetManager {
                     if (!budgetInstance?.expenseOrchestrator) {
                         throw new Error('ExpenseOrchestrator not available');
                     }
-                    return await budgetInstance.optimizedExpenseManager.remove(id);
+                    return await budgetInstance.expenseOrchestrator.remove(id);
                 },
                 
                 // 🚀 MÉTODOS AVANZADOS EXCLUSIVOS
@@ -531,7 +531,7 @@ export class BudgetManager {
                     if (!budgetInstance?.expenseOrchestrator) {
                         throw new Error('ExpenseOrchestrator not available');
                     }
-                    return await budgetInstance.optimizedExpenseManager.addMultiple(expenses);
+                    return await budgetInstance.expenseOrchestrator.addMultiple(expenses);
                 },
                 
                 forceSync: async () => {
