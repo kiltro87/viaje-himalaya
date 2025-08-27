@@ -1,11 +1,11 @@
 /**
- * OptimizedExpenseManager - Gestor Ultra-Optimizado de Gastos
+ * ExpenseOrchestrator - Orquestador de Gastos en Tiempo Real
  * 
- * Sistema avanzado que combina todas las optimizaciones:
+ * Coordina todas las operaciones de gastos integrando:
  * - OptimisticUI para cambios instantáneos
  * - BatchManager para operaciones agrupadas
- * - RealtimeSync para notificaciones instantáneas
- * - Service Worker sync para offline
+ * - RealtimeSync para sincronización entre dispositivos
+ * - Service Worker sync para funcionalidad offline
  * 
  * @author David Ferrer Figueroa
  * @version 4.0.0
@@ -15,7 +15,7 @@
 import Logger from './Logger.js';
 import OptimisticUI from './OptimisticUI.js';
 
-export class OptimizedExpenseManager {
+export class ExpenseOrchestrator {
     constructor(budgetManager) {
         this.budgetManager = budgetManager;
         this.firebaseManager = budgetManager.firebaseManager;
@@ -26,7 +26,7 @@ export class OptimizedExpenseManager {
         // Configurar notificaciones en tiempo real
         this.setupRealtimeNotifications();
         
-        Logger.init('OptimizedExpenseManager initialized');
+        Logger.init('ExpenseOrchestrator initialized');
     }
 
     /**
@@ -365,4 +365,4 @@ export class OptimizedExpenseManager {
     }
 }
 
-export default OptimizedExpenseManager;
+export default ExpenseOrchestrator;

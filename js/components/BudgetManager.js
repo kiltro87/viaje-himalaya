@@ -30,7 +30,7 @@ import OptimisticUI from '../utils/OptimisticUI.js';
 import BatchManager from '../utils/BatchManager.js';
 import { HeaderRenderer } from './renderers/HeaderRenderer.js';
 import RealtimeSync from '../utils/RealtimeSync.js';
-import OptimizedExpenseManager from '../utils/OptimizedExpenseManager.js';
+import { ExpenseOrchestrator } from '../utils/ExpenseOrchestrator.js';
 
 export class BudgetManager {
     /**
@@ -68,7 +68,7 @@ export class BudgetManager {
         this.realtimeSync = new RealtimeSync(this.firebaseManager);
         
         // 🎯 EXPENSE MANAGER ULTRA-OPTIMIZADO
-        this.optimizedExpenseManager = new OptimizedExpenseManager(this);
+        this.expenseOrchestrator = new ExpenseOrchestrator(this);
         
         // Configurar callbacks del sistema de tiempo real
         this.setupAdvancedSyncCallbacks();
@@ -495,24 +495,24 @@ export class BudgetManager {
                 // ⚡ MÉTODOS OPTIMIZADOS CON OPTIMISTIC UI
                 add: async (expense) => {
                     const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.optimizedExpenseManager) {
-                        throw new Error('OptimizedExpenseManager not available');
+                    if (!budgetInstance?.expenseOrchestrator) {
+                        throw new Error('ExpenseOrchestrator not available');
                     }
                     return await budgetInstance.optimizedExpenseManager.add(expense);
                 },
                 
                 update: async (id, updates) => {
                     const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.optimizedExpenseManager) {
-                        throw new Error('OptimizedExpenseManager not available');
+                    if (!budgetInstance?.expenseOrchestrator) {
+                        throw new Error('ExpenseOrchestrator not available');
                     }
                     return await budgetInstance.optimizedExpenseManager.update(id, updates);
                 },
                 
                 remove: async (id) => {
                     const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.optimizedExpenseManager) {
-                        throw new Error('OptimizedExpenseManager not available');
+                    if (!budgetInstance?.expenseOrchestrator) {
+                        throw new Error('ExpenseOrchestrator not available');
                     }
                     return await budgetInstance.optimizedExpenseManager.remove(id);
                 },
@@ -520,26 +520,26 @@ export class BudgetManager {
                 // 🚀 MÉTODOS AVANZADOS EXCLUSIVOS
                 addMultiple: async (expenses) => {
                     const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.optimizedExpenseManager) {
-                        throw new Error('OptimizedExpenseManager not available');
+                    if (!budgetInstance?.expenseOrchestrator) {
+                        throw new Error('ExpenseOrchestrator not available');
                     }
                     return await budgetInstance.optimizedExpenseManager.addMultiple(expenses);
                 },
                 
                 forceSync: async () => {
                     const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.optimizedExpenseManager) {
-                        throw new Error('OptimizedExpenseManager not available');
+                    if (!budgetInstance?.expenseOrchestrator) {
+                        throw new Error('ExpenseOrchestrator not available');
                     }
-                    return await budgetInstance.optimizedExpenseManager.forceSync();
+                    return await budgetInstance.expenseOrchestrator.forceSync();
                 },
                 
                 getStats: () => {
                     const budgetInstance = window.budgetInstance;
-                    if (!budgetInstance?.optimizedExpenseManager) {
-                        return { error: 'OptimizedExpenseManager not available' };
+                    if (!budgetInstance?.expenseOrchestrator) {
+                        return { error: 'ExpenseOrchestrator not available' };
                     }
-                    return budgetInstance.optimizedExpenseManager.getPerformanceStats();
+                    return budgetInstance.expenseOrchestrator.getPerformanceStats();
                 }
             };
         }
