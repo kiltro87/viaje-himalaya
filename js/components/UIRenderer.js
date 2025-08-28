@@ -1869,51 +1869,99 @@ export class UIRenderer {
 
         // Renderizar packing list REAL
         if (packingManager) {
-            // Usar el método render o updateUI existente en el PackingListManager
-            packingManager.updateUI();
-            
-            // Si necesitamos un contenedor específico, creamos uno compacto
-            const allItems = packingManager.localCache || {};
-            const checkedCount = Object.values(allItems).filter(checked => checked).length;
-            const totalCount = Object.keys(allItems).length;
-            
-            packingContent.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center p-3 bg-teal-50 dark:bg-teal-900/20 radius-standard">
-                        <span class="font-medium text-teal-800 dark:text-teal-200">Progreso del equipaje</span>
-                        <span class="text-2xl font-bold text-teal-600 dark:text-teal-400">${checkedCount}/${totalCount}</span>
-                    </div>
-                    <div class="text-center">
-                        <button id="show-full-packing-list" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
-                            Ver Lista Completa
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Event listener para mostrar lista completa
-            const showButton = document.getElementById('show-full-packing-list');
-            if (showButton) {
-                showButton.addEventListener('click', () => {
-                    // La lista completa ahora está en la misma vista (planificacion)
-                    // Simplemente hacer scroll a la sección de packing list
-                    const packingSection = document.getElementById('packing-list-content');
-                    if (packingSection) {
-                        packingSection.scrollIntoView({ behavior: 'smooth' });
-                        // Mostrar mensaje informativo
-                        packingSection.innerHTML = `
-                            <div class="text-center py-8">
-                                <p class="text-slate-600 dark:text-slate-400 mb-4">
-                                    📍 Ya estás en la vista completa de Planificación.<br>
-                                    La lista de equipaje completa se puede gestionar desde aquí.
-                                </p>
-                                <button onclick="window.location.reload()" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
-                                    Recargar Lista
+            try {
+                // Acceder directamente al cache para generar estadísticas
+                const allItems = packingManager.localCache || {};
+                const checkedCount = Object.values(allItems).filter(checked => checked).length;
+                const totalCount = Object.keys(allItems).length;
+                
+                Logger.debug(`PackingList stats: ${checkedCount}/${totalCount} items`);
+                
+                if (totalCount === 0) {
+                    // Si no hay items, mostrar mensaje de inicialización
+                    packingContent.innerHTML = `
+                        <div class="text-center py-8">
+                            <div class="mb-4">
+                                <span class="material-symbols-outlined text-4xl text-slate-400">inventory_2</span>
+                            </div>
+                            <p class="text-slate-600 dark:text-slate-400 mb-4">Inicializando lista de equipaje...</p>
+                            <button id="init-packing-list" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
+                                Crear Lista de Equipaje
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Event listener para inicializar
+                    const initButton = document.getElementById('init-packing-list');
+                    if (initButton) {
+                        initButton.addEventListener('click', async () => {
+                            try {
+                                // Crear algunos items de ejemplo si no existen
+                                await packingManager.toggleItem('pasaporte', false);
+                                await packingManager.toggleItem('ropa-termica', false);
+                                await packingManager.toggleItem('medicamentos', false);
+                                await packingManager.toggleItem('camara', false);
+                                await packingManager.toggleItem('cargadores', false);
+                                
+                                Logger.info('🎒 Packing list initialized with sample items');
+                                
+                                // Recargar la vista
+                                this.loadPackingList();
+                            } catch (error) {
+                                Logger.error('Error initializing packing list:', error);
+                            }
+                        });
+                    }
+                } else {
+                    // Mostrar resumen y lista básica
+                    const itemEntries = Object.entries(allItems);
+                    const recentItems = itemEntries.slice(0, 3); // Mostrar solo 3 items
+                    
+                    packingContent.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-3 bg-teal-50 dark:bg-teal-900/20 radius-standard">
+                                <span class="font-medium text-teal-800 dark:text-teal-200">Progreso del equipaje</span>
+                                <span class="text-2xl font-bold text-teal-600 dark:text-teal-400">${checkedCount}/${totalCount}</span>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <h4 class="font-medium text-slate-700 dark:text-slate-300">Algunos items:</h4>
+                                ${recentItems.map(([itemKey, checked]) => `
+                                    <div class="flex items-center gap-2 text-sm">
+                                        <span class="w-4 h-4 ${checked ? 'text-green-600' : 'text-slate-400'}">${checked ? '✅' : '☐'}</span>
+                                        <span class="text-slate-600 dark:text-slate-400">${itemKey.replace(/-/g, ' ')}</span>
+                                    </div>
+                                `).join('')}
+                                ${totalCount > 3 ? `<div class="text-xs text-slate-500">... y ${totalCount - 3} items más</div>` : ''}
+                            </div>
+                            
+                            <div class="text-center">
+                                <button id="show-full-packing-list" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
+                                    Gestionar Lista Completa
                                 </button>
                             </div>
-                        `;
+                        </div>
+                    `;
+                    
+                    // Event listener para mostrar lista completa
+                    const showButton = document.getElementById('show-full-packing-list');
+                    if (showButton) {
+                        showButton.addEventListener('click', () => {
+                            // Renderizar lista completa expandida
+                            this.renderFullPackingList(packingContent, packingManager);
+                        });
                     }
-                });
+                }
+            } catch (error) {
+                Logger.error('Error rendering packing list:', error);
+                packingContent.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-red-600 dark:text-red-400 mb-4">Error al cargar la lista de equipaje</p>
+                        <button onclick="window.location.reload()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white radius-standard transition-standard">
+                            Reintentar
+                        </button>
+                    </div>
+                `;
             }
         } else {
             // Fallback si no hay PackingListManager
@@ -1922,6 +1970,109 @@ export class UIRenderer {
                     <p class="text-slate-600 dark:text-slate-400 mb-4">Lista de equipaje no disponible</p>
                     <button class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
                         Activar Lista Completa
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Helper: Renderizar lista completa de equipaje
+     */
+    renderFullPackingList(container, packingManager) {
+        try {
+            const allItems = packingManager.localCache || {};
+            const itemEntries = Object.entries(allItems);
+            
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-lg font-bold text-slate-900 dark:text-white">Lista Completa de Equipaje</h4>
+                        <button id="collapse-packing-list" class="text-sm text-teal-600 dark:text-teal-400 hover:underline">
+                            ← Volver al resumen
+                        </button>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-3">
+                        ${itemEntries.map(([itemKey, checked]) => `
+                            <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 radius-standard hover:bg-slate-100 dark:hover:bg-slate-600 transition-standard">
+                                <input type="checkbox" 
+                                       id="item-${itemKey}" 
+                                       ${checked ? 'checked' : ''} 
+                                       data-item-key="${itemKey}"
+                                       class="w-5 h-5 text-teal-600 dark:text-teal-400">
+                                <label for="item-${itemKey}" class="flex-1 text-slate-700 dark:text-slate-300 cursor-pointer ${checked ? 'line-through text-slate-400' : ''}">
+                                    ${itemKey.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button id="add-packing-item" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white radius-standard transition-standard">
+                            + Agregar Item
+                        </button>
+                        <button id="save-packing-list" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard">
+                            💾 Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Event listeners
+            const collapseBtn = document.getElementById('collapse-packing-list');
+            if (collapseBtn) {
+                collapseBtn.addEventListener('click', () => {
+                    this.loadPackingList(); // Volver al resumen
+                });
+            }
+            
+            // Listeners para checkboxes
+            itemEntries.forEach(([itemKey]) => {
+                const checkbox = document.getElementById(`item-${itemKey}`);
+                if (checkbox) {
+                    checkbox.addEventListener('change', async (e) => {
+                        try {
+                            await packingManager.toggleItem(itemKey, e.target.checked);
+                            
+                            // Actualizar visualmente
+                            const label = checkbox.nextElementSibling;
+                            if (label) {
+                                if (e.target.checked) {
+                                    label.classList.add('line-through', 'text-slate-400');
+                                } else {
+                                    label.classList.remove('line-through', 'text-slate-400');
+                                }
+                            }
+                        } catch (error) {
+                            Logger.error('Error toggling item:', error);
+                            // Revertir checkbox en caso de error
+                            checkbox.checked = !checkbox.checked;
+                        }
+                    });
+                }
+            });
+            
+            // Agregar nuevo item
+            const addBtn = document.getElementById('add-packing-item');
+            if (addBtn) {
+                addBtn.addEventListener('click', () => {
+                    const itemName = prompt('Nombre del nuevo item:');
+                    if (itemName && itemName.trim()) {
+                        const itemKey = itemName.trim().toLowerCase().replace(/\s+/g, '-');
+                        packingManager.toggleItem(itemKey, false);
+                        this.renderFullPackingList(container, packingManager);
+                    }
+                });
+            }
+            
+        } catch (error) {
+            Logger.error('Error rendering full packing list:', error);
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-red-600 dark:text-red-400 mb-4">Error al mostrar la lista completa</p>
+                    <button onclick="this.loadPackingList()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white radius-standard transition-standard">
+                        Volver al resumen
                     </button>
                 </div>
             `;
