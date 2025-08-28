@@ -192,10 +192,10 @@ export class ItineraryRenderer {
             return `
                 <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer group hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 ease-out overflow-hidden">
                     <div class="relative h-56 md:h-64 lg:h-72 overflow-hidden">
-                        <img loading="lazy" src="${day.image}" alt="${day.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f46e5/ffffff?text=Imagen';">
+                        <img loading="lazy" src="${day.image}" alt="${day.title}" class="w-full h-full object-cover transition-transform duration-300" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f46e5/ffffff?text=Imagen';">
                         
-                        <!-- Overlay gradiente en hover -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <!-- Overlay sutil en hover -->
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                         
                         <!-- Badges superiores -->
                         <div class="absolute top-4 left-4 flex gap-2">

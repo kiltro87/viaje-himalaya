@@ -318,7 +318,7 @@ export class UIRenderer {
                 </div>
 
                 <!-- Resumen del día actual -->
-                <div id="today-main-content" class="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
+                <div id="today-main-content" class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
                     <!-- El contenido se generará dinámicamente -->
                 </div>
 
@@ -1460,7 +1460,7 @@ export class UIRenderer {
             
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 ${enhancedWeatherData.map(location => `
-                    <div class="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 group">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-200">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <span class="material-symbols-outlined text-2xl ${location.color}">${location.icon}</span>
@@ -1477,12 +1477,12 @@ export class UIRenderer {
                         
                         <!-- Temperaturas principales -->
                         <div class="grid grid-cols-2 gap-3 mb-4">
-                            <div class="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-xl p-3 text-center border border-orange-200/50 dark:border-orange-700/50 hover:scale-105 transition-transform duration-300">
+                            <div class="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-center border border-orange-200 dark:border-orange-700 hover:shadow-md transition-all duration-200">
                                 <span class="material-symbols-outlined text-orange-600 text-sm animate-pulse">wb_sunny</span>
                                 <div class="text-sm font-medium text-orange-800 dark:text-orange-200">Día</div>
                                 <div class="text-lg font-bold text-orange-900 dark:text-orange-100">${location.dayTemp}</div>
                             </div>
-                            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-3 text-center border border-blue-200/50 dark:border-blue-700/50 hover:scale-105 transition-transform duration-300">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center border border-blue-200 dark:border-blue-700 hover:shadow-md transition-all duration-200">
                                 <span class="material-symbols-outlined text-blue-600 text-sm">nights_stay</span>
                                 <div class="text-sm font-medium text-blue-800 dark:text-blue-200">Noche</div>
                                 <div class="text-lg font-bold text-blue-900 dark:text-blue-100">${location.nightTemp}</div>

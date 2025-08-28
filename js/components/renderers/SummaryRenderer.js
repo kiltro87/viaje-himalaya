@@ -67,32 +67,19 @@ export class SummaryRenderer {
 
         mainContent.innerHTML = `
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
-                <!-- Header con imagen de fondo (exacto del original) -->
-                <header class="relative h-96 rounded-3xl overflow-hidden shadow-2xl shadow-slate-900/20 border border-slate-200 dark:border-slate-700">
-                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 ease-out" style="background-image: url('https://www.lasociedadgeografica.com/blog/uploads/2019/10/bhutan-peaceful-tours-nido-del-tigre.jpg'); transform: scale(1.1);"></div>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20"></div>
-                    
-                    <!-- Floating elements -->
-                    <div class="absolute top-6 right-6 flex gap-3">
-                        <div class="bg-white/20 backdrop-blur-sm rounded-full p-3 shadow-lg">
-                            <span class="material-symbols-outlined text-white text-lg">flight_takeoff</span>
-                        </div>
-                        <div class="bg-white/20 backdrop-blur-sm rounded-full p-3 shadow-lg">
-                            <span class="material-symbols-outlined text-white text-lg">landscape</span>
+                <!-- Header simplificado -->
+                <header class="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="material-symbols-outlined text-6xl text-blue-600 dark:text-blue-400">hiking</span>
+                        <div>
+                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Mi Aventura en el Himalaya</h1>
+                            <p class="text-lg text-slate-600 dark:text-slate-400">Un recorrido para descubrir Nepal y Bután</p>
                         </div>
                     </div>
                     
-                    <div class="relative h-full flex flex-col justify-end p-4 sm:p-6 md:p-8 lg:p-12 text-white">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                                <span class="material-symbols-outlined text-white text-lg sm:text-xl">hiking</span>
-                            </div>
-                            <div class="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                                <span id="trip-dates" class="text-sm font-medium">Cargando fechas...</span>
-                            </div>
-                        </div>
-                        <h1 class="text-4xl md:text-6xl font-black leading-tight mb-3">Mi Aventura en el Himalaya</h1>
-                        <p class="text-lg md:text-xl max-w-2xl opacity-90">Un recorrido para descubrir Nepal y Bután</p>
+                    <div class="flex items-center gap-2 text-sm">
+                        <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">schedule</span>
+                        <span id="trip-dates" class="text-slate-600 dark:text-slate-400">Cargando fechas...</span>
                     </div>
                 </header>
 
