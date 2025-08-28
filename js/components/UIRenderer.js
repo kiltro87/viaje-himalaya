@@ -1736,6 +1736,17 @@ export class UIRenderer {
                         <p class="text-slate-600 dark:text-slate-400">Cargando lista de equipaje...</p>
                     </div>
                 </div>
+
+                <!-- Sección de Agencias de Viaje -->
+                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-orange-600 dark:text-orange-400">business</span>
+                        Agencias de Viaje
+                    </h2>
+                    <div id="agencies-content">
+                        <!-- Las agencias se renderizarán aquí -->
+                    </div>
+                </div>
             </div>
         `;
 
@@ -1747,6 +1758,9 @@ export class UIRenderer {
 
         // Cargar packing list (si existe)
         this.loadPackingList();
+        
+        // Cargar agencias de viaje
+        this.loadAgencies();
     }
 
     /**
@@ -1788,7 +1802,19 @@ export class UIRenderer {
         // Renderizar el resumen/analytics en la sección dedicada
         const summaryStats = document.getElementById('summary-stats');
         if (summaryStats) {
-            this.summaryRenderer.renderSummary(summaryStats);
+            // El SummaryRenderer renderiza en main-content, asi que temporalmente lo cambiamos
+            const originalContent = document.getElementById('main-content');
+            const tempDiv = document.createElement('div');
+            tempDiv.id = 'main-content';
+            summaryStats.appendChild(tempDiv);
+            
+            this.summaryRenderer.renderSummary();
+            
+            // Mover el contenido generado y restaurar el original
+            summaryStats.innerHTML = tempDiv.innerHTML;
+            if (originalContent) {
+                originalContent.id = 'main-content';
+            }
         }
 
         // Renderizar el mapa
@@ -1799,31 +1825,128 @@ export class UIRenderer {
     }
 
     /**
-     * Helper: Cargar packing list
+     * Helper: Cargar packing list REAL con PackingListManager
      */
-    loadPackingList() {
+    async loadPackingList() {
         const packingContent = document.getElementById('packing-list-content');
         if (!packingContent) return;
 
-        // Placeholder para packing list - se puede integrar con PackingListManager
-        packingContent.innerHTML = `
-            <div class="space-y-3">
-                <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 radius-standard">
-                    <input type="checkbox" class="w-5 h-5 text-teal-600">
-                    <span class="text-slate-700 dark:text-slate-300">Pasaporte y documentos</span>
+        // Inicializar PackingListManager si no existe (como en el original)
+        let packingManager = stateManager.getPackingListManager();
+        if (!packingManager) {
+            try {
+                const { getPackingListManager } = await import('../utils/PackingListManager.js');
+                packingManager = getPackingListManager();
+                stateManager.setPackingListManager(packingManager);
+                
+                // Inicializar con FirebaseManager si está disponible
+                const firebaseManager = stateManager.getFirebaseManager();
+                if (firebaseManager) {
+                    await packingManager.initialize(firebaseManager);
+                }
+            } catch (error) {
+                Logger.warning('PackingListManager not available, using simple implementation');
+                packingManager = null;
+            }
+        }
+
+        // Renderizar packing list REAL
+        if (packingManager) {
+            // Usar el método render o updateUI existente en el PackingListManager
+            packingManager.updateUI();
+            
+            // Si necesitamos un contenedor específico, creamos uno compacto
+            const allItems = packingManager.localCache || {};
+            const checkedCount = Object.values(allItems).filter(checked => checked).length;
+            const totalCount = Object.keys(allItems).length;
+            
+            packingContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-teal-50 dark:bg-teal-900/20 radius-standard">
+                        <span class="font-medium text-teal-800 dark:text-teal-200">Progreso del equipaje</span>
+                        <span class="text-2xl font-bold text-teal-600 dark:text-teal-400">${checkedCount}/${totalCount}</span>
+                    </div>
+                    <div class="text-center">
+                        <button id="show-full-packing-list" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
+                            Ver Lista Completa
+                        </button>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 radius-standard">
-                    <input type="checkbox" class="w-5 h-5 text-teal-600">
-                    <span class="text-slate-700 dark:text-slate-300">Ropa de montaña</span>
-                </div>
-                <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 radius-standard">
-                    <input type="checkbox" class="w-5 h-5 text-teal-600">
-                    <span class="text-slate-700 dark:text-slate-300">Medicamentos</span>
-                </div>
-                <div class="text-center pt-4">
+            `;
+            
+            // Event listener para mostrar lista completa
+            const showButton = document.getElementById('show-full-packing-list');
+            if (showButton) {
+                showButton.addEventListener('click', () => {
+                    // Aquí se podría abrir un modal o redirigir a la vista completa
+                    alert('Funcionalidad de lista completa - por implementar');
+                });
+            }
+        } else {
+            // Fallback si no hay PackingListManager
+            packingContent.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-slate-600 dark:text-slate-400 mb-4">Lista de equipaje no disponible</p>
                     <button class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
-                        Gestionar Lista Completa
+                        Activar Lista Completa
                     </button>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Helper: Cargar agencias de viaje
+     */
+    loadAgencies() {
+        const agenciesContent = document.getElementById('agencies-content');
+        if (!agenciesContent) return;
+
+        // Llamar al método renderAgencies existente que ya tenemos en el UIRenderer
+        const agencies = tripConfig.agenciesData;
+        
+        agenciesContent.innerHTML = `
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- WeRoad Nepal -->
+                <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-2xl ${agencies.weroad.color}">${agencies.weroad.icon}</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">${agencies.weroad.name}</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">${agencies.weroad.tour}</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-700 dark:text-slate-300 mb-4">${agencies.weroad.description}</p>
+                    <div class="flex gap-3">
+                        <a href="${agencies.weroad.url}" target="_blank" 
+                           class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white radius-standard transition-standard text-sm">
+                            Ver Paquete
+                        </a>
+                        <span class="px-3 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 radius-standard text-sm font-medium">
+                            ${agencies.weroad.price}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Best of Bhutan -->
+                <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-2xl ${agencies.bhutan.color}">${agencies.bhutan.icon}</span>
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">${agencies.bhutan.name}</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">${agencies.bhutan.tour}</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-700 dark:text-slate-300 mb-4">${agencies.bhutan.description}</p>
+                    <div class="flex gap-3">
+                        <a href="${agencies.bhutan.url}" target="_blank" 
+                           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard text-sm">
+                            Ver Tour
+                        </a>
+                        <span class="px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 radius-standard text-sm font-medium">
+                            ${agencies.bhutan.price}
+                        </span>
+                    </div>
                 </div>
             </div>
         `;
