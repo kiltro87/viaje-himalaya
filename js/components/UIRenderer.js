@@ -1816,7 +1816,7 @@ export class UIRenderer {
             </div>
         `;
 
-        // Renderizar el resumen/analytics COMPLETO usando SummaryRenderer
+        // Renderizar el resumen/analytics COMPLETO usando SummaryRenderer (SIN sección duplicada "Hoy")
         const summaryStats = document.getElementById('summary-stats');
         if (summaryStats) {
             // Crear un contenedor temporal para que SummaryRenderer funcione
@@ -1832,39 +1832,45 @@ export class UIRenderer {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = generatedContent;
             
-            // Extraer solo las secciones de contenido (sin header)
+            // Extraer solo las secciones de contenido (sin header y sin "Qué hacemos hoy")
             const sections = tempDiv.querySelectorAll('section');
             summaryStats.innerHTML = '';
             sections.forEach(section => {
-                summaryStats.appendChild(section.cloneNode(true));
+                // Filtrar la sección "¿Qué hacemos hoy?" que está duplicada con la vista HOY
+                const sectionText = section.textContent || '';
+                if (!sectionText.includes('¿Qué hacemos hoy?')) {
+                    summaryStats.appendChild(section.cloneNode(true));
+                }
             });
             
             // Limpiar contenedor temporal
             document.body.removeChild(tempContainer);
         }
 
-        // Renderizar el mapa usando la instancia global importada
-        const mapContainer = document.getElementById('map-container');
-        if (mapContainer) {
-            // Usar mapRenderer importado globalmente
-            try {
-                mapRenderer.renderMap(mapContainer);
-                Logger.success('🗺️ Map rendered successfully in tracking view');
-            } catch (error) {
-                Logger.error('❌ Error rendering map in tracking view:', error);
-                mapContainer.innerHTML = `
-                    <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
-                        <div class="text-center">
-                            <span class="material-symbols-outlined text-6xl mb-4 block">map</span>
-                            <p>Error al cargar el mapa</p>
-                            <button onclick="window.location.reload()" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard">
-                                Reintentar
-                            </button>
+        // Renderizar el mapa usando la instancia global importada (DESPUÉS del contenido)
+        setTimeout(() => {
+            const mapContainer = document.getElementById('map-container');
+            if (mapContainer) {
+                // Usar mapRenderer importado globalmente
+                try {
+                    mapRenderer.renderMap(mapContainer);
+                    Logger.success('🗺️ Map rendered successfully in tracking view');
+                } catch (error) {
+                    Logger.error('❌ Error rendering map in tracking view:', error);
+                    mapContainer.innerHTML = `
+                        <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
+                            <div class="text-center">
+                                <span class="material-symbols-outlined text-6xl mb-4 block">map</span>
+                                <p>Error al cargar el mapa</p>
+                                <button onclick="window.location.reload()" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard">
+                                    Reintentar
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             }
-        }
+        }, 300); // Delay para asegurar que el DOM esté listo
     }
 
     /**
