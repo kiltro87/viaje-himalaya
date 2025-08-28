@@ -643,7 +643,7 @@ export class BudgetManager {
             
             <!-- Contenido Dinámico -->
             <div id="budget-content" class="mb-6" style="display: none;">
-                <div class="text-center text-slate-500 dark:text-slate-400 py-8 bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600">
+                <div class="text-center text-slate-500 dark:text-slate-400 py-8 bg-slate-50 dark:bg-slate-800 radius-card border-2 border-dashed border-slate-300 dark:border-slate-600">
                     <span class="material-symbols-outlined text-4xl mb-2 opacity-50">analytics</span>
                     <p class="text-lg font-medium">Haz clic en las categorías para ver el análisis</p>
                 </div>

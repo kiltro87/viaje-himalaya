@@ -181,7 +181,7 @@ export class MapRenderer {
         
         return L.divIcon({
             className: 'custom-div-icon',
-            html: `<div class="w-10 h-10 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-200 dark:border-slate-600">
+            html: `<div class="w-10 h-10 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-card border-2 border-slate-200 dark:border-slate-600">
                 <span class="material-symbols-outlined text-lg ${iconColor}">${materialIcon}</span>
             </div>`,
             iconSize: [40, 40],
@@ -396,7 +396,7 @@ export class MapRenderer {
     createMainModalMarker(map, coords, title) {
         const mainIcon = L.divIcon({
             className: 'custom-div-icon',
-            html: `<div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+            html: `<div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-card border-2 border-white">
                 📍
             </div>`,
             iconSize: [40, 40],
@@ -426,7 +426,7 @@ export class MapRenderer {
         nearbyPlaces.forEach(place => {
             const placeIcon = L.divIcon({
                 className: 'custom-div-icon',
-                html: `<div class="w-8 h-8 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-200 dark:border-slate-600">
+                html: `<div class="w-8 h-8 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-card border-2 border-slate-200 dark:border-slate-600">
                     ${this.getActivityIconHTML(place.icon, 'text-sm')}
                 </div>`,
                 iconSize: [32, 32],

@@ -190,12 +190,12 @@ export class ItineraryRenderer {
         
         if (day.image) {
             return `
-                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 radius-card shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer group shadow-card-hover  transition-standard overflow-hidden">
+                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 cursor-pointer group shadow-card-hover  transition-standard overflow-hidden">
                     <div class="relative h-56 md:h-64 lg:h-72 overflow-hidden">
                         <img loading="lazy" src="${day.image}" alt="${day.title}" class="w-full h-full object-cover transition-standard" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f46e5/ffffff?text=Imagen';">
                         
                         <!-- Overlay sutil en hover -->
-                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-standard"></div>
                         
                         <!-- Badges superiores -->
                         <div class="absolute top-4 left-4 flex gap-2">
@@ -258,7 +258,7 @@ export class ItineraryRenderer {
             `;
         } else {
             return `
-                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 radius-card shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer group shadow-card-hover  transition-standard overflow-hidden">
+                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 cursor-pointer group shadow-card-hover  transition-standard overflow-hidden">
                     <div class="p-6 space-y-4">
                         <!-- Header con badges -->
                         <div class="flex items-center justify-between mb-4">

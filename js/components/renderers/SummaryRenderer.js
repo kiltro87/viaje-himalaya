@@ -666,7 +666,7 @@ export class SummaryRenderer {
                 </div>`;
 
             const flightCardHTML = (flight) => `
-                <div class="bg-white dark:bg-slate-800 p-6 radius-card shadow-card border border-slate-200 dark:border-slate-700 shadow-card-hover transition-all duration-200">
+                <div class="bg-white dark:bg-slate-800 p-6 radius-card shadow-card border border-slate-200 dark:border-slate-700 shadow-card-hover transition-standard">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight</span>
                         <div>

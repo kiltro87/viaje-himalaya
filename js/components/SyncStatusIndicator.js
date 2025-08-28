@@ -45,7 +45,7 @@ export class SyncStatusIndicator {
             px-3 py-2 rounded-full 
             text-sm font-medium 
             transition-all var(--transition-fast) 
-            shadow-lg border
+            shadow-card border
             transform translate-y-0 opacity-0
             pointer-events-none
         `.replace(/\s+/g, ' ').trim();
@@ -191,7 +191,7 @@ export class SyncStatusIndicator {
             px-3 py-2 rounded-full 
             text-sm font-medium 
             transition-all var(--transition-fast) 
-            shadow-lg border
+            shadow-card border
             transform translate-y-0 opacity-100
         `.replace(/\s+/g, ' ').trim();
     }

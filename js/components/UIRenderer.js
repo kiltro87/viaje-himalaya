@@ -662,7 +662,7 @@ export class UIRenderer {
                     </div>
                     
                     <!-- Tarjeta principal del día -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 mb-6">
+                    <div class="bg-white dark:bg-slate-800 radius-card p-6 border border-slate-200 dark:border-slate-700 mb-6">
                         <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">${currentDayData.title}</h3>
                         <p class="text-slate-600 dark:text-slate-400 mb-6 text-lg leading-relaxed">${currentDayData.description}</p>`;
                         
@@ -699,7 +699,7 @@ export class UIRenderer {
                 
                 if (currentDayData.consejo) {
                     contentHTML += `
-                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800">
+                        <div class="bg-blue-50 dark:bg-blue-900/20 radius-card p-6 border border-blue-200 dark:border-blue-800">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="material-symbols-outlined text-lg text-blue-600 dark:text-blue-400">lightbulb</span>
                                 <h4 class="font-semibold text-slate-900 dark:text-white">Consejo</h4>
@@ -710,7 +710,7 @@ export class UIRenderer {
                 
                 if (currentDayData.bocado) {
                     contentHTML += `
-                        <div class="bg-green-50 dark:bg-green-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800">
+                        <div class="bg-green-50 dark:bg-green-900/20 radius-card p-6 border border-green-200 dark:border-green-800">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="material-symbols-outlined text-lg text-green-600 dark:text-green-400">restaurant</span>
                                 <h4 class="font-semibold text-slate-900 dark:text-white">Bocado</h4>
@@ -734,7 +734,7 @@ export class UIRenderer {
                         <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información del Viaje</h2>
                     </div>
                     
-                    <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 text-center">
+                    <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 text-center">
                         <span class="material-symbols-outlined text-6xl text-slate-400 dark:text-slate-500 mb-4 block">schedule</span>
                         <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">${statusTitle}</h3>
                         <p class="text-slate-600 dark:text-slate-400">${statusMessage}</p>
@@ -776,7 +776,7 @@ export class UIRenderer {
     generatePrePostTripContent(title, message) {
         return `
             <div class="w-full max-w-4xl mx-auto p-6 text-center">
-                <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+                <div class="bg-white dark:bg-slate-800 radius-card p-8 shadow-card border border-slate-200 dark:border-slate-700">
                     <span class="material-symbols-outlined text-6xl text-slate-400 mb-4 block">event</span>
                     <h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">${title}</h1>
                     <p class="text-slate-600 dark:text-slate-400">${message}</p>
@@ -1021,7 +1021,7 @@ export class UIRenderer {
 
         const modalHTML = `
             <div id="itinerary-modal-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center p-4" style="pointer-events: auto;">
-                <div class="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-[999999]" style="pointer-events: auto;">
+                <div class="bg-white dark:bg-slate-900 radius-card w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-[999999]" style="pointer-events: auto;">
                     <button id="close-modal-btn" class="absolute top-4 right-4 z-[999999] p-2 rounded-full bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-700 transition-colors">
                         <span class="material-symbols-outlined">close</span>
                     </button>
@@ -1118,7 +1118,7 @@ export class UIRenderer {
 
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- WeRoad Nepal -->
-                <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
+                <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl ${agencies.weroad.color}">${agencies.weroad.icon}</span>
                         <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${agencies.weroad.name}</h3>
@@ -1140,7 +1140,7 @@ export class UIRenderer {
                 </div>
 
                 <!-- Best of Bhutan -->
-                <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
+                <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl ${agencies.bhutan.color}">${agencies.bhutan.icon}</span>
                         <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${agencies.bhutan.name}</h3>
@@ -1162,7 +1162,7 @@ export class UIRenderer {
                 </div>
 
                 <!-- Seguro de Viaje -->
-                <div class="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
+                <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl ${agencies.insurance.color}">${agencies.insurance.icon}</span>
                         <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${agencies.insurance.name}</h3>
@@ -1180,7 +1180,7 @@ export class UIRenderer {
                 </div>
 
                 <!-- Información de Emergencia -->
-                <div class="bg-red-50 dark:bg-red-900/20 rounded-2xl p-6 border border-red-200 dark:border-red-800">
+                <div class="bg-red-50 dark:bg-red-900/20 radius-card p-6 border border-red-200 dark:border-red-800">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl text-red-600 dark:text-red-400">emergency</span>
                         <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Información de Emergencia</h3>
@@ -1477,12 +1477,12 @@ export class UIRenderer {
                         
                         <!-- Temperaturas principales -->
                         <div class="grid grid-cols-2 gap-3 mb-4">
-                            <div class="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-center border border-orange-200 dark:border-orange-700 hover:shadow-md transition-all duration-200">
+                            <div class="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-center border border-orange-200 dark:border-orange-700 hover:shadow-md transition-standard">
                                 <span class="material-symbols-outlined text-orange-600 text-sm animate-pulse">wb_sunny</span>
                                 <div class="text-sm font-medium text-orange-800 dark:text-orange-200">Día</div>
                                 <div class="text-lg font-bold text-orange-900 dark:text-orange-100">${location.dayTemp}</div>
                             </div>
-                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center border border-blue-200 dark:border-blue-700 hover:shadow-md transition-all duration-200">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center border border-blue-200 dark:border-blue-700 hover:shadow-md transition-standard">
                                 <span class="material-symbols-outlined text-blue-600 text-sm">nights_stay</span>
                                 <div class="text-sm font-medium text-blue-800 dark:text-blue-200">Noche</div>
                                 <div class="text-lg font-bold text-blue-900 dark:text-blue-100">${location.nightTemp}</div>
@@ -1560,25 +1560,25 @@ export class UIRenderer {
             
             return `
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <div class="bg-white dark:bg-slate-800 p-6 radius-card shadow-card border border-slate-200 dark:border-slate-700 text-center">
                         <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400 mx-auto mb-4 block">location_on</span>
                         <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Origen</h3>
                         <p class="text-slate-600 dark:text-slate-400">${flightInfo.origin}</p>
                     </div>
                     
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <div class="bg-white dark:bg-slate-800 p-6 radius-card shadow-card border border-slate-200 dark:border-slate-700 text-center">
                         <span class="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400 mx-auto mb-4 block">flight_land</span>
                         <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Destino</h3>
                         <p class="text-slate-600 dark:text-slate-400">${flightInfo.destination}</p>
                     </div>
                     
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <div class="bg-white dark:bg-slate-800 p-6 radius-card shadow-card border border-slate-200 dark:border-slate-700 text-center">
                         <span class="material-symbols-outlined text-4xl text-orange-600 dark:text-orange-400 mx-auto mb-4 block">schedule</span>
                         <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Horario</h3>
                         <p class="text-slate-600 dark:text-slate-400">${flightInfo.time}</p>
                     </div>
                     
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <div class="bg-white dark:bg-slate-800 p-6 radius-card shadow-card border border-slate-200 dark:border-slate-700 text-center">
                         <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 mx-auto mb-4 block">airplane_ticket</span>
                         <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">Aerolínea</h3>
                         <p class="text-slate-600 dark:text-slate-400">${flightInfo.airline}</p>
