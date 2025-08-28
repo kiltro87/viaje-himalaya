@@ -35,6 +35,7 @@ import { ExpenseOrchestrator } from '../utils/ExpenseOrchestrator.js';
 import { container } from '../core/DependencyContainer.js';
 import { tripConfig } from '../config/tripConfig.js';
 import { getBudgetCategoryColors } from '../utils/StyleUtils.js';
+import { COLORS, RADIUS, SHADOW } from '../config/DesignTokens.js';
 
 export class BudgetManager {
     /**
