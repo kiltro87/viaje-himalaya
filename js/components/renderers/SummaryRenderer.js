@@ -99,9 +99,7 @@ export class SummaryRenderer {
                 <!-- Panel "Hoy" Dinámico (exacto del original) -->
                 <section class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                            <span class="material-symbols-outlined text-white text-xl">today</span>
-                        </div>
+                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">today</span>
                         <div>
                             <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-200">¿Qué hacemos hoy?</h2>
                             <p class="text-slate-600 dark:text-slate-400" id="today-date">Calculando fecha actual...</p>
@@ -115,30 +113,22 @@ export class SummaryRenderer {
                 <!-- Grid de Estadísticas (exacto del original) -->
                 <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                     <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                            <span class="material-symbols-outlined text-white text-xl">calendar_month</span>
-                        </div>
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl mb-4 block">calendar_month</span>
                         <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">${totalDays}</p>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">días de aventura</p>
                     </div>
                     <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                            <span class="material-symbols-outlined text-white text-xl">public</span>
-                        </div>
+                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl mb-4 block">public</span>
                         <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">${totalCountries}</p>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">países visitados</p>
                     </div>
                     <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                            <span class="material-symbols-outlined text-white text-xl">account_balance_wallet</span>
-                        </div>
+                        <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl mb-4 block">account_balance_wallet</span>
                         <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">€${grandTotal.toFixed(0)}</p>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">presupuesto total</p>
                     </div>
                     <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200 dark:border-slate-700 text-center">
-                        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                            <span class="material-symbols-outlined text-white text-xl">trending_up</span>
-                        </div>
+                        <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 text-3xl mb-4 block">trending_up</span>
                         <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">€${costPerDay.toFixed(0)}</p>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">coste por día</p>
                     </div>
@@ -153,9 +143,7 @@ export class SummaryRenderer {
                 <section class="grid md:grid-cols-2 gap-6 lg:gap-8">
                     <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
                         <div class="flex items-center gap-3 mb-6">
-                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                                <span class="material-symbols-outlined text-white text-xl">info</span>
-                            </div>
+                            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">info</span>
                             <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Información del Viaje</h3>
                         </div>
                         <div class="space-y-4">
@@ -180,9 +168,7 @@ export class SummaryRenderer {
                     
                     <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
                         <div class="flex items-center gap-3 mb-6">
-                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                                <span class="material-symbols-outlined text-white text-xl">trending_up</span>
-                            </div>
+                            <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">trending_up</span>
                             <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Progreso del Viaje</h3>
                         </div>
                         <div class="space-y-4">

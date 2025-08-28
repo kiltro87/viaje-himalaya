@@ -20,6 +20,7 @@
 
 import Logger from './Logger.js';
 import { firebaseConfig, firestoreConfig, isConfigured } from '../config/firebaseConfig.js';
+import stateManager from './StateManager.js';
 
 export class FirebaseManager {
     /**
@@ -32,9 +33,10 @@ export class FirebaseManager {
      */
     constructor() {
         // 🚨 PREVENIR MÚLTIPLES INSTANCIAS DE FIREBASE
-        if (window.firebaseManagerInstance) {
+        const existingInstance = stateManager.getFirebaseManager();
+        if (existingInstance) {
             Logger.warning('FirebaseManager ya existe, retornando instancia existente');
-            return window.firebaseManagerInstance;
+            return existingInstance;
         }
         
         this.db = null;
@@ -53,7 +55,7 @@ export class FirebaseManager {
         Logger.init('FirebaseManager initialized');
         
         // 🚨 ASIGNAR COMO INSTANCIA SINGLETON
-        window.firebaseManagerInstance = this;
+        stateManager.setFirebaseManager(this);
         
         // Verificar configuración de Firebase
         try {

@@ -64,6 +64,9 @@ export class UIRenderer {
         Logger.responsive(`Initial breakpoint detected: ${initialBreakpoint}`, 
             ResponsiveUtils.getViewportInfo());
         
+        // Registrar esta instancia en StateManager para eliminar window.uiRenderer
+        stateManager.updateState('instances.uiRenderer', this);
+        
         Logger.endPerformance('UIRenderer-init');
         Logger.success('UIRenderer initialized successfully', { 
             currentView: this.currentView,
@@ -159,8 +162,10 @@ export class UIRenderer {
                         </div>
 
                         <!-- Contenedor del Mapa -->
-                        <div id="map-container" class="w-full h-[70vh] min-h-[500px] rounded-2xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700">
-                            <!-- El mapa se renderizará aquí -->
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 relative z-10">
+                            <div id="map-container" class="w-full h-[80vh] min-h-[600px] rounded-xl overflow-hidden relative">
+                                <!-- El mapa se renderizará aquí -->
+                            </div>
                         </div>
                     </div>
                 `;
@@ -302,7 +307,7 @@ export class UIRenderer {
         mainContent.innerHTML = `
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
                 <!-- Header de Hoy -->
-                <div class="mb-12 hidden md:block">
+                <div class="mb-12">
                     <div class="flex items-center gap-4 mb-4">
                         <span class="material-symbols-outlined text-6xl text-orange-600 dark:text-orange-400">today</span>
                         <div>
@@ -312,59 +317,61 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Resumen del día -->
-                <div id="today-main-content" class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
+                <!-- Resumen del día actual -->
+                <div id="today-main-content" class="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
                     <!-- El contenido se generará dinámicamente -->
+                </div>
+
+                <!-- Estado y progreso del viaje -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Progreso del viaje -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">trending_up</span>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Progreso del Viaje</h3>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm font-medium text-blue-800 dark:text-blue-200">Días completados</span>
+                                    <span class="text-lg font-bold text-blue-900 dark:text-blue-100" id="progress-days">-</span>
+                                </div>
+                                <div class="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+                                    <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3 text-center">
+                                <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-3">
+                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itineraryData.length}</div>
+                                    <div class="text-xs text-slate-600 dark:text-slate-400">días totales</div>
+                                </div>
+                                <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-3">
+                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="remaining-days">-</div>
+                                    <div class="text-xs text-slate-600 dark:text-slate-400">días restantes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información del clima de hoy -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">wb_sunny</span>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Clima de Hoy</h3>
+                        </div>
+                        
+                        <div id="today-weather-info" class="space-y-4">
+                            <!-- Contenido dinámico del clima -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Información del día (solo si hay vuelos) -->
                 ${this.renderFlightInfoForToday()}
 
-                <!-- Preparativos para el viaje -->
-                <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
-                    <div class="flex items-center gap-4 mb-6">
-                        <span class="material-symbols-outlined text-3xl text-emerald-600 dark:text-emerald-400">checklist</span>
-                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Preparativos para el Viaje</h2>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                            <h3 class="font-semibold text-slate-900 dark:text-white">Documentos necesarios</h3>
-                            <div class="space-y-2">
-                                <div class="flex items-center gap-2 text-green-600">
-                                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                                    <span class="text-sm">Pasaporte válido</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-green-600">
-                                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                                    <span class="text-sm">Visa de Nepal (on arrival)</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-orange-600">
-                                    <span class="material-symbols-outlined text-sm">pending</span>
-                                    <span class="text-sm">Tarjeta de embarque</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-4">
-                            <h3 class="font-semibold text-slate-900 dark:text-white">Equipaje de mano</h3>
-                            <div class="space-y-2">
-                                <div class="flex items-center gap-2 text-green-600">
-                                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                                    <span class="text-sm">Documentos importantes</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-green-600">
-                                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                                    <span class="text-sm">Medicamentos básicos</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-green-600">
-                                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                                    <span class="text-sm">Cargador de móvil</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
 
 
             </div>
@@ -375,21 +382,205 @@ export class UIRenderer {
     }
 
     /**
-     * 🌅 ACTUALIZAR CONTENIDO DINÁMICO DE HOY (VERSIÓN ORIGINAL)
+     * 🌅 ACTUALIZAR CONTENIDO DINÁMICO DE HOY (VERSIÓN MEJORADA)
      */
     updateTodayDynamicContent() {
-        Logger.ui('📅 Updating today dynamic content (original implementation)');
+        Logger.ui('📅 Updating today dynamic content (improved implementation)');
         
-        // Actualizar contenido del today-main-content (como en la versión original)
-        this.updateTodayMainContent();
-        
-        // Actualizar fecha en header
-        const dateElement = document.getElementById('today-current-date');
-        if (dateElement) {
-            const today = stateManager.getCurrentDate();
-            const todayFormatted = DateUtils.formatMediumDate(today);
-            dateElement.textContent = `Fecha actual: ${todayFormatted}`;
+        try {
+            // Actualizar contenido del today-main-content (como en la versión original)
+            this.updateTodayMainContent();
+            
+            // Actualizar fecha en header
+            this.updateTodayDateHeader();
+            
+            // Actualizar progreso del viaje
+            this.updateTripProgress();
+            
+            // Actualizar información climática
+            this.updateTodayWeather();
+            
+            Logger.success('✅ Today dynamic content updated successfully');
+        } catch (error) {
+            Logger.error('❌ Error updating today dynamic content:', error);
         }
+    }
+
+    /**
+     * 📅 ACTUALIZAR HEADER DE FECHA DE HOY
+     */
+    updateTodayDateHeader() {
+        const dateElement = document.getElementById('today-current-date');
+        if (!dateElement) return;
+
+        try {
+            const today = stateManager.getCurrentDate();
+            const daySimulator = stateManager.getState('instances.daySimulator');
+            
+            let dateText = '';
+            if (daySimulator && daySimulator.isSimulating) {
+                dateText = `${DateUtils.formatMediumDate(today)} (Simulando día ${daySimulator.simulatedDay})`;
+            } else {
+                dateText = `Fecha actual: ${DateUtils.formatMediumDate(today)}`;
+            }
+            
+            dateElement.textContent = dateText;
+        } catch (error) {
+            Logger.error('Error updating today date header:', error);
+        }
+    }
+
+    /**
+     * 📊 ACTUALIZAR PROGRESO DEL VIAJE
+     */
+    updateTripProgress() {
+        try {
+            const today = stateManager.getCurrentDate();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            const totalDays = tripConfig.itineraryData.length;
+            
+            const progressDaysElement = document.getElementById('progress-days');
+            const progressBarElement = document.getElementById('progress-bar');
+            const remainingDaysElement = document.getElementById('remaining-days');
+            
+            if (dayDiff < 0) {
+                // Antes del viaje
+                if (progressDaysElement) progressDaysElement.textContent = '0';
+                if (progressBarElement) progressBarElement.style.width = '0%';
+                if (remainingDaysElement) remainingDaysElement.textContent = totalDays.toString();
+            } else if (dayDiff >= 0 && dayDiff < totalDays) {
+                // Durante el viaje
+                const completedDays = dayDiff + 1;
+                const progress = (completedDays / totalDays) * 100;
+                const remainingDays = totalDays - completedDays;
+                
+                if (progressDaysElement) progressDaysElement.textContent = completedDays.toString();
+                if (progressBarElement) progressBarElement.style.width = `${progress}%`;
+                if (remainingDaysElement) remainingDaysElement.textContent = remainingDays.toString();
+            } else {
+                // Después del viaje
+                if (progressDaysElement) progressDaysElement.textContent = totalDays.toString();
+                if (progressBarElement) progressBarElement.style.width = '100%';
+                if (remainingDaysElement) remainingDaysElement.textContent = '0';
+            }
+            
+            Logger.debug('Trip progress updated:', { dayDiff, totalDays });
+        } catch (error) {
+            Logger.error('Error updating trip progress:', error);
+        }
+    }
+
+    /**
+     * 🌤️ ACTUALIZAR CLIMA DE HOY
+     */
+    updateTodayWeather() {
+        const weatherContainer = document.getElementById('today-weather-info');
+        if (!weatherContainer) return;
+
+        try {
+            const today = stateManager.getCurrentDate();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            
+            let weatherHTML = '';
+            
+            if (dayDiff < 0 || dayDiff >= tripConfig.itineraryData.length) {
+                // Fuera del viaje
+                weatherHTML = `
+                    <div class="text-center p-6 text-slate-600 dark:text-slate-400">
+                        <span class="material-symbols-outlined text-4xl mb-3 block text-slate-400">schedule</span>
+                        <p>Información climática disponible durante el viaje</p>
+                    </div>
+                `;
+            } else {
+                // Durante el viaje
+                const currentDayData = tripConfig.itineraryData[dayDiff];
+                const location = this.extractLocationFromDay(currentDayData);
+                const weatherData = this.getWeatherForLocation(location);
+                
+                weatherHTML = `
+                    <div class="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h4 class="font-semibold text-slate-900 dark:text-white">${location}</h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.country || 'Nepal/Bután'}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-orange-600">${weatherData.temperature}</div>
+                                <div class="text-sm text-slate-600 dark:text-slate-400">${weatherData.condition}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="text-center">
+                                <span class="material-symbols-outlined text-orange-600">water_drop</span>
+                                <div class="text-sm font-medium">${weatherData.humidity}</div>
+                                <div class="text-xs text-slate-600 dark:text-slate-400">Humedad</div>
+                            </div>
+                            <div class="text-center">
+                                <span class="material-symbols-outlined text-orange-600">air</span>
+                                <div class="text-sm font-medium">${weatherData.wind}</div>
+                                <div class="text-xs text-slate-600 dark:text-slate-400">Viento</div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-sm text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-800/30 rounded-lg p-2">
+                            💡 ${weatherData.recommendation}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            weatherContainer.innerHTML = weatherHTML;
+            Logger.debug('Today weather updated for location:', this.extractLocationFromDay(tripConfig.itineraryData[dayDiff] || {}));
+            
+        } catch (error) {
+            Logger.error('Error updating today weather:', error);
+            weatherContainer.innerHTML = '<p class="text-slate-600 dark:text-slate-400">Error al cargar información climática</p>';
+        }
+    }
+
+    /**
+     * 📍 EXTRAER UBICACIÓN DEL DÍA
+     */
+    extractLocationFromDay(dayData) {
+        if (!dayData) return 'Ubicación desconocida';
+        if (dayData.location) return dayData.location;
+        
+        // Extraer ubicación del título
+        const title = dayData.title.toLowerCase();
+        if (title.includes('katmandú') || title.includes('kathmandu')) return 'Katmandú';
+        if (title.includes('pokhara')) return 'Pokhara';
+        if (title.includes('chitwan')) return 'Chitwan';
+        if (title.includes('thimphu')) return 'Thimphu';
+        if (title.includes('paro')) return 'Paro';
+        if (title.includes('punakha')) return 'Punakha';
+        
+        return dayData.country === 'Bután' ? 'Thimphu' : 'Katmandú';
+    }
+
+    /**
+     * 🌤️ OBTENER CLIMA PARA UBICACIÓN
+     */
+    getWeatherForLocation(location) {
+        // Datos climáticos simplificados por ubicación
+        const weatherData = {
+            'Katmandú': { temperature: '24°C', condition: 'Soleado', humidity: '65%', wind: '12 km/h', recommendation: 'Día perfecto para explorar la ciudad' },
+            'Pokhara': { temperature: '22°C', condition: 'Parcialmente nublado', humidity: '70%', wind: '8 km/h', recommendation: 'Ideal para actividades al aire libre' },
+            'Chitwan': { temperature: '28°C', condition: 'Cálido y húmedo', humidity: '80%', wind: '6 km/h', recommendation: 'Hidratarse bien durante el safari' },
+            'Thimphu': { temperature: '18°C', condition: 'Fresco y despejado', humidity: '55%', wind: '15 km/h', recommendation: 'Llevar una chaqueta ligera' },
+            'Paro': { temperature: '16°C', condition: 'Montañoso', humidity: '60%', wind: '18 km/h', recommendation: 'Perfecto para trekking' },
+            'Punakha': { temperature: '21°C', condition: 'Templado', humidity: '68%', wind: '10 km/h', recommendation: 'Clima ideal para visitas culturales' }
+        };
+        
+        return weatherData[location] || { 
+            temperature: '20°C', 
+            condition: 'Variable', 
+            humidity: '65%', 
+            wind: '10 km/h', 
+            recommendation: 'Consultar pronóstico local' 
+        };
     }
 
     /**
@@ -436,64 +627,144 @@ export class UIRenderer {
                     activityType = 'Llegada';
                 }
                 
+                // Determinar colores dinámicos según la fase del viaje
+                const phaseColors = {
+                    'nepal': { 
+                        main: 'from-green-500 to-emerald-600', 
+                        light: 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20',
+                        border: 'border-green-200 dark:border-green-800',
+                        text: 'text-green-600 dark:text-green-400',
+                        accent: 'bg-green-100 dark:bg-green-900/30'
+                    },
+                    'bhutan': { 
+                        main: 'from-purple-500 to-indigo-600', 
+                        light: 'from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20',
+                        border: 'border-purple-200 dark:border-purple-800',
+                        text: 'text-purple-600 dark:text-purple-400',
+                        accent: 'bg-purple-100 dark:bg-purple-900/30'
+                    },
+                    'vuelos': { 
+                        main: 'from-blue-500 to-cyan-600', 
+                        light: 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20',
+                        border: 'border-blue-200 dark:border-blue-800',
+                        text: 'text-blue-600 dark:text-blue-400',
+                        accent: 'bg-blue-100 dark:bg-blue-900/30'
+                    }
+                };
+                
+                const colors = phaseColors[currentDayData.phase] || phaseColors['nepal'];
+                const dayNumber = dayDiff + 1;
+                
                 let contentHTML = `
-                    <div class="flex items-center gap-4 mb-6">
-                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">${activityIcon}</span>
-                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">${activityType}</h2>
+                    <!-- Header mejorado con estilo hero -->
+                    <div class="relative mb-8">
+                        <div class="absolute inset-0 bg-gradient-to-r ${colors.main} rounded-2xl opacity-10"></div>
+                        <div class="relative p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-4">
+                                    <span class="material-symbols-outlined text-6xl ${colors.text}">${activityIcon}</span>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-sm font-semibold ${colors.text} bg-white dark:bg-slate-800 px-3 py-1 rounded-full">Día ${dayNumber}</span>
+                                            <span class="text-sm font-medium text-slate-500 dark:text-slate-400">${currentDayData.phase?.toUpperCase() || 'AVENTURA'}</span>
+                                        </div>
+                                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">${activityType}</h2>
+                                    </div>
+                                </div>
+                                <div class="hidden md:block">
+                                    <div class="text-6xl opacity-20">${currentDayData.icon}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800 mb-6">
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">${currentDayData.title}</h3>
-                        <p class="text-slate-600 dark:text-slate-400 mb-4">${currentDayData.description}</p>`;
+                    <!-- Tarjeta principal del día con diseño mejorado -->
+                    <div class="bg-gradient-to-br ${colors.light} rounded-2xl p-6 border ${colors.border} mb-6 relative overflow-hidden">
+                        <!-- Elemento decorativo -->
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${colors.main} rounded-full opacity-5 transform translate-x-16 -translate-y-16"></div>
+                        
+                        <div class="relative">
+                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
+                                <span class="w-1 h-8 bg-gradient-to-b ${colors.main} rounded-full"></span>
+                                ${currentDayData.title}
+                            </h3>
+                            <p class="text-slate-600 dark:text-slate-400 mb-6 text-lg leading-relaxed">${currentDayData.description}</p>
+                        </div>`;
                         
                 if (currentDayData.planA) {
                     contentHTML += `
-                        <div class="space-y-3">
-                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3">
-                                <h4 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-sm text-blue-600">schedule</span>
-                                    Plan Principal
-                                </h4>
-                                <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.planA}</p>
-                            </div>`;
+                        <!-- Planes del día con diseño de timeline -->
+                        <div class="space-y-4 mb-6">
+                            <h4 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
+                                <span class="material-symbols-outlined text-lg text-slate-600 dark:text-slate-400">event_note</span>
+                                Planes para hoy
+                            </h4>
+                            
+                            <div class="relative">
+                                <!-- Timeline vertical -->
+                                <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b ${colors.main} opacity-30"></div>
+                                
+                                <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border ${colors.border} shadow-sm relative">
+                                    <div class="absolute left-4 top-6 w-4 h-4 bg-slate-400 dark:bg-slate-600 rounded-full border-2 border-white dark:border-slate-800"></div>
+                                    <div class="pl-8">
+                                        <h5 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-400">schedule</span>
+                                            Plan Principal
+                                        </h5>
+                                        <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.planA}</p>
+                                    </div>
+                                </div>`;
                     
                     if (currentDayData.planB) {
                         contentHTML += `
-                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-3">
-                                <h4 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-sm text-green-600">alt_route</span>
-                                    Plan Alternativo
-                                </h4>
-                                <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.planB}</p>
-                            </div>`;
+                                <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border ${colors.border} shadow-sm relative mt-3">
+                                    <div class="absolute left-4 top-6 w-4 h-4 bg-slate-400 dark:bg-slate-600 rounded-full border-2 border-white dark:border-slate-800"></div>
+                                    <div class="pl-8">
+                                        <h5 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-400">alt_route</span>
+                                            Plan Alternativo
+                                        </h5>
+                                        <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.planB}</p>
+                                    </div>
+                                </div>`;
                     }
-                    contentHTML += `</div>`;
+                    contentHTML += `
+                            </div>
+                        </div>`;
                 }
                 
                 contentHTML += `
+                        </div>
                     </div>
                     
-                    <div class="grid md:grid-cols-2 gap-4">`;
+                    <!-- Grid de información adicional con diseño mejorado -->
+                    <div class="grid md:grid-cols-2 gap-6">`;
                 
                 if (currentDayData.consejo) {
                     contentHTML += `
-                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-outlined text-lg text-blue-600 dark:text-blue-400">lightbulb</span>
-                                <h4 class="font-semibold text-slate-900 dark:text-white">Consejo</h4>
+                        <div class="group relative bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800 hover:shadow-lg transition-all duration-300">
+                            <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full opacity-10 transform translate-x-10 -translate-y-10"></div>
+                            <div class="relative">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">lightbulb</span>
+                                    <h4 class="font-bold text-slate-900 dark:text-white">Consejo del día</h4>
+                                </div>
+                                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.consejo}</p>
                             </div>
-                            <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.consejo}</p>
                         </div>`;
                 }
                 
                 if (currentDayData.bocado) {
                     contentHTML += `
-                        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-outlined text-lg text-green-600 dark:text-green-400">restaurant</span>
-                                <h4 class="font-semibold text-slate-900 dark:text-white">Bocado</h4>
+                        <div class="group relative bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800 hover:shadow-lg transition-all duration-300">
+                            <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full opacity-10 transform translate-x-10 -translate-y-10"></div>
+                            <div class="relative">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <span class="material-symbols-outlined text-2xl text-green-600 dark:text-green-400">restaurant</span>
+                                    <h4 class="font-bold text-slate-900 dark:text-white">Gastronomía</h4>
+                                </div>
+                                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.bocado}</p>
                             </div>
-                            <p class="text-sm text-slate-600 dark:text-slate-400">${currentDayData.bocado}</p>
                         </div>`;
                 }
                 
@@ -727,12 +998,12 @@ export class UIRenderer {
         try {
             mainContent.innerHTML = `
                 <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                    <!-- Header de Gastos (estilo Itinerario) -->
+                    <!-- Header de Presupuesto -->
                     <div class="mb-12">
                         <div class="flex items-center gap-4 mb-4">
                             <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400">account_balance_wallet</span>
                             <div>
-                                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Gestión de Gastos</h1>
+                                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Presupuesto del Viaje</h1>
                                 <p class="text-lg text-slate-600 dark:text-slate-400">Controla tu presupuesto y registra todos los gastos de tu aventura</p>
                             </div>
                         </div>
@@ -803,7 +1074,7 @@ export class UIRenderer {
                     <button id="close-modal-btn" class="absolute top-4 right-4 z-[999999] p-2 rounded-full bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-700 transition-colors">
                         <span class="material-symbols-outlined">close</span>
                     </button>
-                    <img src="${day.image}" alt="${day.title}" class="w-full h-60 object-cover rounded-t-2xl" onerror="this.onerror=null;this.src='https://placehold.co/800x400/4f46e5/ffffff?text=Himalaya';">
+                    <img src="${day.image}" alt="${day.title}" class="w-full h-64 md:h-72 object-cover rounded-t-2xl" onerror="this.onerror=null;this.src='https://placehold.co/800x400/4f46e5/ffffff?text=Himalaya';">
                     <div class="p-6 space-y-4">
                         <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">DÍA ${day.id.replace('day-','')}</p>
                         <h3 class="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -1149,6 +1420,7 @@ export class UIRenderer {
         const enhancedWeatherData = [
             {
                 location: 'Katmandú',
+                country: 'Nepal',
                 dayTemp: '22-25°C',
                 nightTemp: '5-10°C',
                 humidity: '65%',
@@ -1157,10 +1429,11 @@ export class UIRenderer {
                 wind: '12 km/h',
                 forecast: ['☀️ 24°C', '⛅ 21°C', '🌤️ 23°C'],
                 icon: 'location_city',
-                color: 'text-blue-600'
+                color: 'text-green-600'
             },
             {
                 location: 'Pokhara',
+                country: 'Nepal',
                 dayTemp: '22-25°C',
                 nightTemp: '5-10°C',
                 humidity: '70%',
@@ -1173,6 +1446,7 @@ export class UIRenderer {
             },
             {
                 location: 'Chitwan',
+                country: 'Nepal',
                 dayTemp: '25-30°C',
                 nightTemp: '15-20°C',
                 humidity: '80%',
@@ -1181,10 +1455,11 @@ export class UIRenderer {
                 wind: '6 km/h',
                 forecast: ['☀️ 28°C', '🌤️ 26°C', '⛅ 24°C'],
                 icon: 'wb_sunny',
-                color: 'text-orange-600'
+                color: 'text-green-600'
             },
             {
                 location: 'Thimphu',
+                country: 'Bután',
                 dayTemp: '15-22°C',
                 nightTemp: '0-7°C',
                 humidity: '55%',
@@ -1193,10 +1468,11 @@ export class UIRenderer {
                 wind: '15 km/h',
                 forecast: ['🌤️ 18°C', '❄️ 12°C', '☁️ 16°C'],
                 icon: 'terrain',
-                color: 'text-slate-600'
+                color: 'text-blue-600'
             },
             {
                 location: 'Paro',
+                country: 'Bután',
                 dayTemp: '15-22°C',
                 nightTemp: '0-7°C',
                 humidity: '60%',
@@ -1205,10 +1481,11 @@ export class UIRenderer {
                 wind: '18 km/h',
                 forecast: ['⛅ 17°C', '🌨️ 10°C', '🌤️ 19°C'],
                 icon: 'terrain',
-                color: 'text-slate-600'
+                color: 'text-blue-600'
             },
             {
                 location: 'Punakha',
+                country: 'Bután',
                 dayTemp: '18-25°C',
                 nightTemp: '10-15°C',
                 humidity: '62%',
@@ -1217,35 +1494,44 @@ export class UIRenderer {
                 wind: '10 km/h',
                 forecast: ['☀️ 22°C', '🌤️ 20°C', '⛅ 18°C'],
                 icon: 'landscape',
-                color: 'text-green-600'
+                color: 'text-blue-600'
             }
         ];
 
         const weatherHTML = `
-            <div class="flex items-center gap-3 mb-8">
+            <div class="flex items-center gap-4 mb-12">
                 <span class="material-symbols-outlined text-3xl text-orange-600 dark:text-orange-400">wb_sunny</span>
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información Climática Detallada</h2>
+                <div>
+                    <h2 class="text-3xl font-black text-slate-900 dark:text-white">Información Climática</h2>
+                    <p class="text-lg text-slate-600 dark:text-slate-400">Condiciones actuales en cada destino</p>
+                </div>
             </div>
             
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 ${enhancedWeatherData.map(location => `
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
-                        <div class="flex items-center gap-3 mb-4">
-                            <span class="material-symbols-outlined text-2xl ${location.color}">${location.icon}</span>
-                            <div>
-                                <h3 class="font-bold text-slate-900 dark:text-white">${location.location}</h3>
-                                <p class="text-sm text-slate-600 dark:text-slate-400">${location.condition}</p>
+                    <div class="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 group">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-2xl ${location.color}">${location.icon}</span>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 dark:text-white">${location.location}</h3>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400">${location.condition}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold ${location.color}">${location.forecast[0]}</div>
+                                <div class="text-xs font-medium ${location.color}">${location.country}</div>
                             </div>
                         </div>
                         
                         <!-- Temperaturas principales -->
                         <div class="grid grid-cols-2 gap-3 mb-4">
-                            <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 text-center">
-                                <span class="material-symbols-outlined text-orange-600 text-sm">wb_sunny</span>
+                            <div class="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-xl p-3 text-center border border-orange-200/50 dark:border-orange-700/50 hover:scale-105 transition-transform duration-300">
+                                <span class="material-symbols-outlined text-orange-600 text-sm animate-pulse">wb_sunny</span>
                                 <div class="text-sm font-medium text-orange-800 dark:text-orange-200">Día</div>
                                 <div class="text-lg font-bold text-orange-900 dark:text-orange-100">${location.dayTemp}</div>
                             </div>
-                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
+                            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-3 text-center border border-blue-200/50 dark:border-blue-700/50 hover:scale-105 transition-transform duration-300">
                                 <span class="material-symbols-outlined text-blue-600 text-sm">nights_stay</span>
                                 <div class="text-sm font-medium text-blue-800 dark:text-blue-200">Noche</div>
                                 <div class="text-lg font-bold text-blue-900 dark:text-blue-100">${location.nightTemp}</div>
@@ -1293,31 +1579,7 @@ export class UIRenderer {
                 `).join('')}
             </div>
             
-            <!-- Recomendaciones generales -->
-            <div class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">tips_and_updates</span>
-                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Recomendaciones Climáticas</h3>
-                </div>
-                <div class="grid md:grid-cols-2 gap-4 text-sm">
-                    <div class="space-y-2">
-                        <h4 class="font-semibold text-slate-900 dark:text-white">🌤️ Para el clima templado:</h4>
-                        <ul class="text-slate-600 dark:text-slate-400 space-y-1">
-                            <li>• Ropa en capas para adaptarse a cambios</li>
-                            <li>• Protector solar (UV alto en altitud)</li>
-                            <li>• Gafas de sol de calidad</li>
-                        </ul>
-                    </div>
-                    <div class="space-y-2">
-                        <h4 class="font-semibold text-slate-900 dark:text-white">🏔️ Para montaña:</h4>
-                        <ul class="text-slate-600 dark:text-slate-400 space-y-1">
-                            <li>• Chaqueta impermeable y cortavientos</li>
-                            <li>• Ropa térmica para las noches</li>
-                            <li>• Calzado adecuado con buen agarre</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+
         `;
 
         container.innerHTML = weatherHTML;

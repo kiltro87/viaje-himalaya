@@ -604,11 +604,10 @@ export class BudgetManager {
             return `<option value="${cat}" data-icon="${icon}">${cat}</option>`;
         }).join('');
 
-        // Renderizar cabecera estandarizada ANTES del contenido
-        const headerHTML = HeaderRenderer.renderPresetHeader('budget');
+        // Cabecera ya se renderiza en UIRenderer.renderGastos()
+        // const headerHTML = HeaderRenderer.renderPresetHeader('budget');
 
         container.innerHTML = `
-            ${headerHTML}
             <!-- Resumen de presupuesto -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-6">
                 

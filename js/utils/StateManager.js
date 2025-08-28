@@ -375,8 +375,9 @@ class StateManager {
      */
     getCurrentDate() {
         // Verificar si hay un Day Simulator global activo
-        if (window.DaySimulator && window.DaySimulator.isSimulating) {
-            return window.DaySimulator.getSimulatedDate();
+        const daySimulator = this.getState('instances.daySimulator');
+        if (daySimulator && daySimulator.isSimulating) {
+            return daySimulator.getSimulatedDate();
         }
         
         // Usar estado interno como fallback
@@ -563,6 +564,18 @@ class StateManager {
         } catch (error) {
             Logger.error('Error importing state:', error);
         }
+    }
+
+    /**
+     * Gestión especializada de FirebaseManager (singleton pattern)
+     */
+    setFirebaseManager(instance) {
+        this.updateState('instances.firebaseManager', instance);
+        Logger.data('FirebaseManager registered in StateManager');
+    }
+
+    getFirebaseManager() {
+        return this.getState('instances.firebaseManager');
     }
 }
 

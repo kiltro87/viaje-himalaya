@@ -18,6 +18,7 @@
  */
 
 import Logger from './Logger.js';
+import stateManager from './StateManager.js';
 
 export class DaySimulator {
     constructor() {
@@ -37,8 +38,9 @@ export class DaySimulator {
 
         try {
             // Usar la función existente del UIRenderer si está disponible
-            if (window.uiRenderer && typeof window.uiRenderer.getTripStartDate === 'function') {
-                this.tripStartDate = window.uiRenderer.getTripStartDate();
+            const uiRenderer = stateManager.getState('instances.uiRenderer');
+            if (uiRenderer && typeof uiRenderer.getTripStartDate === 'function') {
+                this.tripStartDate = uiRenderer.getTripStartDate();
                 Logger.info('🎯 Trip start date from UIRenderer:', this.tripStartDate);
                 return this.tripStartDate;
             }
@@ -202,7 +204,8 @@ export class DaySimulator {
         // Verificar si ya existe
         if (document.getElementById('day-simulator')) return;
 
-        const currentView = window.uiRenderer?.currentView || 'resumen';
+        const uiRenderer = stateManager.getState('instances.uiRenderer');
+        const currentView = uiRenderer?.currentView || 'resumen';
         const simulatorHTML = `
             <div id="day-simulator" class="fixed top-4 right-4 z-50 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 max-w-sm">
                 <div class="flex items-center justify-between mb-4">
@@ -373,12 +376,13 @@ export class DaySimulator {
      */
     refreshContextualComponents() {
         try {
-            if (!window.uiRenderer) {
+            const uiRenderer = stateManager.getState('instances.uiRenderer');
+            if (!uiRenderer) {
                 if (Logger && Logger.warning) Logger.warning('🔄 UIRenderer not available for refresh');
                 return;
             }
 
-            const currentView = window.uiRenderer.currentView;
+            const currentView = uiRenderer.currentView;
             if (Logger && Logger.info) Logger.info(`🔄 Refreshing components for view: ${currentView}`);
 
             // Refrescar según la vista actual
@@ -423,8 +427,9 @@ export class DaySimulator {
      */
     refreshSummaryView() {
         try {
-            if (window.uiRenderer && typeof window.uiRenderer.renderSummary === 'function') {
-                window.uiRenderer.renderSummary();
+            const uiRenderer = stateManager.getState('instances.uiRenderer');
+            if (uiRenderer && typeof uiRenderer.renderSummary === 'function') {
+                uiRenderer.renderSummary();
                 if (Logger && Logger.info) Logger.info('📊 Summary view refreshed');
             }
         } catch (error) {
@@ -437,9 +442,32 @@ export class DaySimulator {
      */
     refreshTodayView() {
         try {
-            if (window.uiRenderer && typeof window.uiRenderer.renderToday === 'function') {
-                window.uiRenderer.renderToday();
-                if (Logger && Logger.info) Logger.info('📅 Today view refreshed');
+            const uiRenderer = stateManager.getState('instances.uiRenderer');
+            if (uiRenderer) {
+                // En lugar de re-renderizar toda la vista, actualizar solo las partes dinámicas
+                if (typeof uiRenderer.updateTodayDynamicContent === 'function') {
+                    uiRenderer.updateTodayDynamicContent();
+                    if (Logger && Logger.info) Logger.info('📅 Today dynamic content updated');
+                }
+                
+                // Actualizar el contenido principal de Hoy también
+                if (typeof uiRenderer.updateTodayMainContent === 'function') {
+                    uiRenderer.updateTodayMainContent();
+                    if (Logger && Logger.info) Logger.info('📅 Today main content updated');
+                }
+                
+                // Actualizar progreso del viaje si está en SummaryRenderer
+                const summaryRenderer = uiRenderer.summaryRenderer;
+                if (summaryRenderer && typeof summaryRenderer.updateTripProgress === 'function') {
+                    summaryRenderer.updateTripProgress();
+                    if (Logger && Logger.info) Logger.info('📅 Trip progress updated');
+                }
+                
+                // Actualizar contenido summary de hoy
+                if (summaryRenderer && typeof summaryRenderer.updateTodaySummaryContent === 'function') {
+                    summaryRenderer.updateTodaySummaryContent();
+                    if (Logger && Logger.info) Logger.info('📅 Today summary content updated');
+                }
             }
         } catch (error) {
             if (Logger && Logger.error) Logger.error('📅 Error refreshing today view:', error);
@@ -451,9 +479,10 @@ export class DaySimulator {
      */
     refreshItineraryView() {
         try {
+            const uiRenderer = stateManager.getState('instances.uiRenderer');
             // Re-renderizar el itinerario completo para destacar el día actual
-            if (typeof window.uiRenderer.renderItinerary === 'function') {
-                window.uiRenderer.renderItinerary();
+            if (uiRenderer && typeof uiRenderer.renderItinerary === 'function') {
+                uiRenderer.renderItinerary();
             }
 
             if (Logger && Logger.info) Logger.info('🗓️ Itinerary view refreshed');
@@ -463,29 +492,14 @@ export class DaySimulator {
     }
 
     /**
-     * 📅 REFRESCAR VISTA HOY: Actualizar información del día actual
-     */
-    refreshTodayView() {
-        try {
-            // Re-renderizar la vista "Hoy" completa
-            if (typeof window.uiRenderer.renderToday === 'function') {
-                window.uiRenderer.renderToday();
-            }
-
-            if (Logger && Logger.info) Logger.info('📅 Today view refreshed');
-        } catch (error) {
-            if (Logger && Logger.error) Logger.error('📅 Error refreshing today view:', error);
-        }
-    }
-
-    /**
      * 🗺️ REFRESCAR VISTA MAPA: Actualizar marcadores y ubicación actual
      */
     refreshMapView() {
         try {
+            const uiRenderer = stateManager.getState('instances.uiRenderer');
             // Re-renderizar el mapa para actualizar la posición actual
-            if (typeof window.uiRenderer.renderMap === 'function') {
-                window.uiRenderer.renderMap();
+            if (uiRenderer && typeof uiRenderer.renderMap === 'function') {
+                uiRenderer.renderMap();
             }
 
             if (Logger && Logger.info) Logger.info('🗺️ Map view refreshed');
@@ -499,9 +513,10 @@ export class DaySimulator {
      */
     refreshGastosView() {
         try {
+            const uiRenderer = stateManager.getState('instances.uiRenderer');
             // Re-renderizar la sección de gastos
-            if (typeof window.uiRenderer.renderGastos === 'function') {
-                window.uiRenderer.renderGastos();
+            if (uiRenderer && typeof uiRenderer.renderGastos === 'function') {
+                uiRenderer.renderGastos();
             }
 
             if (Logger && Logger.info) Logger.info('💰 Gastos view refreshed');
@@ -515,9 +530,10 @@ export class DaySimulator {
      */
     refreshExtrasView() {
         try {
+            const uiRenderer = stateManager.getState('instances.uiRenderer');
             // Re-renderizar la vista extras completa
-            if (typeof window.uiRenderer.renderExtras === 'function') {
-                window.uiRenderer.renderExtras();
+            if (uiRenderer && typeof uiRenderer.renderExtras === 'function') {
+                uiRenderer.renderExtras();
             }
 
             if (Logger && Logger.info) Logger.info('🎒 Extras view refreshed');

@@ -75,7 +75,7 @@ export class HeaderRenderer {
             },
             map: {
                 icon: 'map',
-                title: 'Ruta del Viaje',
+                title: 'Mapa del Viaje',
                 iconColor: 'text-blue-600 dark:text-blue-400'
             },
             budget: {

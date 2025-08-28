@@ -27,6 +27,7 @@ import { UIRenderer } from './components/UIRenderer.js';
 import Logger from './utils/Logger.js';
 import { weatherConfig, checkWeatherConfig } from './config/weatherConfig.js';
 import { getDaySimulator } from './utils/DaySimulator.js';
+import stateManager from './utils/StateManager.js';
 
 // Verificar que Logger está disponible y iniciar logging
 if (Logger && typeof Logger.init === 'function') {
@@ -136,14 +137,19 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Inicializar Day Simulator para desarrollo
         const daySimulator = getDaySimulator();
+        stateManager.updateState('instances.daySimulator', daySimulator);
         if (Logger && Logger.info) Logger.info('🎯 Day Simulator initialized - Use showDaySimulator() to open panel');
         
         // Inicializar PackingListManager cuando Firebase esté disponible
         setTimeout(async () => {
-            if (window.FirebaseManager && !window.PackingListManager) {
+            const firebaseManager = stateManager.getFirebaseManager();
+            const packingListManager = stateManager.getState('instances.packingListManager');
+            
+            if (firebaseManager && !packingListManager) {
                 const { getPackingListManager } = await import('./utils/PackingListManager.js');
-                window.PackingListManager = getPackingListManager();
-                await window.PackingListManager.initialize(window.FirebaseManager);
+                const packingManager = getPackingListManager();
+                await packingManager.initialize(firebaseManager);
+                stateManager.updateState('instances.packingListManager', packingManager);
                 if (Logger && Logger.success) Logger.success('🎒 PackingListManager initialized with Firebase');
             }
         }, 2000); // Esperar a que Firebase se inicialice

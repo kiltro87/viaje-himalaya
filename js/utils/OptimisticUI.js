@@ -16,6 +16,7 @@
  */
 
 import Logger from './Logger.js';
+import stateManager from './StateManager.js';
 
 export class OptimisticUI {
     constructor() {
@@ -52,7 +53,9 @@ export class OptimisticUI {
         };
 
         // Añadir a AppState inmediatamente
-        window.AppState.expenses.unshift(optimisticExpense);
+        const expenses = stateManager.getState('expenses') || [];
+        expenses.unshift(optimisticExpense);
+        stateManager.updateState('expenses', expenses);
         
         // Actualizar UI inmediatamente con mejor rendimiento
         if (uiUpdateCallback) {
@@ -76,13 +79,15 @@ export class OptimisticUI {
             const realId = await serverOperation(expense);
             
             // 3️⃣ REEMPLAZAR ID TEMPORAL CON REAL
-            const expenseIndex = window.AppState.expenses.findIndex(e => e.id === operationId);
+            const expenses = stateManager.getState('expenses') || [];
+            const expenseIndex = expenses.findIndex(e => e.id === operationId);
             if (expenseIndex !== -1) {
-                window.AppState.expenses[expenseIndex] = {
-                    ...window.AppState.expenses[expenseIndex],
+                expenses[expenseIndex] = {
+                    ...expenses[expenseIndex],
                     id: realId,
                     isOptimistic: false
                 };
+                stateManager.updateState('expenses', expenses);
             }
 
             // Limpiar operación pendiente

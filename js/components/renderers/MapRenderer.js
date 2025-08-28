@@ -58,15 +58,7 @@ export class MapRenderer {
 
         try {
             container.innerHTML = `
-                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                    <!-- Header del mapa -->
-                    ${HeaderRenderer.renderPresetHeader('map')}
-
-                    <!-- Contenedor del mapa -->
-                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden" style="height: 70vh; min-height: 500px;">
-                        <div id="map" class="w-full h-full rounded-3xl"></div>
-                    </div>
-                </div>
+                <div id="map" class="w-full h-full rounded-xl"></div>
             `;
             
             // Crear el mapa después de que el DOM esté listo
@@ -118,6 +110,9 @@ export class MapRenderer {
                 });
                 Logger.debug(`🗺️ Main map fitted to ${markers.length} markers with enhanced zoom`);
             }
+            
+            // Configurar event listeners para los botones de modal en popups
+            this.setupMapModalListeners();
             
             Logger.success('Main map initialized successfully');
             
@@ -237,8 +232,8 @@ export class MapRenderer {
                     <b class="text-blue-600">${day.title}</b>
                     <p class="text-xs">Día ${dayNumber} - ${this.formatShortDate(tripDate)}</p>
                     <p class="text-xs text-slate-600 mt-1">${day.description.substring(0, 80)}...</p>
-                    <button onclick="window.uiRenderer.showItineraryModal('${day.id}')" 
-                            class="text-blue-500 text-xs font-semibold mt-1 block hover:underline">
+                    <button class="itinerary-modal-btn text-blue-500 text-xs font-semibold mt-1 block hover:underline" 
+                            data-day-id="${day.id}">
                         Ver detalles →
                     </button>
                 </div>
@@ -269,8 +264,9 @@ export class MapRenderer {
         
         marker.on('click', () => {
             // Usar el callback global para abrir el modal
-            if (window.uiRenderer && window.uiRenderer.showItineraryModal) {
-                window.uiRenderer.showItineraryModal(day.id);
+            const uiRenderer = stateManager.getState('instances.uiRenderer');
+            if (uiRenderer && uiRenderer.showItineraryModal) {
+                uiRenderer.showItineraryModal(day.id);
             }
         });
     }
@@ -369,20 +365,20 @@ export class MapRenderer {
         // Añadir lugares cercanos
         const markers = this.createNearbyPlaceMarkers(map, dayId);
         
-        // Ajustar vista
-        this.adjustModalMapView(map, coords, markers);
-        
         // Forzar redibujado múltiple para asegurar renderizado
         setTimeout(() => {
             map.invalidateSize();
-            Logger.debug(`🗺️ Map invalidated for day: ${dayId}`);
-        }, 100);
+            // Ajustar vista después de invalidar el tamaño
+            this.adjustModalMapView(map, coords, markers);
+            Logger.debug(`🗺️ Map invalidated and view adjusted for day: ${dayId}`);
+        }, 200);
         
-        // Segundo invalidate por si el modal aún no está completamente renderizado
+        // Segundo ajuste de vista para asegurar zoom correcto
         setTimeout(() => {
             map.invalidateSize();
-            Logger.debug(`🗺️ Map second invalidation for day: ${dayId}`);
-        }, 300);
+            this.adjustModalMapView(map, coords, markers);
+            Logger.debug(`🗺️ Final view adjustment for day: ${dayId}`);
+        }, 500);
         
         Logger.success(`Modal map created successfully for day: ${dayId}`);
     }
@@ -481,14 +477,14 @@ export class MapRenderer {
             // Si hay múltiples coordenadas, ajustar vista para verlas todas
             const bounds = L.latLngBounds(validCoords);
             map.fitBounds(bounds, { 
-                padding: [10, 10], // Padding mínimo para máxima proximidad
-                maxZoom: 13 // Zoom muy cercano para ver detalles del área
+                padding: [5, 5], // Padding mínimo para máxima proximidad
+                maxZoom: 15 // Zoom más cercano para ver detalles del área
             });
-            Logger.debug(`🗺️ Multiple coordinates: fitted bounds with zoom 11`);
+            Logger.debug(`🗺️ Multiple coordinates: fitted bounds with enhanced zoom`);
         } else if (coords) {
             // Si solo hay una coordenada, zoom muy cercano para máximo detalle
-            map.setView(coords, 14); // Zoom muy cercano para ver el área específica
-            Logger.debug(`🗺️ Single coordinate: set view with zoom 14`);
+            map.setView(coords, 16); // Zoom muy cercano para ver el área específica
+            Logger.debug(`🗺️ Single coordinate: set view with enhanced zoom`);
         }
         
         // Forzar actualización del tamaño después de ajustar vista
@@ -497,11 +493,11 @@ export class MapRenderer {
             // Re-aplicar bounds después de invalidar tamaño con mejor zoom
             if (validCoords.length > 1) {
                 const bounds = L.latLngBounds(validCoords);
-                map.fitBounds(bounds, { padding: [10, 10], maxZoom: 13 });
-                Logger.debug(`🔄 Re-applied bounds with enhanced zoom`);
+                map.fitBounds(bounds, { padding: [5, 5], maxZoom: 15 });
+                Logger.debug(`🔄 Re-applied bounds with enhanced zoom level 15`);
             } else if (coords) {
-                map.setView(coords, 14);
-                Logger.debug(`🔄 Re-centered with enhanced zoom`);
+                map.setView(coords, 16);
+                Logger.debug(`🔄 Re-centered with enhanced zoom level 16`);
             }
         }, 300);
         
@@ -565,6 +561,25 @@ export class MapRenderer {
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * 🎯 CONFIGURAR EVENT LISTENERS PARA MODALES
+     * 
+     * Configura los event listeners para los botones de modal en los popups del mapa.
+     * Reemplaza el onclick directo por un patrón de eventos más limpio.
+     */
+    setupMapModalListeners() {
+        // Usar event delegation para manejar clicks en botones de modal
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('itinerary-modal-btn')) {
+                const dayId = e.target.dataset.dayId;
+                const uiRenderer = stateManager.getState('instances.uiRenderer');
+                if (uiRenderer && uiRenderer.showItineraryModal) {
+                    uiRenderer.showItineraryModal(dayId);
+                }
+            }
+        });
     }
 
     /**

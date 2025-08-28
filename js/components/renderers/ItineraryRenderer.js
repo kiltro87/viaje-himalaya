@@ -29,6 +29,7 @@ import { tripConfig } from '../../config/tripConfig.js';
 import { DateUtils } from '../../utils/DateUtils.js';
 import { FormatUtils } from '../../utils/FormatUtils.js';
 import Logger from '../../utils/Logger.js';
+import stateManager from '../../utils/StateManager.js';
 
 export class ItineraryRenderer {
     
@@ -164,38 +165,147 @@ export class ItineraryRenderer {
      * @private
      */
     buildDayCardHTML(day, dayNumber, tripDate, activityIcon) {
+        // Determinar el color de la fase del viaje usando el esquema de la app
+        const phaseColors = {
+            'nepal': { bg: 'bg-blue-500', text: 'text-blue-600', light: 'bg-blue-50 dark:bg-blue-900/20' },
+            'bhutan': { bg: 'bg-purple-500', text: 'text-purple-600', light: 'bg-purple-50 dark:bg-purple-900/20' },
+            'vuelos': { bg: 'bg-indigo-500', text: 'text-indigo-600', light: 'bg-indigo-50 dark:bg-indigo-900/20' }
+        };
+        const colors = phaseColors[day.phase] || phaseColors['nepal'];
+        
+        // Determinar el tipo de actividad para badge usando colores del esquema
+        const getActivityBadge = (icon) => {
+            const badges = {
+                '✈️': { text: 'Vuelo', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300' },
+                '🏛️': { text: 'Cultural', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' },
+                '🏔️': { text: 'Trekking', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+                '🚣': { text: 'Aventura', color: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300' },
+                '🎯': { text: 'Safari', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300' },
+                '🏞️': { text: 'Naturaleza', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' }
+            };
+            return badges[icon] || { text: 'Experiencia', color: 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' };
+        };
+        
+        const activityBadge = getActivityBadge(day.icon);
+        
         if (day.image) {
             return `
-                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer transition-all duration-200 hover:shadow-xl overflow-hidden">
-                    <div class="relative h-48 md:h-56">
-                        <img loading="lazy" src="${day.image}" alt="${day.title}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f46e5/ffffff?text=Imagen';">
-                        <div class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
-                            <p class="text-white text-sm font-semibold">Día ${dayNumber}</p>
+                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer group hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 ease-out overflow-hidden">
+                    <div class="relative h-56 md:h-64 lg:h-72 overflow-hidden">
+                        <img loading="lazy" src="${day.image}" alt="${day.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f46e5/ffffff?text=Imagen';">
+                        
+                        <!-- Overlay gradiente en hover -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        
+                        <!-- Badges superiores -->
+                        <div class="absolute top-4 left-4 flex gap-2">
+                            <div class="bg-black/70 backdrop-blur-sm rounded-full px-3 py-1">
+                                <p class="text-white text-sm font-semibold">Día ${dayNumber}</p>
+                            </div>
+                            <div class="${activityBadge.color} backdrop-blur-sm rounded-full px-3 py-1">
+                                <p class="text-xs font-semibold">${activityBadge.text}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Badge de país -->
+                        <div class="absolute top-4 right-4">
+                            <div class="${colors.light} backdrop-blur-sm rounded-full px-3 py-1 border border-white/20">
+                                <p class="${colors.text} text-xs font-semibold">${day.country}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Icono grande en hover -->
+                        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                            <div class="w-12 h-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+                                <span class="text-2xl">${day.icon}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="p-6">
-                        <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-2">${day.title}</h4>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">${day.description}</p>
-                        <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                            <span class="material-symbols-outlined text-sm">touch_app</span>
-                            <span class="text-xs font-medium">Toca para ver detalles</span>
+                    
+                    <div class="p-6 space-y-4">
+                        <!-- Header con fecha -->
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2 ${colors.text}">
+                                <span class="material-symbols-outlined text-sm">schedule</span>
+                                <span class="text-xs font-medium">${this.formatShortDate(tripDate)}</span>
+                            </div>
+                            <div class="flex items-center gap-1 text-slate-400">
+                                <span class="material-symbols-outlined text-xs">schedule</span>
+                                <span class="text-xs">Todo el día</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Título principal -->
+                        <div>
+                            <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-2 leading-tight group-hover:${colors.text} transition-colors duration-300">${day.title}</h4>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">${day.description}</p>
+                        </div>
+                        
+
+                        
+                        <!-- Footer con acción -->
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700">
+                            <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 group-hover:${colors.text} transition-colors duration-300">
+                                <span class="material-symbols-outlined text-sm">touch_app</span>
+                                <span class="text-xs font-medium">Ver detalles</span>
+                            </div>
+                            <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <span class="material-symbols-outlined text-sm ${colors.text}">arrow_forward</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
         } else {
             return `
-                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer transition-all duration-200 hover:shadow-xl overflow-hidden">
-                    <div class="p-6">
-                        <div class="flex items-center gap-3 mb-4">
-                            <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">${activityIcon}</span>
-                            <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">Día ${dayNumber} • ${this.formatShortDate(tripDate)}</p>
+                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer group hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 ease-out overflow-hidden">
+                    <div class="p-6 space-y-4">
+                        <!-- Header con badges -->
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex gap-2">
+                                <div class="bg-black/10 dark:bg-white/10 rounded-full px-3 py-1">
+                                    <p class="text-slate-900 dark:text-white text-sm font-semibold">Día ${dayNumber}</p>
+                                </div>
+                                <div class="${activityBadge.color} rounded-full px-3 py-1">
+                                    <p class="text-xs font-semibold">${activityBadge.text}</p>
+                                </div>
+                            </div>
+                            <div class="${colors.light} rounded-full px-3 py-1">
+                                <p class="${colors.text} text-xs font-semibold">${day.country}</p>
+                            </div>
                         </div>
-                        <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3">${day.title}</h4>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">${day.description}</p>
-                        <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                            <span class="material-symbols-outlined text-sm">touch_app</span>
-                            <span class="text-xs font-medium">Toca para ver detalles</span>
+                        
+                        <!-- Icono central grande -->
+                        <div class="flex items-center justify-center mb-6">
+                            <div class="relative">
+                                <div class="w-16 h-16 ${colors.light} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <span class="text-3xl">${day.icon}</span>
+                                </div>
+                                <div class="absolute inset-0 ${colors.bg} rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Información principal -->
+                        <div class="text-center space-y-2">
+                            <div class="flex items-center justify-center gap-2 ${colors.text} mb-2">
+                                <span class="material-symbols-outlined text-sm">schedule</span>
+                                <span class="text-xs font-medium">${this.formatShortDate(tripDate)}</span>
+                            </div>
+                            <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3 leading-tight group-hover:${colors.text} transition-colors duration-300">${day.title}</h4>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">${day.description}</p>
+                        </div>
+                        
+
+                        
+                        <!-- Footer con acción -->
+                        <div class="flex items-center justify-center pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 group-hover:${colors.text} transition-colors duration-300">
+                                <span class="material-symbols-outlined text-sm">touch_app</span>
+                                <span class="text-xs font-medium">Ver detalles</span>
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-1">
+                                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -301,8 +411,9 @@ export class ItineraryRenderer {
         document.querySelectorAll('.itinerary-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 const dayId = e.currentTarget.dataset.dayId;
-                if (window.uiRenderer && window.uiRenderer.showItineraryModal) {
-                    window.uiRenderer.showItineraryModal(dayId);
+                const uiRenderer = stateManager.getState('instances.uiRenderer');
+                if (uiRenderer && uiRenderer.showItineraryModal) {
+                    uiRenderer.showItineraryModal(dayId);
                 } else {
                     Logger.warning(`showItineraryModal not available for day: ${dayId}`);
                 }
@@ -347,8 +458,9 @@ export class ItineraryRenderer {
     scrollToCurrentDay() {
         try {
             // Calcular día actual (usando Day Simulator si está activo)
-            const today = window.DaySimulator && window.DaySimulator.isSimulating 
-                ? window.DaySimulator.getSimulatedDate() 
+            const daySimulator = stateManager.getState('instances.daySimulator');
+            const today = daySimulator && daySimulator.isSimulating 
+                ? daySimulator.getSimulatedDate() 
                 : new Date();
             const tripStartDate = this.getTripStartDate();
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
