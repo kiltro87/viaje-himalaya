@@ -567,29 +567,19 @@ export class BudgetManager {
     }
 
     getCategoryColor(category) {
-        // Limpiar el nombre de la categoría eliminando emojis
-        const cleanCategory = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
-        
-        const colors = {
-            'Ropa': 'bg-blue-500',
-            'Calzado': 'bg-green-500',
-            'Equipo': 'bg-purple-500',
-            'Documentos y Salud': 'bg-red-500',
-            'Vuelos': 'bg-blue-500',
-            'Alojamiento': 'bg-purple-500',
-            'Transporte': 'bg-green-500',
-            'Comida': 'bg-orange-500',
-            'Comida y Bebida': 'bg-orange-500',
-            'Actividades': 'bg-red-500',
-            'Visados': 'bg-yellow-500',
-            'Entradas y Visados': 'bg-yellow-500',
-            'Seguro': 'bg-indigo-500',
-            'Equipamiento': 'bg-pink-500',
-            'Tour': 'bg-teal-500',
-            'Varios': 'bg-gray-500',
-            'Contingencia': 'bg-amber-500'
-        };
-        return colors[cleanCategory] || colors[category] || 'bg-slate-500';
+        // Usar Design Tokens para colores consistentes
+        const categoryColors = getBudgetCategoryColors(category);
+        return categoryColors.bg;
+    }
+
+    /**
+     * 🎨 OBTENER COLORES COMPLETOS DE CATEGORÍA
+     * 
+     * @param {string} category - Nombre de la categoría
+     * @returns {object} Objeto con todas las clases de color (bg, text, border)
+     */
+    getCategoryColorSet(category) {
+        return getBudgetCategoryColors(category);
     }
 
     render(container, tripConfigParam) {

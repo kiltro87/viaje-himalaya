@@ -1,6 +1,10 @@
 /**
  * Sistema de Logging y Trazabilidad Completo
  * 
+ * Sistema unificado de logging que usa colores consistentes con
+ * el Design System de la aplicación. Optimizado para desarrollo
+ * y producción con diferentes niveles de verbosidad.
+ * 
  * Categorías de Trazas:
  * - 🚀 INIT: Inicialización de componentes y aplicación
  * - 📊 DATA: Operaciones con datos (CRUD, transformaciones)
@@ -22,19 +26,20 @@ class Logger {
         this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         this.isEnabled = true;
         this.logLevel = this.isMobile ? 'ERROR' : 'DEBUG'; // Menos logging en móvil
+        // Usar colores consistentes con Design Tokens
         this.categories = {
-            INIT: { emoji: '🚀', color: '#3B82F6', enabled: true },
-            DATA: { emoji: '📊', color: '#10B981', enabled: true },
-            UI: { emoji: '🎨', color: '#8B5CF6', enabled: true },
-            EVENT: { emoji: '🔄', color: '#F59E0B', enabled: true },
-            MAP: { emoji: '🗺️', color: '#06B6D4', enabled: true },
-            BUDGET: { emoji: '💰', color: '#059669', enabled: true },
-            RESPONSIVE: { emoji: '📱', color: '#EC4899', enabled: true },
-            WARNING: { emoji: '⚠️', color: '#F59E0B', enabled: true },
-            ERROR: { emoji: '❌', color: '#EF4444', enabled: true },
-            SUCCESS: { emoji: '✅', color: '#10B981', enabled: true },
-            DEBUG: { emoji: '🔍', color: '#6B7280', enabled: true },
-            PERFORMANCE: { emoji: '📈', color: '#7C3AED', enabled: true }
+            INIT: { emoji: '🚀', color: '#3B82F6', tailwind: 'text-blue-600', enabled: true },
+            DATA: { emoji: '📊', color: '#10B981', tailwind: 'text-green-600', enabled: true },
+            UI: { emoji: '🎨', color: '#8B5CF6', tailwind: 'text-purple-600', enabled: true },
+            EVENT: { emoji: '🔄', color: '#F59E0B', tailwind: 'text-amber-600', enabled: true },
+            MAP: { emoji: '🗺️', color: '#06B6D4', tailwind: 'text-cyan-600', enabled: true },
+            BUDGET: { emoji: '💰', color: '#059669', tailwind: 'text-green-600', enabled: true },
+            RESPONSIVE: { emoji: '📱', color: '#EC4899', tailwind: 'text-pink-600', enabled: true },
+            WARNING: { emoji: '⚠️', color: '#F59E0B', tailwind: 'text-amber-600', enabled: true },
+            ERROR: { emoji: '❌', color: '#EF4444', tailwind: 'text-red-600', enabled: true },
+            SUCCESS: { emoji: '✅', color: '#10B981', tailwind: 'text-green-600', enabled: true },
+            DEBUG: { emoji: '🔍', color: '#6B7280', tailwind: 'text-gray-600', enabled: true },
+            PERFORMANCE: { emoji: '📈', color: '#7C3AED', tailwind: 'text-violet-600', enabled: true }
         };
         
         this.startTime = Date.now();

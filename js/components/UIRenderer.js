@@ -218,11 +218,11 @@ export class UIRenderer {
 
         mainContent.innerHTML = `
             <div class="w-full max-w-4xl mx-auto p-6">
-                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
                     <span class="material-symbols-outlined text-4xl text-red-600 dark:text-red-400 mb-4 block">error</span>
                     <h2 class="text-xl font-bold text-red-800 dark:text-red-300 mb-2">Error de renderizado</h2>
                     <p class="text-red-700 dark:text-red-400 mb-4">${error.message}</p>
-                    <button onclick="location.reload()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                    <button onclick="location.reload()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl">
                         Recargar página
                     </button>
                 </div>
@@ -343,11 +343,11 @@ export class UIRenderer {
                             </div>
                             
                             <div class="grid grid-cols-2 gap-3 text-center">
-                                <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-3">
+                                <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
                                     <div class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itineraryData.length}</div>
                                     <div class="text-xs text-slate-600 dark:text-slate-400">días totales</div>
                                 </div>
-                                <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-3">
+                                <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
                                     <div class="text-2xl font-bold text-slate-900 dark:text-white" id="remaining-days">-</div>
                                     <div class="text-xs text-slate-600 dark:text-slate-400">días restantes</div>
                                 </div>
@@ -525,7 +525,7 @@ export class UIRenderer {
                             </div>
                         </div>
                         
-                        <div class="text-sm text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-800/30 rounded-lg p-2">
+                        <div class="text-sm text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-800/30 rounded-xl p-2">
                             💡 ${weatherData.recommendation}
                         </div>
                     </div>
