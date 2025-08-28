@@ -37,12 +37,10 @@ export const APP_CONFIG = {
 };
 
 export const VIEWS = {
-    SUMMARY: 'resumen',
-    ITINERARY: 'itinerario', 
-    TODAY: 'hoy',
-    MAP: 'mapa',
-    BUDGET: 'gastos',
-    EXTRAS: 'extras'
+    TODAY: 'hoy',           // Landing page principal
+    ITINERARY: 'itinerario', // Timeline del viaje
+    PLANNING: 'planificacion', // Gastos + Extras + Packing
+    TRACKING: 'seguimiento'    // Mapa + Analytics
 };
 
 export const BREAKPOINTS = {

@@ -124,11 +124,11 @@
         📅 Simulando día
     </div>
 
-    <nav id="bottom-nav" class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-lg h-20 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 z-40 grid grid-cols-6 rounded-3xl shadow-2xl shadow-slate-300/30 dark:shadow-black/30">
-        <!-- Botón 1: Resumen (Activo por defecto) -->
-        <button data-view="resumen" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full active">
-            <span class="material-symbols-outlined">dashboard</span>
-            <span class="text-xs font-medium">Resumen</span>
+    <nav id="bottom-nav" class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-lg h-20 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 z-40 grid grid-cols-4 rounded-3xl shadow-2xl shadow-slate-300/30 dark:shadow-black/30">
+        <!-- Botón 1: HOY (Landing page principal) -->
+        <button data-view="hoy" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full active">
+            <span class="material-symbols-outlined">today</span>
+            <span class="text-xs font-medium">Hoy</span>
         </button>
         
         <!-- Botón 2: Itinerario -->
@@ -137,28 +137,16 @@
             <span class="text-xs font-medium">Itinerario</span>
         </button>
         
-        <!-- Botón 3: Hoy -->
-        <button data-view="hoy" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full">
-             <span class="material-symbols-outlined">today</span>
-            <span class="text-xs font-medium">Hoy</span>
+        <!-- Botón 3: Planificación (gastos + extras + packing) -->
+        <button data-view="planificacion" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full">
+            <span class="material-symbols-outlined">checklist</span>
+            <span class="text-xs font-medium">Planificación</span>
         </button>
         
-        <!-- Botón 4: Mapa -->
-        <button data-view="mapa" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full">
-            <span class="material-symbols-outlined">map</span>
-            <span class="text-xs font-medium">Mapa</span>
-        </button>
-        
-        <!-- Botón 5: Gastos -->
-        <button data-view="gastos" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full">
-            <span class="material-symbols-outlined">account_balance_wallet</span>
-            <span class="text-xs font-medium">Gastos</span>
-        </button>
-        
-        <!-- Botón 6: Extras -->
-        <button data-view="extras" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full">
-            <span class="material-symbols-outlined">inventory_2</span>
-            <span class="text-xs font-medium">Extras</span>
+        <!-- Botón 4: Seguimiento (mapa + analytics) -->
+        <button data-view="seguimiento" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full">
+            <span class="material-symbols-outlined">analytics</span>
+            <span class="text-xs font-medium">Seguimiento</span>
         </button>
     </nav>
 

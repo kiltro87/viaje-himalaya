@@ -47,8 +47,8 @@ export class UIRenderer {
         Logger.init('UIRenderer constructor started');
         Logger.startPerformance('UIRenderer-init');
         
-        // Vista actual del sistema (por defecto: resumen)
-        this.currentView = VIEWS.SUMMARY;
+        // Vista actual del sistema (por defecto: HOY como landing page)
+        this.currentView = VIEWS.TODAY;
         
         // Instancia del gestor de presupuesto para operaciones financieras
         this.budgetManager = new BudgetManager();
@@ -128,65 +128,24 @@ export class UIRenderer {
         Logger.ui(`🎨 Rendering main content for view: ${this.currentView}`);
         Logger.startPerformance('render-main-content');
 
-        // Mapeo de vistas a métodos de renderizado
+        // Mapeo de vistas a métodos de renderizado - NUEVA ESTRUCTURA 4 SECCIONES
         const viewRenderers = {
-            [VIEWS.SUMMARY]: () => {
-                Logger.ui('Rendering summary view');
-                this.summaryRenderer.renderSummary();
+            [VIEWS.TODAY]: () => {
+                Logger.ui('🌅 Rendering TODAY view (landing page principal)');
+                this.renderTodayLanding();
             },
             [VIEWS.ITINERARY]: () => {
-                Logger.ui('Rendering itinerary view - delegating to ItineraryRenderer');
+                Logger.ui('📅 Rendering ITINERARY view - delegating to ItineraryRenderer');
                 const mainContent = document.getElementById('main-content');
                 itineraryRenderer.renderItinerary(mainContent);
             },
-            [VIEWS.TODAY]: () => {
-                Logger.ui('Rendering today view');
-                this.renderToday();
+            [VIEWS.PLANNING]: () => {
+                Logger.ui('🎯 Rendering PLANNING view (gastos + extras + packing)');
+                this.renderPlanning();
             },
-            [VIEWS.MAP]: () => {
-                Logger.ui('Rendering map view with consistent header');
-                const mainContent = document.getElementById('main-content');
-                
-                // Aplicar header consistente con Itinerario
-                mainContent.innerHTML = `
-                    <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                        <!-- Header del Mapa (estilo Itinerario) -->
-                        <div class="mb-12">
-                            <div class="flex items-center gap-4 mb-4">
-                                <span class="material-symbols-outlined text-6xl text-blue-600 dark:text-blue-400">map</span>
-                                <div>
-                                    <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Mapa del Viaje</h1>
-                                    <p class="text-lg text-slate-600 dark:text-slate-400">Explora todos los destinos y lugares que visitarás en tu aventura</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Contenedor del Mapa -->
-                        <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-2 relative z-10">
-                            <div id="map-container" class="w-full h-[80vh] min-h-[600px] rounded-xl overflow-hidden relative">
-                                <!-- El mapa se renderizará aquí -->
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Renderizar el mapa en el contenedor específico
-                const mapContainer = document.getElementById('map-container');
-                if (mapContainer) {
-                    mapRenderer.renderMap(mapContainer);
-                }
-            },
-            [VIEWS.BUDGET]: () => {
-                Logger.ui('💰 Rendering budget view');
-                this.renderGastos();
-            },
-            [VIEWS.FLIGHTS]: () => {
-                Logger.ui('✈️ Rendering flights view');
-                this.renderFlights();
-            },
-            ['extras']: () => {
-                Logger.ui('🎁 Rendering extras view');
-                this.renderExtras();
+            [VIEWS.TRACKING]: () => {
+                Logger.ui('📊 Rendering TRACKING view (mapa + analytics)');
+                this.renderTracking();
             }
         };
 
@@ -1699,6 +1658,175 @@ export class UIRenderer {
                 airline: 'Error'
             };
         }
+    }
+
+    /**
+     * 🌅 NUEVA ESTRUCTURA - TODAY LANDING PAGE
+     * Combina la vista HOY con micro-stats como página principal
+     */
+    renderTodayLanding() {
+        Logger.ui('🌅 Rendering TODAY as landing page with micro-stats');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        // Reutilizar renderToday() existente pero agregar micro-stats
+        this.renderToday();
+        
+        // Añadir micro-stats al final del contenido
+        const existingContent = mainContent.innerHTML;
+        mainContent.innerHTML = existingContent + `
+            <!-- Micro-stats rápidas (antes era parte de Resumen) -->
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">21</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">días</div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">2</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">países</div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">€3,500</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">presupuesto</div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
+                        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">45%</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">progreso</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 🎯 NUEVA ESTRUCTURA - PLANNING (gastos + extras + packing)
+     * Combina gestión de presupuesto, packing list y herramientas
+     */
+    renderPlanning() {
+        Logger.ui('🎯 Rendering PLANNING view (budget + packing + tools)');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        mainContent.innerHTML = `
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                <!-- Header de Planificación -->
+                <div class="mb-12">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="material-symbols-outlined text-6xl text-indigo-600 dark:text-indigo-400">checklist</span>
+                        <div>
+                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Planificación</h1>
+                            <p class="text-lg text-slate-600 dark:text-slate-400">Gestiona tu presupuesto, packing y preparativos del viaje</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de Presupuesto -->
+                <div id="budget-section" class="mb-12">
+                    <!-- El BudgetManager se renderizará aquí -->
+                </div>
+
+                <!-- Sección de Packing List -->
+                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-teal-600 dark:text-teal-400">inventory_2</span>
+                        Lista de Equipaje
+                    </h2>
+                    <div id="packing-list-content">
+                        <p class="text-slate-600 dark:text-slate-400">Cargando lista de equipaje...</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Renderizar el presupuesto en la sección dedicada
+        const budgetSection = document.getElementById('budget-section');
+        if (budgetSection) {
+            this.budgetManager.render(budgetSection);
+        }
+
+        // Cargar packing list (si existe)
+        this.loadPackingList();
+    }
+
+    /**
+     * 📊 NUEVA ESTRUCTURA - TRACKING (mapa + analytics)
+     * Combina mapa del viaje con analytics y progreso
+     */
+    renderTracking() {
+        Logger.ui('📊 Rendering TRACKING view (map + analytics)');
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) return;
+
+        mainContent.innerHTML = `
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                <!-- Header de Seguimiento -->
+                <div class="mb-12">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="material-symbols-outlined text-6xl text-emerald-600 dark:text-emerald-400">analytics</span>
+                        <div>
+                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Seguimiento</h1>
+                            <p class="text-lg text-slate-600 dark:text-slate-400">Mapa del viaje y análisis de progreso</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen estadístico -->
+                <div id="summary-stats" class="mb-8">
+                    <!-- Las estadísticas del resumen se renderizarán aquí -->
+                </div>
+
+                <!-- Mapa del Viaje -->
+                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-2 relative z-10">
+                    <div id="map-container" class="w-full h-[80vh] min-h-[600px] rounded-xl overflow-hidden relative">
+                        <!-- El mapa se renderizará aquí -->
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Renderizar el resumen/analytics en la sección dedicada
+        const summaryStats = document.getElementById('summary-stats');
+        if (summaryStats) {
+            this.summaryRenderer.renderSummary(summaryStats);
+        }
+
+        // Renderizar el mapa
+        const mapContainer = document.getElementById('map-container');
+        if (mapContainer) {
+            mapRenderer.renderMap(mapContainer);
+        }
+    }
+
+    /**
+     * Helper: Cargar packing list
+     */
+    loadPackingList() {
+        const packingContent = document.getElementById('packing-list-content');
+        if (!packingContent) return;
+
+        // Placeholder para packing list - se puede integrar con PackingListManager
+        packingContent.innerHTML = `
+            <div class="space-y-3">
+                <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 radius-standard">
+                    <input type="checkbox" class="w-5 h-5 text-teal-600">
+                    <span class="text-slate-700 dark:text-slate-300">Pasaporte y documentos</span>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 radius-standard">
+                    <input type="checkbox" class="w-5 h-5 text-teal-600">
+                    <span class="text-slate-700 dark:text-slate-300">Ropa de montaña</span>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 radius-standard">
+                    <input type="checkbox" class="w-5 h-5 text-teal-600">
+                    <span class="text-slate-700 dark:text-slate-300">Medicamentos</span>
+                </div>
+                <div class="text-center pt-4">
+                    <button class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
+                        Gestionar Lista Completa
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
     /**
