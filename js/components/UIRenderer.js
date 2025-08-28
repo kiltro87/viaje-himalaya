@@ -656,115 +656,66 @@ export class UIRenderer {
                 const dayNumber = dayDiff + 1;
                 
                 let contentHTML = `
-                    <!-- Header mejorado con estilo hero -->
-                    <div class="relative mb-8">
-                        <div class="absolute inset-0 bg-gradient-to-r ${colors.main} rounded-2xl opacity-10"></div>
-                        <div class="relative p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-4">
-                                    <span class="material-symbols-outlined text-6xl ${colors.text}">${activityIcon}</span>
-                                    <div>
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="text-sm font-semibold ${colors.text} bg-white dark:bg-slate-800 px-3 py-1 rounded-full">Día ${dayNumber}</span>
-                                            <span class="text-sm font-medium text-slate-500 dark:text-slate-400">${currentDayData.phase?.toUpperCase() || 'AVENTURA'}</span>
-                                        </div>
-                                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">${activityType}</h2>
-                                    </div>
-                                </div>
-                                <div class="hidden md:block">
-                                    <div class="text-6xl opacity-20">${currentDayData.icon}</div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">${activityIcon}</span>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">${activityType}</h2>
                     </div>
                     
-                    <!-- Tarjeta principal del día con diseño mejorado -->
-                    <div class="bg-gradient-to-br ${colors.light} rounded-2xl p-6 border ${colors.border} mb-6 relative overflow-hidden">
-                        <!-- Elemento decorativo -->
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${colors.main} rounded-full opacity-5 transform translate-x-16 -translate-y-16"></div>
-                        
-                        <div class="relative">
-                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
-                                <span class="w-1 h-8 bg-gradient-to-b ${colors.main} rounded-full"></span>
-                                ${currentDayData.title}
-                            </h3>
-                            <p class="text-slate-600 dark:text-slate-400 mb-6 text-lg leading-relaxed">${currentDayData.description}</p>
-                        </div>`;
+                    <!-- Tarjeta principal del día -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 mb-6">
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">${currentDayData.title}</h3>
+                        <p class="text-slate-600 dark:text-slate-400 mb-6 text-lg leading-relaxed">${currentDayData.description}</p>`;
                         
                 if (currentDayData.planA) {
                     contentHTML += `
-                        <!-- Planes del día con diseño de timeline -->
-                        <div class="space-y-4 mb-6">
-                            <h4 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-                                <span class="material-symbols-outlined text-lg text-slate-600 dark:text-slate-400">event_note</span>
-                                Planes para hoy
-                            </h4>
+                        <div class="space-y-3 mb-6">
                             
-                            <div class="relative">
-                                <!-- Timeline vertical -->
-                                <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b ${colors.main} opacity-30"></div>
-                                
-                                <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border ${colors.border} shadow-sm relative">
-                                    <div class="absolute left-4 top-6 w-4 h-4 bg-slate-400 dark:bg-slate-600 rounded-full border-2 border-white dark:border-slate-800"></div>
-                                    <div class="pl-8">
-                                        <h5 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                                            <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-400">schedule</span>
-                                            Plan Principal
-                                        </h5>
-                                        <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.planA}</p>
-                                    </div>
+                            <div class="space-y-3">
+                                <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
+                                    <h5 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-400">schedule</span>
+                                        Plan Principal
+                                    </h5>
+                                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.planA}</p>
                                 </div>`;
                     
                     if (currentDayData.planB) {
                         contentHTML += `
-                                <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border ${colors.border} shadow-sm relative mt-3">
-                                    <div class="absolute left-4 top-6 w-4 h-4 bg-slate-400 dark:bg-slate-600 rounded-full border-2 border-white dark:border-slate-800"></div>
-                                    <div class="pl-8">
-                                        <h5 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                                            <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-400">alt_route</span>
-                                            Plan Alternativo
-                                        </h5>
-                                        <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.planB}</p>
-                                    </div>
+                                <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
+                                    <h5 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-400">alt_route</span>
+                                        Plan Alternativo
+                                    </h5>
+                                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.planB}</p>
                                 </div>`;
                     }
-                    contentHTML += `
-                            </div>
-                        </div>`;
+                    contentHTML += `</div>`;
                 }
                 
                 contentHTML += `
-                        </div>
                     </div>
                     
-                    <!-- Grid de información adicional con diseño mejorado -->
-                    <div class="grid md:grid-cols-2 gap-6">`;
+                    <div class="grid md:grid-cols-2 gap-4">`;
                 
                 if (currentDayData.consejo) {
                     contentHTML += `
-                        <div class="group relative bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800 hover:shadow-lg transition-all duration-300">
-                            <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full opacity-10 transform translate-x-10 -translate-y-10"></div>
-                            <div class="relative">
-                                <div class="flex items-center gap-3 mb-4">
-                                    <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">lightbulb</span>
-                                    <h4 class="font-bold text-slate-900 dark:text-white">Consejo del día</h4>
-                                </div>
-                                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.consejo}</p>
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="material-symbols-outlined text-lg text-blue-600 dark:text-blue-400">lightbulb</span>
+                                <h4 class="font-semibold text-slate-900 dark:text-white">Consejo</h4>
                             </div>
+                            <p class="text-slate-600 dark:text-slate-400">${currentDayData.consejo}</p>
                         </div>`;
                 }
                 
                 if (currentDayData.bocado) {
                     contentHTML += `
-                        <div class="group relative bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800 hover:shadow-lg transition-all duration-300">
-                            <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full opacity-10 transform translate-x-10 -translate-y-10"></div>
-                            <div class="relative">
-                                <div class="flex items-center gap-3 mb-4">
-                                    <span class="material-symbols-outlined text-2xl text-green-600 dark:text-green-400">restaurant</span>
-                                    <h4 class="font-bold text-slate-900 dark:text-white">Gastronomía</h4>
-                                </div>
-                                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.bocado}</p>
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="material-symbols-outlined text-lg text-green-600 dark:text-green-400">restaurant</span>
+                                <h4 class="font-semibold text-slate-900 dark:text-white">Bocado</h4>
                             </div>
+                            <p class="text-slate-600 dark:text-slate-400">${currentDayData.bocado}</p>
                         </div>`;
                 }
                 
