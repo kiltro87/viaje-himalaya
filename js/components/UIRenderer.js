@@ -1802,13 +1802,19 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Resumen estadístico -->
+
+
+                <!-- Resumen/Analytics aquí (se renderiza dinámicamente) -->
                 <div id="summary-stats" class="mb-8">
                     <!-- Las estadísticas del resumen se renderizarán aquí -->
                 </div>
 
                 <!-- Mapa del Viaje -->
                 <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-2 relative z-10">
+                    <div class="flex items-center gap-3 mb-4 p-4">
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">map</span>
+                        <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-200">Mapa del Viaje</h2>
+                    </div>
                     <div id="map-container" class="w-full h-[80vh] min-h-[600px] rounded-xl overflow-hidden relative">
                         <!-- El mapa se renderizará aquí -->
                     </div>

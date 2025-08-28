@@ -456,48 +456,22 @@ export class MapRenderer {
     adjustModalMapView(map, coords, markers) {
         Logger.debug(`🎯 Adjusting modal map view for coords:`, coords);
         
-        // Incluir marcador principal y lugares cercanos
-        const nearbyPlaces = tripConfig.placesByDay || {};
-        const allCoords = [coords];
-        
-        // Agregar coordenadas de lugares cercanos si existen
-        if (nearbyPlaces && Object.keys(nearbyPlaces).length > 0) {
-            Object.values(nearbyPlaces).flat().forEach(place => {
-                if (place.coords) {
-                    allCoords.push(place.coords);
-                }
-            });
-        }
-        
-        // Filtrar coordenadas válidas
-        const validCoords = allCoords.filter(coord => coord && coord.length === 2);
-        Logger.debug(`📍 Valid coordinates for modal map:`, validCoords);
-        
-        if (validCoords.length > 1) {
-            // Si hay múltiples coordenadas, ajustar vista para verlas todas con ZOOM CERCANO
-            const bounds = L.latLngBounds(validCoords);
-            map.fitBounds(bounds, {
-                padding: [10, 10], // Padding mínimo para máximo detalle
-                maxZoom: 16 // Zoom MUY CERCANO para Nepal/Bután (era 13)
-            });
-            Logger.debug(`🗺️ Multiple coordinates: fitted bounds with CLOSE zoom 16`);
-        } else if (coords) {
-            // Si solo hay una coordenada, zoom MUY CERCANO para ver detalles
-            map.setView(coords, 17); // Zoom MUY CERCANO (era 14)
-            Logger.debug(`🗺️ Single coordinate: set view with CLOSE zoom 17`);
+        // SOLO usar las coordenadas del día específico, NO lugares cercanos que pueden estar lejos
+        if (coords && coords.length === 2) {
+            // Zoom SÚPER CERCANO directo a la ubicación específica
+            map.setView(coords, 15); // Zoom 15 es perfecto para ciudades/lugares específicos
+            Logger.debug(`🗺️ Direct zoom to specific location: zoom 15`);
+        } else {
+            Logger.warning(`❌ Invalid coordinates for modal map:`, coords);
         }
         
         // Forzar actualización del tamaño después de ajustar vista
         setTimeout(() => {
             map.invalidateSize();
-            // Re-aplicar bounds después de invalidar tamaño con ZOOM CERCANO
-            if (validCoords.length > 1) {
-                const bounds = L.latLngBounds(validCoords);
-                map.fitBounds(bounds, { padding: [10, 10], maxZoom: 16 });
-                Logger.debug(`🔄 Re-applied bounds with CLOSE zoom level 16`);
-            } else if (coords) {
-                map.setView(coords, 17);
-                Logger.debug(`🔄 Re-centered with CLOSE zoom level 17`);
+            // Re-aplicar el zoom directo a la ubicación específica
+            if (coords && coords.length === 2) {
+                map.setView(coords, 15); // Zoom consistente 15
+                Logger.debug(`🔄 Re-applied direct zoom level 15 to location`);
             }
         }, 300);
         
