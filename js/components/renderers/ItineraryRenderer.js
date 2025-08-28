@@ -190,9 +190,9 @@ export class ItineraryRenderer {
         
         if (day.image) {
             return `
-                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer group hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 ease-out overflow-hidden">
+                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 radius-card shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer group shadow-card-hover  transition-standard overflow-hidden">
                     <div class="relative h-56 md:h-64 lg:h-72 overflow-hidden">
-                        <img loading="lazy" src="${day.image}" alt="${day.title}" class="w-full h-full object-cover transition-transform duration-300" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f46e5/ffffff?text=Imagen';">
+                        <img loading="lazy" src="${day.image}" alt="${day.title}" class="w-full h-full object-cover transition-standard" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f46e5/ffffff?text=Imagen';">
                         
                         <!-- Overlay sutil en hover -->
                         <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
@@ -215,7 +215,7 @@ export class ItineraryRenderer {
                         </div>
                         
                         <!-- Icono grande en hover -->
-                        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-standard transform translate-y-2 group-hover:translate-y-0">
                             <div class="w-12 h-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-card">
                                 <span class="text-2xl">${day.icon}</span>
                             </div>
@@ -237,7 +237,7 @@ export class ItineraryRenderer {
                         
                         <!-- Título principal -->
                         <div>
-                            <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-2 leading-tight group-hover:${colors.text} transition-colors duration-300">${day.title}</h4>
+                            <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-2 leading-tight group-hover:${colors.text} transition-standard">${day.title}</h4>
                             <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">${day.description}</p>
                         </div>
                         
@@ -245,11 +245,11 @@ export class ItineraryRenderer {
                         
                         <!-- Footer con acción -->
                         <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700">
-                            <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 group-hover:${colors.text} transition-colors duration-300">
+                            <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 group-hover:${colors.text} transition-standard">
                                 <span class="material-symbols-outlined text-sm">touch_app</span>
                                 <span class="text-xs font-medium">Ver detalles</span>
                             </div>
-                            <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div class="opacity-0 group-hover:opacity-100 transition-standard">
                                 <span class="material-symbols-outlined text-sm ${colors.text}">arrow_forward</span>
                             </div>
                         </div>
@@ -258,7 +258,7 @@ export class ItineraryRenderer {
             `;
         } else {
             return `
-                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer group hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 ease-out overflow-hidden">
+                <div data-day-id="${day.id}" class="itinerary-card bg-white dark:bg-slate-800 radius-card shadow-lg border border-slate-200 dark:border-slate-700 cursor-pointer group shadow-card-hover  transition-standard overflow-hidden">
                     <div class="p-6 space-y-4">
                         <!-- Header con badges -->
                         <div class="flex items-center justify-between mb-4">
@@ -278,10 +278,10 @@ export class ItineraryRenderer {
                         <!-- Icono central grande -->
                         <div class="flex items-center justify-center mb-6">
                             <div class="relative">
-                                <div class="w-16 h-16 ${colors.light} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                <div class="w-16 h-16 ${colors.light} rounded-full flex items-center justify-center  transition-standard">
                                     <span class="text-3xl">${day.icon}</span>
                                 </div>
-                                <div class="absolute inset-0 ${colors.bg} rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                                <div class="absolute inset-0 ${colors.bg} rounded-full opacity-0 group-hover:opacity-20 transition-standard"></div>
                             </div>
                         </div>
                         
@@ -291,7 +291,7 @@ export class ItineraryRenderer {
                                 <span class="material-symbols-outlined text-sm">schedule</span>
                                 <span class="text-xs font-medium">${this.formatShortDate(tripDate)}</span>
                             </div>
-                            <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3 leading-tight group-hover:${colors.text} transition-colors duration-300">${day.title}</h4>
+                            <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3 leading-tight group-hover:${colors.text} transition-standard">${day.title}</h4>
                             <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">${day.description}</p>
                         </div>
                         
@@ -299,10 +299,10 @@ export class ItineraryRenderer {
                         
                         <!-- Footer con acción -->
                         <div class="flex items-center justify-center pt-4 border-t border-slate-100 dark:border-slate-700">
-                            <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 group-hover:${colors.text} transition-colors duration-300">
+                            <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 group-hover:${colors.text} transition-standard">
                                 <span class="material-symbols-outlined text-sm">touch_app</span>
                                 <span class="text-xs font-medium">Ver detalles</span>
-                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-1">
+                                <div class="opacity-0 group-hover:opacity-100 transition-standard ml-1">
                                     <span class="material-symbols-outlined text-sm">arrow_forward</span>
                                 </div>
                             </div>
@@ -541,7 +541,7 @@ export class ItineraryRenderer {
      */
     renderError(container, error) {
         container.innerHTML = `
-            <div class="flex items-center justify-center min-h-[400px] bg-red-50 dark:bg-red-900/20 rounded-3xl">
+            <div class="flex items-center justify-center min-h-[400px] bg-red-50 dark:bg-red-900/20 radius-card">
                 <div class="text-center p-8">
                     <div class="text-red-500 text-6xl mb-4">📅</div>
                     <h3 class="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">Error al cargar el itinerario</h3>

@@ -44,7 +44,7 @@ export class SyncStatusIndicator {
             fixed top-4 left-4 z-50 
             px-3 py-2 rounded-full 
             text-sm font-medium 
-            transition-all duration-300 
+            transition-all var(--transition-fast) 
             shadow-lg border
             transform translate-y-0 opacity-0
             pointer-events-none
@@ -190,7 +190,7 @@ export class SyncStatusIndicator {
             fixed top-4 left-4 z-50 
             px-3 py-2 rounded-full 
             text-sm font-medium 
-            transition-all duration-300 
+            transition-all var(--transition-fast) 
             shadow-lg border
             transform translate-y-0 opacity-100
         `.replace(/\s+/g, ' ').trim();
