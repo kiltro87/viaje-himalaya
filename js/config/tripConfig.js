@@ -891,15 +891,19 @@ export const tripConfig = {
             color: 'text-green-600 dark:text-green-400',
             tour: 'Nepal 360',
             website: 'www.weroad.es',
-            description: 'Grupo de viajeros jóvenes'
+            url: 'https://www.weroad.es/viajes/nepal-360',
+            price: '€1,899',
+            description: 'Grupo de viajeros jóvenes (18-35 años) con itinerario completo de 15 días'
         },
         bhutan: {
             name: 'Best of Bhutan',
             icon: 'temple_buddhist', 
             color: 'text-orange-600 dark:text-orange-400',
-            tour: 'Best of Bhutan',
-            description: 'Agencia local especializada',
-            contact: 'Por definir'
+            tour: 'Best of Bhutan Tour (6 días)',
+            url: 'https://www.bhutan-acorn.com/tour/6-days-best-of-bhutan-tour',
+            price: '€1,602',
+            description: 'Agencia local especializada en turismo sostenible en Bután',
+            contact: 'Bhutan Acorn Tours & Treks'
         },
         insurance: {
             name: 'Seguro de Viaje',

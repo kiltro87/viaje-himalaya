@@ -507,6 +507,9 @@ export class UIRenderer {
         if (!dayData) return 'Ubicación desconocida';
         if (dayData.location) return dayData.location;
         
+        // Verificar que existe title antes de usar toLowerCase
+        if (!dayData.title) return 'Ubicación desconocida';
+        
         // Extraer ubicación del título
         const title = dayData.title.toLowerCase();
         if (title.includes('katmandú') || title.includes('kathmandu')) return 'Katmandú';
@@ -1747,6 +1750,17 @@ export class UIRenderer {
                         <!-- Las agencias se renderizarán aquí -->
                     </div>
                 </div>
+
+                <!-- Sección de Alojamientos -->
+                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">hotel</span>
+                        Alojamientos del Viaje
+                    </h2>
+                    <div id="accommodations-content">
+                        <!-- Los alojamientos se renderizarán aquí -->
+                    </div>
+                </div>
             </div>
         `;
 
@@ -1761,6 +1775,9 @@ export class UIRenderer {
         
         // Cargar agencias de viaje
         this.loadAgencies();
+        
+        // Cargar información de alojamientos
+        this.loadAccommodations();
     }
 
     /**
@@ -1878,8 +1895,8 @@ export class UIRenderer {
             const showButton = document.getElementById('show-full-packing-list');
             if (showButton) {
                 showButton.addEventListener('click', () => {
-                    // Aquí se podría abrir un modal o redirigir a la vista completa
-                    alert('Funcionalidad de lista completa - por implementar');
+                    // Navegar a la vista de "extras" donde está la lista completa
+                    this.changeView('extras');
                 });
             }
         } else {
@@ -1949,7 +1966,70 @@ export class UIRenderer {
                     </div>
                 </div>
             </div>
+
+            <!-- Información de Emergencia y Contactos -->
+            <div class="mt-8 bg-red-50 dark:bg-red-900/20 radius-card p-6 border border-red-200 dark:border-red-800">
+                <h3 class="font-bold text-lg text-red-800 dark:text-red-200 mb-4 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-2xl ${agencies.emergency.color}">${agencies.emergency.icon}</span>
+                    ${agencies.emergency.name}
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4 text-sm">
+                    <div class="space-y-2">
+                        <div class="font-medium text-red-700 dark:text-red-300">📞 Embajada de España</div>
+                        <div class="text-red-600 dark:text-red-400">${agencies.emergency.embassy}</div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="font-medium text-red-700 dark:text-red-300">🏥 Hospital Internacional</div>
+                        <div class="text-red-600 dark:text-red-400">${agencies.emergency.hospital}</div>
+                    </div>
+                    <div class="space-y-2 md:col-span-2">
+                        <div class="font-medium text-red-700 dark:text-red-300">🕒 Zonas Horarias</div>
+                        <div class="text-red-600 dark:text-red-400">${agencies.emergency.timezone}</div>
+                    </div>
+                </div>
+            </div>
         `;
+    }
+
+    /**
+     * Helper: Cargar información de alojamientos
+     */
+    loadAccommodations() {
+        const accommodationsContent = document.getElementById('accommodations-content');
+        if (!accommodationsContent) return;
+
+        // Extraer información de alojamientos del tripConfig
+        const accommodationsByLocation = {};
+        
+        tripConfig.itineraryData.forEach(day => {
+            if (day.accommodation && day.accommodation !== 'Vuelo nocturno') {
+                const location = this.extractLocationFromDay(day);
+                if (!accommodationsByLocation[location]) {
+                    accommodationsByLocation[location] = [];
+                }
+                if (!accommodationsByLocation[location].includes(day.accommodation)) {
+                    accommodationsByLocation[location].push(day.accommodation);
+                }
+            }
+        });
+
+        let accommodationsHTML = '<div class="space-y-4">';
+        
+        Object.entries(accommodationsByLocation).forEach(([location, hotels]) => {
+            accommodationsHTML += `
+                <div class="border border-slate-200 dark:border-slate-600 radius-standard p-4">
+                    <h4 class="font-bold text-slate-900 dark:text-white mb-2">📍 ${location}</h4>
+                    <div class="space-y-1">
+                        ${hotels.map(hotel => `
+                            <div class="text-slate-700 dark:text-slate-300 text-sm">🏨 ${hotel}</div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
+        
+        accommodationsHTML += '</div>';
+        accommodationsContent.innerHTML = accommodationsHTML;
     }
 
     /**
