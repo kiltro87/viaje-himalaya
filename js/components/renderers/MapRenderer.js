@@ -105,8 +105,8 @@ export class MapRenderer {
                 const group = new L.featureGroup(markers);
                 const bounds = group.getBounds();
                 this.map.fitBounds(bounds, {
-                    padding: [5, 5], // Padding reducido para máximo aprovechamiento del espacio
-                    maxZoom: 10 // Zoom más cercano sin perder visión general
+                    padding: [20, 20], // Padding contextual como en modales
+                    maxZoom: 13 // Zoom contextual como en modales
                 });
                 Logger.debug(`🗺️ Main map fitted to ${markers.length} markers with enhanced zoom`);
             }

@@ -1816,34 +1816,31 @@ export class UIRenderer {
             </div>
         `;
 
-        // Renderizar el resumen/analytics en la sección dedicada - SIMPLIFICADO
+        // Renderizar el resumen/analytics COMPLETO usando SummaryRenderer
         const summaryStats = document.getElementById('summary-stats');
         if (summaryStats) {
-            // Renderizar directamente sin complicaciones de DOM
-            summaryStats.innerHTML = `
-                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl mb-4 block">calendar_month</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">21</p>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm">días de aventura</p>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl mb-4 block">public</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">2</p>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm">países visitados</p>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl mb-4 block">account_balance_wallet</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">€3,500</p>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm">presupuesto total</p>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 text-3xl mb-4 block">trending_up</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">45%</p>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm">progreso del viaje</p>
-                    </div>
-                </section>
-            `;
+            // Crear un contenedor temporal para que SummaryRenderer funcione
+            const tempContainer = document.createElement('div');
+            tempContainer.id = 'main-content';
+            document.body.appendChild(tempContainer);
+            
+            // Renderizar usando SummaryRenderer completo
+            this.summaryRenderer.renderSummary();
+            
+            // Copiar el contenido generado (excluyendo el header que ya está)
+            const generatedContent = tempContainer.innerHTML;
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = generatedContent;
+            
+            // Extraer solo las secciones de contenido (sin header)
+            const sections = tempDiv.querySelectorAll('section');
+            summaryStats.innerHTML = '';
+            sections.forEach(section => {
+                summaryStats.appendChild(section.cloneNode(true));
+            });
+            
+            // Limpiar contenedor temporal
+            document.body.removeChild(tempContainer);
         }
 
         // Renderizar el mapa
@@ -1860,128 +1857,112 @@ export class UIRenderer {
         const packingContent = document.getElementById('packing-list-content');
         if (!packingContent) return;
 
-        // Inicializar PackingListManager si no existe (como en el original)
-        let packingManager = stateManager.getPackingListManager();
-        if (!packingManager) {
-            try {
-                const { getPackingListManager } = await import('../utils/PackingListManager.js');
-                packingManager = getPackingListManager();
-                stateManager.setPackingListManager(packingManager);
-                
-                // Inicializar con FirebaseManager si está disponible
-                const firebaseManager = stateManager.getFirebaseManager();
-                if (firebaseManager) {
-                    await packingManager.initialize(firebaseManager);
-                }
-            } catch (error) {
-                Logger.warning('PackingListManager not available, using simple implementation');
-                packingManager = null;
-            }
-        }
-
-        // Renderizar packing list REAL
-        if (packingManager) {
-            try {
-                // Acceder directamente al cache para generar estadísticas
-                const allItems = packingManager.localCache || {};
-                const checkedCount = Object.values(allItems).filter(checked => checked).length;
-                const totalCount = Object.keys(allItems).length;
-                
-                Logger.debug(`PackingList stats: ${checkedCount}/${totalCount} items`);
-                
-                if (totalCount === 0) {
-                    // Si no hay items, mostrar mensaje de inicialización
-                    packingContent.innerHTML = `
-                        <div class="text-center py-8">
-                            <div class="mb-4">
-                                <span class="material-symbols-outlined text-4xl text-slate-400">inventory_2</span>
-                            </div>
-                            <p class="text-slate-600 dark:text-slate-400 mb-4">Inicializando lista de equipaje...</p>
-                            <button id="init-packing-list" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
-                                Crear Lista de Equipaje
-                            </button>
-                        </div>
-                    `;
-                    
-                    // Event listener para inicializar
-                    const initButton = document.getElementById('init-packing-list');
-                    if (initButton) {
-                        initButton.addEventListener('click', async () => {
-                            try {
-                                // Crear algunos items de ejemplo si no existen
-                                await packingManager.toggleItem('pasaporte', false);
-                                await packingManager.toggleItem('ropa-termica', false);
-                                await packingManager.toggleItem('medicamentos', false);
-                                await packingManager.toggleItem('camara', false);
-                                await packingManager.toggleItem('cargadores', false);
-                                
-                                Logger.info('🎒 Packing list initialized with sample items');
-                                
-                                // Recargar la vista
-                                this.loadPackingList();
-                            } catch (error) {
-                                Logger.error('Error initializing packing list:', error);
-                            }
-                        });
-                    }
-                } else {
-                    // Mostrar resumen y lista básica
-                    const itemEntries = Object.entries(allItems);
-                    const recentItems = itemEntries.slice(0, 3); // Mostrar solo 3 items
-                    
-                    packingContent.innerHTML = `
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center p-3 bg-teal-50 dark:bg-teal-900/20 radius-standard">
-                                <span class="font-medium text-teal-800 dark:text-teal-200">Progreso del equipaje</span>
-                                <span class="text-2xl font-bold text-teal-600 dark:text-teal-400">${checkedCount}/${totalCount}</span>
-                            </div>
-                            
-                            <div class="space-y-2">
-                                <h4 class="font-medium text-slate-700 dark:text-slate-300">Algunos items:</h4>
-                                ${recentItems.map(([itemKey, checked]) => `
-                                    <div class="flex items-center gap-2 text-sm">
-                                        <span class="w-4 h-4 ${checked ? 'text-green-600' : 'text-slate-400'}">${checked ? '✅' : '☐'}</span>
-                                        <span class="text-slate-600 dark:text-slate-400">${itemKey.replace(/-/g, ' ')}</span>
-                                    </div>
-                                `).join('')}
-                                ${totalCount > 3 ? `<div class="text-xs text-slate-500">... y ${totalCount - 3} items más</div>` : ''}
-                            </div>
-                            
-                            <div class="text-center">
-                                <button id="show-full-packing-list" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
-                                    Gestionar Lista Completa
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // Event listener para mostrar lista completa
-                    const showButton = document.getElementById('show-full-packing-list');
-                    if (showButton) {
-                        showButton.addEventListener('click', () => {
-                            // Renderizar lista completa expandida
-                            this.renderFullPackingList(packingContent, packingManager);
-                        });
-                    }
-                }
-            } catch (error) {
-                Logger.error('Error rendering packing list:', error);
-                packingContent.innerHTML = `
-                    <div class="text-center py-8">
-                        <p class="text-red-600 dark:text-red-400 mb-4">Error al cargar la lista de equipaje</p>
-                        <button onclick="window.location.reload()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white radius-standard transition-standard">
-                            Reintentar
-                        </button>
-                    </div>
-                `;
-            }
-        } else {
-            // Fallback si no hay PackingListManager
+        // Usar datos REALES de tripConfig en lugar de Firestore
+        const packingData = tripConfig.packingListData || {};
+        const categories = Object.keys(packingData);
+        
+        if (categories.length === 0) {
+            // Fallback si no hay datos en tripConfig
             packingContent.innerHTML = `
                 <div class="text-center py-8">
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">Lista de equipaje no disponible</p>
-                    <button class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
-                        Activar Lista Completa
+                    <div class="mb-4">
+                        <span class="material-symbols-outlined text-4xl text-slate-400">inventory_2</span>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-400 mb-4">No hay datos de equipaje en la configuración</p>
+                </div>
+            `;
+        } else {
+            // Mostrar resumen de las categorías de tripConfig
+            const totalItems = Object.values(packingData).flat().length;
+            const categoriesPreview = categories.slice(0, 3);
+            
+            packingContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-teal-50 dark:bg-teal-900/20 radius-standard">
+                        <span class="font-medium text-teal-800 dark:text-teal-200">Lista de equipaje</span>
+                        <span class="text-2xl font-bold text-teal-600 dark:text-teal-400">${totalItems}</span>
+                        <span class="text-sm text-teal-700 dark:text-teal-300">items</span>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <h4 class="font-medium text-slate-700 dark:text-slate-300">Categorías:</h4>
+                        ${categoriesPreview.map(category => `
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="w-4 h-4 text-teal-600">📦</span>
+                                <span class="text-slate-600 dark:text-slate-400">${category} (${packingData[category].length} items)</span>
+                            </div>
+                        `).join('')}
+                        ${categories.length > 3 ? `<div class="text-xs text-slate-500">... y ${categories.length - 3} categorías más</div>` : ''}
+                    </div>
+                    
+                    <div class="text-center">
+                        <button id="show-full-packing-list" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
+                            Ver Lista Completa
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Event listener para mostrar lista completa
+            const showButton = document.getElementById('show-full-packing-list');
+            if (showButton) {
+                showButton.addEventListener('click', () => {
+                    this.renderFullPackingListFromConfig(packingContent, packingData);
+                });
+            }
+        }
+    }
+
+    /**
+     * Helper: Renderizar lista completa de equipaje desde tripConfig
+     */
+    renderFullPackingListFromConfig(container, packingData) {
+        try {
+            const categories = Object.keys(packingData);
+            
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-lg font-bold text-slate-900 dark:text-white">Lista Completa de Equipaje</h4>
+                        <button id="collapse-packing-list" class="text-sm text-teal-600 dark:text-teal-400 hover:underline">
+                            ← Volver al resumen
+                        </button>
+                    </div>
+                    
+                    ${categories.map(category => `
+                        <div class="bg-slate-50 dark:bg-slate-700 radius-standard p-4">
+                            <h5 class="font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+                                <span class="text-teal-600">📦</span> ${category}
+                                <span class="text-sm text-slate-500">(${packingData[category].length} items)</span>
+                            </h5>
+                            <div class="grid md:grid-cols-2 gap-2">
+                                ${packingData[category].map(item => `
+                                    <div class="flex items-center gap-3 p-2 bg-white dark:bg-slate-600 radius-standard text-sm">
+                                        <input type="checkbox" class="w-4 h-4 text-teal-600">
+                                        <span class="text-slate-700 dark:text-slate-300">${item}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Event listener para volver
+            const collapseBtn = document.getElementById('collapse-packing-list');
+            if (collapseBtn) {
+                collapseBtn.addEventListener('click', () => {
+                    this.loadPackingList(); // Volver al resumen
+                });
+            }
+            
+        } catch (error) {
+            Logger.error('Error rendering full packing list from config:', error);
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-red-600 dark:text-red-400 mb-4">Error al mostrar la lista completa</p>
+                    <button onclick="this.loadPackingList()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white radius-standard transition-standard">
+                        Volver al resumen
                     </button>
                 </div>
             `;
@@ -1989,7 +1970,7 @@ export class UIRenderer {
     }
 
     /**
-     * Helper: Renderizar lista completa de equipaje
+     * Helper: Renderizar lista completa de equipaje (Firestore - deprecated)
      */
     renderFullPackingList(container, packingManager) {
         try {
