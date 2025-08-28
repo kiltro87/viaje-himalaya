@@ -1816,95 +1816,50 @@ export class UIRenderer {
             </div>
         `;
 
-        // Renderizar solo estadísticas relevantes (SIN "¿Qué hacemos hoy?" duplicado)
+        // Renderizar el resumen/analytics COMPLETO usando SummaryRenderer
         const summaryStats = document.getElementById('summary-stats');
         if (summaryStats) {
-            // Renderizar estadísticas específicas para SEGUIMIENTO (sin duplicar Hoy)
-            summaryStats.innerHTML = `
-                <!-- Grid de Estadísticas Principales -->
-                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-8">
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl mb-4 block">calendar_month</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">21</p>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm">días de aventura</p>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl mb-4 block">public</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">2</p>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm">países visitados</p>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl mb-4 block">route</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">1,200km</p>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm">distancia total</p>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 text-3xl mb-4 block">trending_up</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">45%</p>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm">progreso del viaje</p>
-                    </div>
-                </section>
-
-                <!-- Análisis del Viaje -->
-                <section class="grid md:grid-cols-2 gap-6 lg:gap-8 mb-8">
-                    <div class="bg-white dark:bg-slate-800 radius-card p-6 shadow-card border border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center gap-3 mb-6">
-                            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">analytics</span>
-                            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Análisis del Viaje</h3>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-600 dark:text-slate-400">Fase actual</span>
-                                <span class="font-medium text-slate-800 dark:text-slate-200">Nepal - Trekking</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-600 dark:text-slate-400">Días restantes</span>
-                                <span class="font-medium text-slate-800 dark:text-slate-200">12 días</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-600 dark:text-slate-400">Altitude máxima</span>
-                                <span class="font-medium text-slate-800 dark:text-slate-200">5,545m</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-slate-800 radius-card p-6 shadow-card border border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center gap-3 mb-6">
-                            <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">trending_up</span>
-                            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Progreso del Viaje</h3>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-600 dark:text-slate-400">Días completados</span>
-                                <span class="font-medium text-slate-800 dark:text-slate-200">9 de 21</span>
-                            </div>
-                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-2">
-                                <div class="bg-green-500 h-2 rounded-full transition-standard" style="width: 43%"></div>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-600 dark:text-slate-400">Estado</span>
-                                <span class="font-medium px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm">En progreso</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            `;
+            // Crear un contenedor temporal para que SummaryRenderer funcione
+            const tempContainer = document.createElement('div');
+            tempContainer.id = 'main-content';
+            document.body.appendChild(tempContainer);
+            
+            // Renderizar usando SummaryRenderer completo
+            this.summaryRenderer.renderSummary();
+            
+            // Copiar el contenido generado (excluyendo el header que ya está)
+            const generatedContent = tempContainer.innerHTML;
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = generatedContent;
+            
+            // Extraer solo las secciones de contenido (sin header)
+            const sections = tempDiv.querySelectorAll('section');
+            summaryStats.innerHTML = '';
+            sections.forEach(section => {
+                summaryStats.appendChild(section.cloneNode(true));
+            });
+            
+            // Limpiar contenedor temporal
+            document.body.removeChild(tempContainer);
         }
 
-        // Renderizar el mapa con verificación de instancia
+        // Renderizar el mapa usando la instancia global importada
         const mapContainer = document.getElementById('map-container');
         if (mapContainer) {
-            // Verificar que mapRenderer esté disponible
-            if (this.mapRenderer) {
-                this.mapRenderer.renderMap(mapContainer);
+            // Usar mapRenderer importado globalmente
+            try {
+                mapRenderer.renderMap(mapContainer);
                 Logger.success('🗺️ Map rendered successfully in tracking view');
-            } else {
-                Logger.error('❌ MapRenderer not available in tracking view');
+            } catch (error) {
+                Logger.error('❌ Error rendering map in tracking view:', error);
                 mapContainer.innerHTML = `
                     <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
                         <div class="text-center">
                             <span class="material-symbols-outlined text-6xl mb-4 block">map</span>
-                            <p>Error: MapRenderer no disponible</p>
+                            <p>Error al cargar el mapa</p>
+                            <button onclick="window.location.reload()" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard">
+                                Reintentar
+                            </button>
                         </div>
                     </div>
                 `;
