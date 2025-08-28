@@ -34,6 +34,7 @@ import RealtimeSync from '../utils/RealtimeSync.js';
 import { ExpenseOrchestrator } from '../utils/ExpenseOrchestrator.js';
 import { container } from '../core/DependencyContainer.js';
 import { tripConfig } from '../config/tripConfig.js';
+import { getBudgetCategoryColors } from '../utils/StyleUtils.js';
 
 export class BudgetManager {
     /**
