@@ -135,13 +135,13 @@ export class SummaryRenderer {
                 </section>
 
                 <!-- Análisis de Estilo de Viaje -->
-                <section class="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+                <section class="bg-white dark:bg-slate-800 radius-card p-6 md:p-8 shadow-card border border-slate-200 dark:border-slate-700">
                     ${this.renderTripStyleAnalysis()}
                 </section>
 
                 <!-- Información del Viaje y Progreso -->
                 <section class="grid md:grid-cols-2 gap-6 lg:gap-8">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+                    <div class="bg-white dark:bg-slate-800 radius-card p-6 shadow-card border border-slate-200 dark:border-slate-700">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">info</span>
                             <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Información del Viaje</h3>
@@ -166,7 +166,7 @@ export class SummaryRenderer {
                         </div>
                     </div>
                     
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+                    <div class="bg-white dark:bg-slate-800 radius-card p-6 shadow-card border border-slate-200 dark:border-slate-700">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">trending_up</span>
                             <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Progreso del Viaje</h3>
@@ -589,7 +589,7 @@ export class SummaryRenderer {
                         <span>${Math.round(progressPercentage)}%</span>
                     </div>
                     <div class="w-full bg-green-200 dark:bg-green-800 rounded-full h-2">
-                        <div class="bg-green-600 h-2 rounded-full transition-all duration-500" 
+                        <div class="bg-green-600 h-2 rounded-full transition-normal" 
                              style="width: ${progressPercentage}%"></div>
                     </div>
                 </div>
@@ -644,7 +644,7 @@ export class SummaryRenderer {
             }
 
             const flightSegmentHTML = (segment) => `
-                <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-2xl">
+                <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/30 radius-card">
                     <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">flight</span>
                     <div class="flex-1">
                         <div class="flex items-center justify-between">
@@ -666,7 +666,7 @@ export class SummaryRenderer {
                 </div>`;
 
             const flightCardHTML = (flight) => `
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-200">
+                <div class="bg-white dark:bg-slate-800 p-6 radius-card shadow-card border border-slate-200 dark:border-slate-700 shadow-card-hover transition-all duration-200">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight</span>
                         <div>

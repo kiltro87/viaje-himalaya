@@ -1002,7 +1002,7 @@ export class BudgetManager {
                                                             return `
                                                                 <div class="budget-subitem-wrapper" data-item-id="${subItemId}">
                                                                     <!-- SubItem Presupuestado -->
-                                                                    <div class="budget-subitem-clickable flex justify-between text-sm text-slate-600 dark:text-slate-400 py-1 px-2 rounded hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer transition-all duration-200"
+                                                                    <div class="budget-subitem-clickable flex justify-between text-sm text-slate-600 dark:text-slate-400 py-1 px-2 rounded hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer transition-standard"
                                                                          data-concept="${subItem.concept}" 
                                                                          data-amount="${subItem.cost || 0}" 
                                                                          data-category="${cat}"
@@ -1051,7 +1051,7 @@ export class BudgetManager {
                                                                                     </span>
                                                                                     
                                                                                     <!-- Lista desplegable -->
-                                                                                    <div class="budget-inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-item-id="${subItemId}">
+                                                                                    <div class="budget-inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-item-id="${subItemId}">
                                                                                         ${allCategories.map(category => `
                                                                                             <div class="budget-inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-xs" data-value="${category}" data-item-id="${subItemId}">
                                                                                                 <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${this.getCategoryIcon(category)}</span>
@@ -1085,7 +1085,7 @@ export class BudgetManager {
                                             return `
                                                 <div class="budget-item-wrapper" data-item-id="${itemId}">
                                                     <!-- Item Presupuestado -->
-                                                    <div class="budget-item-clickable flex justify-between items-center py-2 px-3 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-all duration-200" 
+                                                    <div class="budget-item-clickable flex justify-between items-center py-2 px-3 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-standard" 
                                                          data-concept="${item.concept}" 
                                                          data-amount="${item.cost || 0}" 
                                                          data-category="${cat}"
@@ -1131,7 +1131,7 @@ export class BudgetManager {
                                                                     </span>
                                                                     
                                                                     <!-- Lista desplegable -->
-                                                                    <div class="budget-inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-item-id="${itemId}">
+                                                                    <div class="budget-inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-item-id="${itemId}">
                                                                         ${allCategories.map(category => `
                                                                             <div class="budget-inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-sm" data-value="${category}" data-item-id="${itemId}">
                                                                                 <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${this.getCategoryIcon(category)}</span>
@@ -1172,11 +1172,11 @@ export class BudgetManager {
                                     ${catExpenses.map(exp => `
                                         <div class="expense-item-wrapper" data-expense-id="${exp.id}">
                                             <!-- Vista Normal del Gasto -->
-                                            <div class="expense-item-category group flex justify-between items-center py-2 px-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-all duration-200" data-expense-id="${exp.id}">
+                                            <div class="expense-item-category group flex justify-between items-center py-2 px-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-standard" data-expense-id="${exp.id}">
                                                 <span class="text-slate-700 dark:text-slate-300 ${exp.paid ? 'line-through opacity-60' : ''}">${exp.concept}</span>
                                                 <div class="flex items-center gap-2">
                                                     <span class="font-medium text-green-700 dark:text-green-400 ${exp.paid ? 'line-through opacity-60' : ''}">${this.formatCurrency(exp.amount, true)}</span>
-                                                    <button class="delete-expense-btn opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-all duration-200" data-expense-id="${exp.id}" title="Eliminar gasto">
+                                                    <button class="delete-expense-btn opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-standard" data-expense-id="${exp.id}" title="Eliminar gasto">
                                                         <span class="material-symbols-outlined text-xs">delete</span>
                                                     </button>
                                                 </div>
@@ -1208,7 +1208,7 @@ export class BudgetManager {
                                                             </span>
                                                             
                                                             <!-- Lista desplegable -->
-                                                            <div class="inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-expense-id="${exp.id}">
+                                                            <div class="inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-expense-id="${exp.id}">
                                                                 ${allCategories.map(cat => `
                                                                     <div class="inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-sm" data-value="${cat}" data-expense-id="${exp.id}">
                                                                         <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${this.getCategoryIcon(cat)}</span>

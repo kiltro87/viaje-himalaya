@@ -338,7 +338,7 @@ export class UIRenderer {
                                     <span class="text-lg font-bold text-blue-900 dark:text-blue-100" id="progress-days">-</span>
                                 </div>
                                 <div class="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
-                                    <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                    <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-normal" style="width: 0%"></div>
                                 </div>
                             </div>
                             
