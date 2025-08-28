@@ -1675,11 +1675,11 @@ export class UIRenderer {
         // Reutilizar renderToday() existente pero agregar micro-stats
         this.renderToday();
         
-        // Añadir micro-stats al final del contenido
+        // Añadir micro-stats al final del contenido CON PADDING-BOTTOM
         const existingContent = mainContent.innerHTML;
         mainContent.innerHTML = existingContent + `
             <!-- Micro-stats rápidas (antes era parte de Resumen) -->
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
                         <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">21</div>
@@ -1816,22 +1816,34 @@ export class UIRenderer {
             </div>
         `;
 
-        // Renderizar el resumen/analytics en la sección dedicada
+        // Renderizar el resumen/analytics en la sección dedicada - SIMPLIFICADO
         const summaryStats = document.getElementById('summary-stats');
         if (summaryStats) {
-            // El SummaryRenderer renderiza en main-content, asi que temporalmente lo cambiamos
-            const originalContent = document.getElementById('main-content');
-            const tempDiv = document.createElement('div');
-            tempDiv.id = 'main-content';
-            summaryStats.appendChild(tempDiv);
-            
-            this.summaryRenderer.renderSummary();
-            
-            // Mover el contenido generado y restaurar el original
-            summaryStats.innerHTML = tempDiv.innerHTML;
-            if (originalContent) {
-                originalContent.id = 'main-content';
-            }
+            // Renderizar directamente sin complicaciones de DOM
+            summaryStats.innerHTML = `
+                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl mb-4 block">calendar_month</span>
+                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">21</p>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">días de aventura</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl mb-4 block">public</span>
+                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">2</p>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">países visitados</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl mb-4 block">account_balance_wallet</span>
+                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">€3,500</p>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">presupuesto total</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
+                        <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 text-3xl mb-4 block">trending_up</span>
+                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">45%</p>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">progreso del viaje</p>
+                    </div>
+                </section>
+            `;
         }
 
         // Renderizar el mapa

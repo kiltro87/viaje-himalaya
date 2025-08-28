@@ -476,15 +476,15 @@ export class MapRenderer {
         if (validCoords.length > 1) {
             // Si hay múltiples coordenadas, ajustar vista para verlas todas
             const bounds = L.latLngBounds(validCoords);
-            map.fitBounds(bounds, { 
-                padding: [5, 5], // Padding mínimo para máxima proximidad
-                maxZoom: 15 // Zoom más cercano para ver detalles del área
+                        map.fitBounds(bounds, {
+                padding: [20, 20], // Padding adecuado para mejor visualización
+                maxZoom: 13 // Zoom moderado para ver área contextual
             });
             Logger.debug(`🗺️ Multiple coordinates: fitted bounds with enhanced zoom`);
         } else if (coords) {
-            // Si solo hay una coordenada, zoom muy cercano para máximo detalle
-            map.setView(coords, 16); // Zoom muy cercano para ver el área específica
-            Logger.debug(`🗺️ Single coordinate: set view with enhanced zoom`);
+            // Si solo hay una coordenada, zoom moderado para ver área contextual
+            map.setView(coords, 14); // Zoom moderado para ver el área y contexto
+            Logger.debug(`🗺️ Single coordinate: set view with contextual zoom`);
         }
         
         // Forzar actualización del tamaño después de ajustar vista
@@ -493,11 +493,11 @@ export class MapRenderer {
             // Re-aplicar bounds después de invalidar tamaño con mejor zoom
             if (validCoords.length > 1) {
                 const bounds = L.latLngBounds(validCoords);
-                map.fitBounds(bounds, { padding: [5, 5], maxZoom: 15 });
-                Logger.debug(`🔄 Re-applied bounds with enhanced zoom level 15`);
+                map.fitBounds(bounds, { padding: [20, 20], maxZoom: 13 });
+                Logger.debug(`🔄 Re-applied bounds with contextual zoom level 13`);
             } else if (coords) {
-                map.setView(coords, 16);
-                Logger.debug(`🔄 Re-centered with enhanced zoom level 16`);
+                map.setView(coords, 14);
+                Logger.debug(`🔄 Re-centered with contextual zoom level 14`);
             }
         }, 300);
         
