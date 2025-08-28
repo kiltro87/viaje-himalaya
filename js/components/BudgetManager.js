@@ -454,7 +454,7 @@ export class BudgetManager {
         if (!statusIndicator) {
             statusIndicator = document.createElement('div');
             statusIndicator.id = 'sync-status-indicator';
-            statusIndicator.className = 'fixed top-4 left-4 z-50 px-3 py-1 rounded-full text-sm font-medium transition-all duration-300';
+            statusIndicator.className = 'fixed top-4 left-4 z-50 px-3 py-1 rounded-full text-sm font-medium transition-normal';
             document.body.appendChild(statusIndicator);
         }
         
@@ -600,7 +600,7 @@ export class BudgetManager {
 
         container.innerHTML = `
             <!-- Resumen de presupuesto -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-6">
+            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-6">
                 
                 <!-- Resumen General Simplificado -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -620,7 +620,7 @@ export class BudgetManager {
             </div>
             
             <!-- Filtros de Categoría -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-6">
+            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-6">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">filter_list</span>
@@ -632,7 +632,7 @@ export class BudgetManager {
                     ${allCategories.map(cat => {
                         const icon = this.getCategoryIcon(cat);
                         const color = this.getCategoryColor(cat);
-                        return `<button data-category="${cat}" class="budget-filter-btn group flex items-center gap-3 p-4 text-left bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 transition-all duration-200">
+                        return `<button data-category="${cat}" class="budget-filter-btn group flex items-center gap-3 p-4 text-left bg-white dark:bg-slate-800 radius-standard border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 transition-standard">
                             <span class="material-symbols-outlined text-2xl ${color.replace('bg-', 'text-')} flex-shrink-0">${icon}</span>
                             <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${cat}</span>
                         </button>`;
@@ -649,7 +649,7 @@ export class BudgetManager {
             </div>
             
             <!-- Formulario de Nuevo Gasto -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-6">
+            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-6">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">add_circle</span>
@@ -666,7 +666,7 @@ export class BudgetManager {
                         <div>
                             <label for="expense-concept" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Concepto</label>
                             <input type="text" id="expense-concept" required 
-                                   class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-slate-900 dark:text-white placeholder-slate-400"
+                                   class="w-full px-4 py-3 radius-standard bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-standard text-slate-900 dark:text-white placeholder-slate-400"
                                    placeholder="Ej: Cena en restaurante">
                         </div>
                         
@@ -674,7 +674,7 @@ export class BudgetManager {
                             <label for="expense-amount" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Cantidad (€)</label>
                             <div class="relative">
                                 <input type="number" id="expense-amount" step="0.01" required 
-                                       class="w-full pl-4 pr-12 py-3 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-slate-900 dark:text-white placeholder-slate-400"
+                                       class="w-full pl-4 pr-12 py-3 radius-standard bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-standard text-slate-900 dark:text-white placeholder-slate-400"
                                        placeholder="0,00">
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium pointer-events-none">€</span>
                             </div>
@@ -686,7 +686,7 @@ export class BudgetManager {
                             <!-- Desplegable personalizado con iconos -->
                             <div id="custom-category-dropdown" class="relative" style="overflow: visible;">
                                 <button type="button" id="category-dropdown-btn" 
-                                        class="w-full px-4 py-3 pl-12 pr-10 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200 text-slate-900 dark:text-white text-left cursor-pointer">
+                                        class="w-full px-4 py-3 pl-12 pr-10 radius-standard bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-standard text-slate-900 dark:text-white text-left cursor-pointer">
                                     <span id="selected-category-text">Seleccionar categoría</span>
                                 </button>
                                 <span id="category-icon" class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none">
@@ -697,7 +697,7 @@ export class BudgetManager {
                                 </span>
                                 
                                 <!-- Lista desplegable -->
-                                <div id="category-dropdown-list" class="fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-y-auto hidden" style="z-index: 99999 !important; min-width: 200px;">
+                                <div id="category-dropdown-list" class="fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-60 overflow-y-auto hidden" style="z-index: 99999 !important; min-width: 200px;">
                                     ${allCategories.map(cat => {
                                         const icon = this.getCategoryIcon(cat);
                                         return `
@@ -714,7 +714,7 @@ export class BudgetManager {
                             <input type="hidden" id="expense-category" name="category" required>
                         </div>
                         <button type="submit" id="add-expense-btn"
-                                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 whitespace-nowrap">
+                                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold radius-standard shadow-card shadow-card-hover transition-standard flex items-center gap-2 whitespace-nowrap">
                             <span class="material-symbols-outlined" id="add-btn-icon">add</span>
                             <span id="add-btn-text">Añadir</span>
                         </button>
@@ -963,7 +963,7 @@ export class BudgetManager {
                 const categoryColor = this.getCategoryColor(cat);
                 
                 return `
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-200">
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card shadow-card-hover border border-slate-200 dark:border-slate-700 p-6 transition-standard">
                         <div class="flex items-center gap-4 mb-4">
                             <span class="material-symbols-outlined text-3xl ${categoryColor.replace('bg-', 'text-')}">${categoryIcon}</span>
                             <div class="flex-1">
@@ -1018,7 +1018,7 @@ export class BudgetManager {
                                                                     </div>
                                                                     
                                                                     <!-- Formulario Inline para SubItem (Oculto por defecto) -->
-                                                                    <div class="budget-inline-form hidden mt-2 ml-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg border-2 border-green-300 dark:border-green-700 shadow-sm" data-item-id="${subItemId}">
+                                                                    <div class="budget-inline-form hidden mt-2 ml-4 p-3 bg-green-50 dark:bg-green-900/30 radius-standard border-2 border-green-300 dark:border-green-700 shadow-card" data-item-id="${subItemId}">
                                                                         <div class="flex items-center gap-2 mb-2">
                                                                             <span class="material-symbols-outlined text-green-600 text-sm">add_circle</span>
                                                                             <h5 class="text-xs font-medium text-green-800 dark:text-green-200">Crear gasto: ${subItem.concept}</h5>
@@ -1098,7 +1098,7 @@ export class BudgetManager {
                                                     </div>
                                                     
                                                     <!-- Formulario Inline para Crear Gasto (Oculto por defecto) -->
-                                                    <div class="budget-inline-form hidden mt-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl border-2 border-green-300 dark:border-green-700 shadow-md" data-item-id="${itemId}">
+                                                    <div class="budget-inline-form hidden mt-3 p-4 bg-green-50 dark:bg-green-900/30 radius-standard border-2 border-green-300 dark:border-green-700 shadow-card" data-item-id="${itemId}">
                                                         <div class="flex items-center gap-2 mb-3">
                                                             <span class="material-symbols-outlined text-green-600">add_circle</span>
                                                             <h4 class="text-sm font-medium text-green-800 dark:text-green-200">Crear gasto basado en: ${item.concept}</h4>

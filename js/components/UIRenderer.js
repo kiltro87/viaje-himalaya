@@ -162,7 +162,7 @@ export class UIRenderer {
                         </div>
 
                         <!-- Contenedor del Mapa -->
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 relative z-10">
+                        <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-2 relative z-10">
                             <div id="map-container" class="w-full h-[80vh] min-h-[600px] rounded-xl overflow-hidden relative">
                                 <!-- El mapa se renderizará aquí -->
                             </div>
@@ -318,14 +318,14 @@ export class UIRenderer {
                 </div>
 
                 <!-- Resumen del día actual -->
-                <div id="today-main-content" class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
+                <div id="today-main-content" class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-8">
                     <!-- El contenido se generará dinámicamente -->
                 </div>
 
                 <!-- Estado y progreso del viaje -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Progreso del viaje -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">trending_up</span>
                             <h3 class="text-xl font-bold text-slate-900 dark:text-white">Progreso del Viaje</h3>
@@ -356,7 +356,7 @@ export class UIRenderer {
                     </div>
 
                     <!-- Información del clima de hoy -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">wb_sunny</span>
                             <h3 class="text-xl font-bold text-slate-900 dark:text-white">Clima de Hoy</h3>
@@ -762,7 +762,7 @@ export class UIRenderer {
                     </div>
                 </div>
                 
-                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+                <div class="bg-white dark:bg-slate-800 radius-card p-6 md:p-8 shadow-card border border-slate-200 dark:border-slate-700">
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Actividades del día</h2>
                     <p class="text-slate-600 dark:text-slate-400">${dayData.description || 'Sin descripción disponible'}</p>
                 </div>
@@ -804,7 +804,7 @@ export class UIRenderer {
                         <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información de Vuelos</h2>
                     </div>
                     <div class="space-y-8">
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+                        <div class="bg-white dark:bg-slate-800 radius-card p-6 shadow-card border border-slate-200 dark:border-slate-700">
                             <p class="text-slate-600 dark:text-slate-400">Información de vuelos disponible próximamente...</p>
                         </div>
                     </div>
@@ -1281,7 +1281,7 @@ export class UIRenderer {
             const cleanCategoryName = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
             
             return `
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
+                <div class="bg-white dark:bg-slate-800 p-6 radius-card shadow-card border border-slate-200 dark:border-slate-700">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl ${categoryColor}">${categoryIcon}</span>
                         <h3 class="text-xl font-bold text-slate-900 dark:text-white">${cleanCategoryName}</h3>
@@ -1460,7 +1460,7 @@ export class UIRenderer {
             
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 ${enhancedWeatherData.map(location => `
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-200">
+                    <div class="bg-white dark:bg-slate-800 radius-card p-6 shadow-card shadow-card-hover border border-slate-200 dark:border-slate-700 transition-standard">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <span class="material-symbols-outlined text-2xl ${location.color}">${location.icon}</span>

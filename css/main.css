@@ -469,3 +469,28 @@ a:hover {
 .tools-content.hidden {
     display: none !important;
 }
+
+/* Clases de utilidad usando variables CSS */
+.transition-standard {
+    transition: all var(--transition-fast);
+}
+
+.transition-normal {
+    transition: all var(--transition-normal);
+}
+
+.shadow-card {
+    box-shadow: var(--shadow-lg);
+}
+
+.shadow-card-hover:hover {
+    box-shadow: var(--shadow-xl);
+}
+
+.radius-standard {
+    border-radius: var(--radius-xl);
+}
+
+.radius-card {
+    border-radius: var(--radius-2xl);
+}

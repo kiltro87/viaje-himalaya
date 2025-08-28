@@ -45,7 +45,7 @@ export class WeatherRenderer {
      */
     static renderCurrentLocationWeather() {
         return `
-            <div class="mb-8 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-2xl border border-blue-200 dark:border-blue-700">
+            <div class="mb-8 p-6 bg-blue-50 dark:bg-blue-900/30 radius-card border border-blue-200 dark:border-blue-700">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">location_on</span>
@@ -72,15 +72,15 @@ export class WeatherRenderer {
     static renderWeatherStats() {
         return `
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                <div class="text-center p-3 bg-white/50 dark:bg-slate-800/50 rounded-xl">
+                <div class="text-center p-3 bg-white/50 dark:bg-slate-800/50 radius-standard">
                     <div class="text-sm text-slate-600 dark:text-slate-400">Sensación</div>
                     <div class="font-semibold text-slate-900 dark:text-white">26°C</div>
                 </div>
-                <div class="text-center p-3 bg-white/50 dark:bg-slate-800/50 rounded-xl">
+                <div class="text-center p-3 bg-white/50 dark:bg-slate-800/50 radius-standard">
                     <div class="text-sm text-slate-600 dark:text-slate-400">Humedad</div>
                     <div class="font-semibold text-slate-900 dark:text-white">68%</div>
                 </div>
-                <div class="text-center p-3 bg-white/50 dark:bg-slate-800/50 rounded-xl">
+                <div class="text-center p-3 bg-white/50 dark:bg-slate-800/50 radius-standard">
                     <div class="text-sm text-slate-600 dark:text-slate-400">Viento</div>
                     <div class="font-semibold text-slate-900 dark:text-white">12 km/h</div>
                 </div>
@@ -109,9 +109,9 @@ export class WeatherRenderer {
      */
     static renderClimateInfo() {
         return `
-            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl p-6 mb-8 border border-blue-200 dark:border-blue-800">
+            <div class="bg-blue-50 dark:bg-blue-900/20 radius-card p-6 mb-8 border border-blue-200 dark:border-blue-800">
                 <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
+                    <div class="w-10 h-10 bg-blue-500 radius-standard flex items-center justify-center flex-shrink-0 mt-1">
                         <span class="material-symbols-outlined text-white">info</span>
                     </div>
                     <div>
@@ -134,7 +134,7 @@ export class WeatherRenderer {
         const enhancedWeatherData = this.enhanceWeatherData(tripConfig.weatherLocations);
         
         const weatherHTML = enhancedWeatherData.map(weather => `
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
+            <div class="bg-white dark:bg-slate-800 p-6 radius-card shadow-card shadow-card-hover border border-slate-200 dark:border-slate-700 transition-standard">
                 ${this.renderCityHeader(weather)}
                 ${this.renderCityTemperatures(weather)}
                 ${this.renderCityDetails(weather)}
@@ -186,11 +186,11 @@ export class WeatherRenderer {
     static renderCityTemperatures(weather) {
         return `
             <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl">
+                <div class="text-center p-3 bg-orange-50 dark:bg-orange-900/20 radius-standard">
                     <span class="text-sm text-slate-600 dark:text-slate-400 block">Día</span>
                     <span class="text-lg font-bold text-slate-900 dark:text-white">${weather.dayTemp}</span>
                 </div>
-                <div class="text-center p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                <div class="text-center p-3 bg-indigo-50 dark:bg-indigo-900/20 radius-standard">
                     <span class="text-sm text-slate-600 dark:text-slate-400 block">Noche</span>
                     <span class="text-lg font-bold text-slate-900 dark:text-white">${weather.nightTemp}</span>
                 </div>

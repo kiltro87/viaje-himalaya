@@ -114,7 +114,7 @@ export class ItineraryRenderer {
             return `
             <div class="mb-16">
                 <div class="flex items-center gap-4 mb-8">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${phase.gradient} rounded-2xl flex items-center justify-center">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 ${phase.gradient.replace('bg-gradient-to-br ', '')} radius-card flex items-center justify-center">
                         <span class="material-symbols-outlined text-white text-lg sm:text-xl">${phase.icon}</span>
                     </div>
                     <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-200">${phase.title}</h3>
@@ -143,7 +143,7 @@ export class ItineraryRenderer {
             <div class="timeline-item grid grid-cols-[auto,1fr] gap-x-6" id="${day.id}" data-coords="${day.coords ? day.coords.join(',') : ''}">
                 <div class="flex flex-col items-center">
                     <span class="material-symbols-outlined text-4xl text-purple-600 dark:text-purple-400 z-10">${activityIcon}</span>
-                    ${index < phaseDays.length - 1 ? '<div class="w-0.5 h-full bg-gradient-to-b from-purple-300 to-violet-300 dark:from-purple-600 dark:to-violet-600"></div>' : ''}
+                    ${index < phaseDays.length - 1 ? '<div class="w-0.5 h-full bg-purple-400 dark:bg-purple-600"></div>' : ''}
                 </div>
                 <div class="pb-12 opacity-0 -translate-y-4" style="animation-delay: ${index * 100}ms;">
                     ${this.buildDayCardHTML(day, dayNumber, tripDate, activityIcon)}
@@ -216,7 +216,7 @@ export class ItineraryRenderer {
                         
                         <!-- Icono grande en hover -->
                         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                            <div class="w-12 h-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+                            <div class="w-12 h-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-card">
                                 <span class="text-2xl">${day.icon}</span>
                             </div>
                         </div>

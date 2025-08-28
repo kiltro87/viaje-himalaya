@@ -84,7 +84,7 @@ export class SummaryRenderer {
                 </header>
 
                 <!-- Panel "Hoy" Dinámico (exacto del original) -->
-                <section class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+                <section class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 md:p-8 shadow-card border border-slate-200 dark:border-slate-700">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">today</span>
                         <div>
@@ -99,22 +99,22 @@ export class SummaryRenderer {
 
                 <!-- Grid de Estadísticas (exacto del original) -->
                 <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
                         <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl mb-4 block">calendar_month</span>
                         <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">${totalDays}</p>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">días de aventura</p>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
                         <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl mb-4 block">public</span>
                         <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">${totalCountries}</p>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">países visitados</p>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
                         <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl mb-4 block">account_balance_wallet</span>
                         <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">€${grandTotal.toFixed(0)}</p>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">presupuesto total</p>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-slate-200 dark:border-slate-700 text-center">
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
                         <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 text-3xl mb-4 block">trending_up</span>
                         <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">€${costPerDay.toFixed(0)}</p>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">coste por día</p>
@@ -168,7 +168,7 @@ export class SummaryRenderer {
                                 <span class="font-medium text-slate-800 dark:text-slate-200" id="budget-used">€${totalSpent.toFixed(0)} de €${grandTotal.toFixed(0)}</span>
                             </div>
                             <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-2">
-                                <div class="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-500" 
+                                <div class="bg-green-500 h-2 rounded-full transition-normal" 
                                      style="width: ${Math.min((totalSpent / grandTotal) * 100, 100)}%">
                                 </div>
                             </div>
