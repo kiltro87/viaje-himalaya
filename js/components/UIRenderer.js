@@ -1895,8 +1895,24 @@ export class UIRenderer {
             const showButton = document.getElementById('show-full-packing-list');
             if (showButton) {
                 showButton.addEventListener('click', () => {
-                    // Navegar a la vista de "extras" donde está la lista completa
-                    this.changeView('extras');
+                    // La lista completa ahora está en la misma vista (planificacion)
+                    // Simplemente hacer scroll a la sección de packing list
+                    const packingSection = document.getElementById('packing-list-content');
+                    if (packingSection) {
+                        packingSection.scrollIntoView({ behavior: 'smooth' });
+                        // Mostrar mensaje informativo
+                        packingSection.innerHTML = `
+                            <div class="text-center py-8">
+                                <p class="text-slate-600 dark:text-slate-400 mb-4">
+                                    📍 Ya estás en la vista completa de Planificación.<br>
+                                    La lista de equipaje completa se puede gestionar desde aquí.
+                                </p>
+                                <button onclick="window.location.reload()" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
+                                    Recargar Lista
+                                </button>
+                            </div>
+                        `;
+                    }
                 });
             }
         } else {
@@ -2039,9 +2055,15 @@ export class UIRenderer {
         Logger.ui(`🔄 Changing view from '${this.currentView}' to '${view}'`);
         this.currentView = view;
         
-        // Log específico para herramientas
+        // Log específico para herramientas y views obsoletas
         if (view === 'herramientas') {
             Logger.ui('🛠️ Tools view detected, calling renderMainContent...');
+        }
+        
+        // Redirigir vistas obsoletas
+        if (view === 'extras') {
+            Logger.warning('⚠️ Vista "extras" obsoleta, redirigiendo a "planificacion"');
+            this.currentView = 'planificacion';
         }
         
         this.renderMainContent();

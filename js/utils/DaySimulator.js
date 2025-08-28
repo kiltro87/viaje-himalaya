@@ -526,19 +526,20 @@ export class DaySimulator {
     }
 
     /**
-     * 🎒 REFRESCAR VISTA EXTRAS: Actualizar clima, equipaje y agencias
+     * 🎯 REFRESCAR VISTA PLANIFICACIÓN: Actualizar contenido de planificación
      */
-    refreshExtrasView() {
+    refreshPlanningView() {
         try {
             const uiRenderer = stateManager.getState('instances.uiRenderer');
-            // Re-renderizar la vista extras completa
-            if (uiRenderer && typeof uiRenderer.renderExtras === 'function') {
-                uiRenderer.renderExtras();
+            
+            // La vista "extras" ahora es parte de "planificacion"
+            if (uiRenderer && uiRenderer.currentView === 'planificacion') {
+                uiRenderer.renderPlanning();
             }
 
-            if (Logger && Logger.info) Logger.info('🎒 Extras view refreshed');
+            if (Logger && Logger.info) Logger.info('🎯 Planning view refreshed');
         } catch (error) {
-            if (Logger && Logger.error) Logger.error('🎒 Error refreshing extras view:', error);
+            if (Logger && Logger.error) Logger.error('🎯 Error refreshing planning view:', error);
         }
     }
 
