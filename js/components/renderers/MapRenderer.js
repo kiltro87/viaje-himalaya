@@ -474,30 +474,30 @@ export class MapRenderer {
         Logger.debug(`📍 Valid coordinates for modal map:`, validCoords);
         
         if (validCoords.length > 1) {
-            // Si hay múltiples coordenadas, ajustar vista para verlas todas
+            // Si hay múltiples coordenadas, ajustar vista para verlas todas con ZOOM CERCANO
             const bounds = L.latLngBounds(validCoords);
-                        map.fitBounds(bounds, {
-                padding: [20, 20], // Padding adecuado para mejor visualización
-                maxZoom: 13 // Zoom moderado para ver área contextual
+            map.fitBounds(bounds, {
+                padding: [10, 10], // Padding mínimo para máximo detalle
+                maxZoom: 16 // Zoom MUY CERCANO para Nepal/Bután (era 13)
             });
-            Logger.debug(`🗺️ Multiple coordinates: fitted bounds with enhanced zoom`);
+            Logger.debug(`🗺️ Multiple coordinates: fitted bounds with CLOSE zoom 16`);
         } else if (coords) {
-            // Si solo hay una coordenada, zoom moderado para ver área contextual
-            map.setView(coords, 14); // Zoom moderado para ver el área y contexto
-            Logger.debug(`🗺️ Single coordinate: set view with contextual zoom`);
+            // Si solo hay una coordenada, zoom MUY CERCANO para ver detalles
+            map.setView(coords, 17); // Zoom MUY CERCANO (era 14)
+            Logger.debug(`🗺️ Single coordinate: set view with CLOSE zoom 17`);
         }
         
         // Forzar actualización del tamaño después de ajustar vista
         setTimeout(() => {
             map.invalidateSize();
-            // Re-aplicar bounds después de invalidar tamaño con mejor zoom
+            // Re-aplicar bounds después de invalidar tamaño con ZOOM CERCANO
             if (validCoords.length > 1) {
                 const bounds = L.latLngBounds(validCoords);
-                map.fitBounds(bounds, { padding: [20, 20], maxZoom: 13 });
-                Logger.debug(`🔄 Re-applied bounds with contextual zoom level 13`);
+                map.fitBounds(bounds, { padding: [10, 10], maxZoom: 16 });
+                Logger.debug(`🔄 Re-applied bounds with CLOSE zoom level 16`);
             } else if (coords) {
-                map.setView(coords, 14);
-                Logger.debug(`🔄 Re-centered with contextual zoom level 14`);
+                map.setView(coords, 17);
+                Logger.debug(`🔄 Re-centered with CLOSE zoom level 17`);
             }
         }, 300);
         
