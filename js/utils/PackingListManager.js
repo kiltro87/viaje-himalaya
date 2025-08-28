@@ -13,7 +13,7 @@
  * - Gestión de conflictos y rollback automático
  * 
  * @author David Ferrer Figueroa
- * @version 1.0.0
+ * @version 3.0.0
  * @since 2024
  */
 
@@ -251,7 +251,7 @@ export class PackingListManager {
                 items: this.localCache,
                 lastUpdated: serverTimestamp(),
                 lastDeviceId: this.deviceId, // Tracking de qué dispositivo hizo el último cambio
-                version: '2.0.0' // Versión global
+                version: '3.0.0' // Versión global
             };
             
             console.log('🔥 SYNC DEBUG: Data to sync:', dataToSync);
