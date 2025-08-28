@@ -9,7 +9,12 @@
  * @since 2024
  */
 
-import { COLORS } from './AppConstants.js';
+import { COLORS as APP_COLORS } from './AppConstants.js';
+
+/**
+ * 🎨 TOKENS DE COLORES (Re-exportados para centralización)
+ */
+export const COLORS = APP_COLORS;
 
 /**
  * 📐 TOKENS DE ESPACIADO
