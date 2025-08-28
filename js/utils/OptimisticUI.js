@@ -269,7 +269,7 @@ export class OptimisticUI {
         if (!indicator) {
             indicator = document.createElement('div');
             indicator.id = `optimistic-${operationId}`;
-            indicator.className = 'fixed top-4 right-4 px-3 py-2 rounded-lg text-sm font-medium z-[10000] transition-all duration-300';
+            indicator.className = 'fixed top-4 right-4 px-3 py-2 rounded-lg text-sm font-medium z-[10000] transition-normal';
             document.body.appendChild(indicator);
         }
 

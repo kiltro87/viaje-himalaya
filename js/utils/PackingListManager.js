@@ -361,7 +361,7 @@ export class PackingListManager {
                     <div class="text-right">
                         <div class="text-2xl font-bold text-teal-600 dark:text-teal-400">${stats.percentage}%</div>
                         <div class="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-all duration-500" 
+                            <div class="h-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-normal" 
                                  style="width: ${stats.percentage}%"></div>
                         </div>
                     </div>
