@@ -1843,22 +1843,22 @@ export class UIRenderer {
             
             const summaryContent = [];
             sections.forEach((section, index) => {
-                // Filtrar la sección "¿Qué hacemos hoy?" que está duplicada con la vista HOY
+                // Filtrar SOLO la sección "¿Qué hacemos hoy?" (muy específica)
                 const sectionText = (section.textContent || '').toLowerCase();
                 const sectionHTML = (section.innerHTML || '').toLowerCase();
                 const sectionTitle = section.querySelector('h2')?.textContent || 'Unknown section';
                 
-                const isHoySection = sectionText.includes('qué hacemos hoy') || 
-                                  sectionText.includes('que hacemos hoy') ||
-                                  sectionHTML.includes('qué hacemos hoy') ||
-                                  sectionHTML.includes('que hacemos hoy') ||
-                                  (sectionText.includes('hoy') && sectionText.includes('hacemos'));
+                // Filtro MUY específico solo para la sección exacta "¿Qué hacemos hoy?"
+                const isHoySection = sectionHTML.includes('qué hacemos hoy') || 
+                                  sectionHTML.includes('que hacemos hoy');
                 
                 Logger.debug(`🔍 Section ${index + 1}: "${sectionTitle}" - isHoySection: ${isHoySection}`);
                 Logger.debug(`📝 Text sample: "${sectionText.substring(0, 100)}..."`);
                 
                 if (!isHoySection) {
-                    summaryContent.push(section.cloneNode(true));
+                    // Asegurarse de que las tarjetas mantengan el estilo original
+                    const clonedSection = section.cloneNode(true);
+                    summaryContent.push(clonedSection);
                     Logger.debug('📊 ✅ Added section to tracking:', sectionTitle);
                 } else {
                     Logger.debug('🗑️ ❌ Filtered out "Hoy" section from tracking:', sectionTitle);
@@ -1869,9 +1869,16 @@ export class UIRenderer {
             mainContent.innerHTML = originalHTML;
             const summaryStatsRestored = document.getElementById('summary-stats');
             summaryStatsRestored.innerHTML = '';
-            summaryContent.forEach(section => {
-                summaryStatsRestored.appendChild(section);
-            });
+            
+            // Agregar las secciones con el wrapper correcto para mantener el estilo
+            if (summaryContent.length > 0) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'space-y-8 md:space-y-12 lg:space-y-16';
+                summaryContent.forEach(section => {
+                    wrapper.appendChild(section);
+                });
+                summaryStatsRestored.appendChild(wrapper);
+            }
             
             Logger.debug('📊 Summary-stats processing completed with', summaryContent.length, 'sections');
         } else {
