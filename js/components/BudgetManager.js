@@ -605,13 +605,10 @@ export class BudgetManager {
                 
                 <!-- Header de Presupuesto -->
                 <div class="mb-6">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400">account_balance_wallet</span>
-                        <div>
-                            <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Gestión de Presupuesto</h2>
-                            <p class="text-slate-600 dark:text-slate-400">Controla tu presupuesto y registra todos los gastos</p>
-                        </div>
-                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-green-600 dark:text-green-400">account_balance_wallet</span>
+                        Gestión de Presupuesto
+                    </h2>
                 </div>
                 
                 <!-- Resumen General Simplificado -->
@@ -632,11 +629,11 @@ export class BudgetManager {
                 
                 <!-- Separador visual -->
                 <div class="border-t border-slate-200 dark:border-slate-700 pt-6 mt-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">filter_list</span>
-                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">Análisis por Categorías</h3>
-                        </div>
+                    <div class="mb-6">
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-3">
+                            <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">filter_list</span>
+                            Análisis por Categorías
+                        </h3>
                     </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3" id="budget-category-filters">
                     ${allCategories.map(cat => {

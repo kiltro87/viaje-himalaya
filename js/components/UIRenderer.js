@@ -1727,7 +1727,7 @@ export class UIRenderer {
                 <!-- Sección de Presupuesto -->
                 <div id="budget-section" class="mb-12">
                     <!-- Contenedor para el BudgetManager -->
-                    <div id="budget-content">
+                    <div id="budget-container">
                         <!-- El BudgetManager se renderizará aquí con título integrado -->
                     </div>
                 </div>
@@ -1768,9 +1768,9 @@ export class UIRenderer {
         `;
 
         // Renderizar el presupuesto en la sección dedicada
-        const budgetContent = document.getElementById('budget-content');
-        if (budgetContent) {
-            this.budgetManager.render(budgetContent);
+        const budgetContainer = document.getElementById('budget-container');
+        if (budgetContainer) {
+            this.budgetManager.render(budgetContainer);
         }
 
         // Cargar packing list (si existe)
