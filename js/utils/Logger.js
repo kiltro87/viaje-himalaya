@@ -82,7 +82,12 @@ class Logger {
     warning(message, data) { this.log('WARNING', message, data, 'WARNING'); }
     error(message, data) { this.log('ERROR', message, data, 'ERROR'); }
     success(message, data) { this.log('SUCCESS', message, data); }
-    debug(message, data) { this.log('DEBUG', message, data, 'DEBUG'); }
+    debug(message, data) { 
+        // Solo mostrar debug si hay flag específico
+        if (window.location.search.includes('debug=true')) {
+            this.log('DEBUG', message, data, 'DEBUG'); 
+        }
+    }
     
     /**
      * Sistema de métricas de rendimiento
