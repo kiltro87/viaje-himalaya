@@ -1837,13 +1837,9 @@ export class UIRenderer {
             
             const summaryContent = [];
             sections.forEach((section, index) => {
-                // Filtrar SOLO la sección específica "¿Qué hacemos hoy?" 
-                const sectionHTML = (section.innerHTML || '').toLowerCase();
-                const sectionTitle = section.querySelector('h2')?.textContent || 'Unknown section';
-                
-                // Solo filtrar si contiene EXACTAMENTE el texto "¿Qué hacemos hoy?"
-                const isHoySection = sectionHTML.includes('¿qué hacemos hoy?') || 
-                                  sectionHTML.includes('¿que hacemos hoy?');
+                // Filtrar SOLO la sección específica "¿Qué hacemos hoy?" usando el título h2
+                const h2Title = section.querySelector('h2')?.textContent || '';
+                const isHoySection = h2Title.includes('¿Qué hacemos hoy?');
                 
                 if (!isHoySection) {
                     const clonedSection = section.cloneNode(true);
