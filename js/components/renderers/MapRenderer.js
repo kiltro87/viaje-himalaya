@@ -28,7 +28,7 @@ import { HeaderRenderer } from './HeaderRenderer.js';
 import { DateUtils } from '../../utils/DateUtils.js';
 import { FormatUtils } from '../../utils/FormatUtils.js';
 import Logger from '../../utils/Logger.js';
-import { stateManager } from '../../utils/StateManager.js';
+import stateManager from '../../utils/StateManager.js';
 
 export class MapRenderer {
     
