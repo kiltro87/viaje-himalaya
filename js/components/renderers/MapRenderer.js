@@ -369,14 +369,14 @@ export class MapRenderer {
         setTimeout(() => {
             map.invalidateSize();
             // Ajustar vista después de invalidar el tamaño
-            this.adjustModalMapView(map, coords, markers);
+            this.adjustModalMapView(map, coords, markers, dayId);
             Logger.debug(`🗺️ Map invalidated and view adjusted for day: ${dayId}`);
         }, 200);
         
         // Segundo ajuste de vista para asegurar zoom correcto
         setTimeout(() => {
             map.invalidateSize();
-            this.adjustModalMapView(map, coords, markers);
+            this.adjustModalMapView(map, coords, markers, dayId);
             Logger.debug(`🗺️ Final view adjustment for day: ${dayId}`);
         }, 500);
         
@@ -468,14 +468,18 @@ export class MapRenderer {
         // Forzar actualización del tamaño después de ajustar vista
         setTimeout(() => {
             map.invalidateSize();
-            // Re-aplicar el zoom directo a la ubicación específica
-            if (coords && coords.length === 2) {
-                map.setView(coords, 15); // Zoom consistente 15
-                Logger.debug(`🔄 Re-applied direct zoom level 15 to location`);
+            // Re-aplicar la vista calculada dinámicamente
+            if (validCoords.length > 1) {
+                const bounds = L.latLngBounds(validCoords);
+                map.fitBounds(bounds, { padding: [20, 20], maxZoom: 16 });
+                Logger.debug(`🔄 Re-applied dynamic bounds for ${validCoords.length} points`);
+            } else if (coords && coords.length === 2) {
+                map.setView(coords, 15);
+                Logger.debug(`🔄 Re-applied single location zoom 15`);
             }
         }, 300);
         
-        Logger.debug(`🗺️ Modal map view optimized: ${validCoords.length} coordinates, enhanced zoom for visibility`);
+        Logger.debug(`🗺️ Modal map view optimized with direct zoom to location`);
     }
 
     /**
