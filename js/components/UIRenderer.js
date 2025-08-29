@@ -1843,9 +1843,16 @@ export class UIRenderer {
             summaryStats.innerHTML = '';
             sections.forEach(section => {
                 // Filtrar la sección "¿Qué hacemos hoy?" que está duplicada con la vista HOY
-                const sectionText = section.textContent || '';
-                if (!sectionText.includes('¿Qué hacemos hoy?')) {
+                const sectionText = (section.textContent || '').toLowerCase();
+                const isHoySection = sectionText.includes('qué hacemos hoy') || 
+                                  sectionText.includes('que hacemos hoy') ||
+                                  sectionText.includes('hoy') && sectionText.includes('hacemos');
+                
+                if (!isHoySection) {
                     summaryStats.appendChild(section.cloneNode(true));
+                    Logger.debug('📊 Added section to tracking:', section.querySelector('h2')?.textContent || 'Unknown section');
+                } else {
+                    Logger.debug('🗑️ Filtered out "Hoy" section from tracking');
                 }
             });
             
@@ -1868,8 +1875,21 @@ export class UIRenderer {
                 // Verificar que mapRenderer existe y tiene el método renderMap
                 if (mapRenderer && typeof mapRenderer.renderMap === 'function') {
                     try {
-                        mapRenderer.renderMap(mapContainer);
-                        Logger.success('🗺️ Map rendered successfully in tracking view');
+                        // Añadir un indicador de carga
+                        mapContainer.innerHTML = `
+                            <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
+                                <div class="text-center">
+                                    <span class="material-symbols-outlined text-6xl mb-4 block animate-spin">autorenew</span>
+                                    <p>Cargando mapa...</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Renderizar el mapa después de un pequeño delay
+                        setTimeout(() => {
+                            mapRenderer.renderMap(mapContainer);
+                            Logger.success('🗺️ Map rendered successfully in tracking view');
+                        }, 100);
                     } catch (error) {
                         Logger.error('❌ Error rendering map in tracking view:', error);
                         mapContainer.innerHTML = `
@@ -1886,6 +1906,10 @@ export class UIRenderer {
                     }
                 } else {
                     Logger.error('❌ MapRenderer not available or missing renderMap method');
+                    Logger.debug('🔍 MapRenderer debug info:', {
+                        mapRenderer: !!mapRenderer,
+                        renderMapMethod: mapRenderer ? typeof mapRenderer.renderMap : 'N/A'
+                    });
                     mapContainer.innerHTML = `
                         <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
                             <div class="text-center">

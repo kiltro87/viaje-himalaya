@@ -453,30 +453,55 @@ export class MapRenderer {
      * @param {Array} markers - Marcadores de lugares cercanos
      * @private
      */
-    adjustModalMapView(map, coords, markers) {
-        Logger.debug(`🎯 Adjusting modal map view for coords:`, coords);
+    adjustModalMapView(map, coords, markers, dayId) {
+        Logger.debug(`🎯 Adjusting modal map view for day: ${dayId}, coords:`, coords);
         
-        // SOLO usar las coordenadas del día específico, NO lugares cercanos que pueden estar lejos
+        // Obtener lugares específicos SOLO de este día
+        const dayPlaces = tripConfig.placesByDay && tripConfig.placesByDay[dayId] ? tripConfig.placesByDay[dayId] : [];
+        const allDayCoords = []; 
+        
+        // Agregar coordenada principal si existe
         if (coords && coords.length === 2) {
-            // Zoom SÚPER CERCANO directo a la ubicación específica
-            map.setView(coords, 15); // Zoom 15 es perfecto para ciudades/lugares específicos
-            Logger.debug(`🗺️ Direct zoom to specific location: zoom 15`);
+            allDayCoords.push(coords);
+        }
+        
+        // Agregar coordenadas de lugares específicos del día
+        dayPlaces.forEach(place => {
+            if (place.coords && place.coords.length === 2) {
+                allDayCoords.push(place.coords);
+            }
+        });
+        
+        // Filtrar coordenadas válidas
+        const validCoords = allDayCoords.filter(coord => coord && coord.length === 2);
+        Logger.debug(`📍 Valid coordinates for day ${dayId}:`, validCoords);
+        
+        if (validCoords.length > 1) {
+            // Múltiples puntos: calcular bounds dinámicamente
+            const bounds = L.latLngBounds(validCoords);
+            map.fitBounds(bounds, {
+                padding: [30, 30], // Padding adecuado para ver todos los puntos
+                maxZoom: 15 // Zoom máximo para mantener detalle
+            });
+            Logger.debug(`🗺️ Dynamic bounds with ${validCoords.length} points, maxZoom: 15`);
+        } else if (validCoords.length === 1) {
+            // Solo una ubicación: zoom directo
+            map.setView(validCoords[0], 14);
+            Logger.debug(`🗺️ Single location: direct zoom 14`);
         } else {
-            Logger.warning(`❌ Invalid coordinates for modal map:`, coords);
+            Logger.warning(`❌ No valid coordinates for modal map day: ${dayId}`);
+            // Fallback: usar las coordenadas originales si las hay
+            if (coords && coords.length === 2) {
+                map.setView(coords, 13);
+                Logger.debug(`🗺️ Fallback to original coords with zoom 13`);
+            }
         }
         
         // Forzar actualización del tamaño después de ajustar vista
         setTimeout(() => {
             map.invalidateSize();
             // Re-aplicar la vista calculada dinámicamente
-            if (validCoords.length > 1) {
-                const bounds = L.latLngBounds(validCoords);
-                map.fitBounds(bounds, { padding: [20, 20], maxZoom: 16 });
-                Logger.debug(`🔄 Re-applied dynamic bounds for ${validCoords.length} points`);
-            } else if (coords && coords.length === 2) {
-                map.setView(coords, 15);
-                Logger.debug(`🔄 Re-applied single location zoom 15`);
-            }
+            this.adjustModalMapView(map, coords, markers, dayId);
         }, 300);
         
         Logger.debug(`🗺️ Modal map view optimized with direct zoom to location`);
