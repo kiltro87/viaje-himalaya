@@ -1844,6 +1844,9 @@ export class UIRenderer {
                 if (!isHoySection) {
                     const clonedSection = section.cloneNode(true);
                     summaryContent.push(clonedSection);
+                    console.log('✅ TRACKING: Added section:', h2Title || 'Grid section'); // DEBUG temporal
+                } else {
+                    console.log('🗑️ TRACKING: Filtered section:', h2Title); // DEBUG temporal
                 }
             });
             
