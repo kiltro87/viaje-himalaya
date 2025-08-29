@@ -62,12 +62,10 @@ export const RESPONSIVE_CLASSES = {
 
 export const COLORS = {
     VIEWS: {
-        [VIEWS.SUMMARY]: 'blue',
-        [VIEWS.ITINERARY]: 'blue', 
-        [VIEWS.TODAY]: 'orange',
-        [VIEWS.MAP]: 'blue',
-        [VIEWS.BUDGET]: 'green',
-        [VIEWS.EXTRAS]: 'purple'
+        [VIEWS.TODAY]: 'orange',        // Landing page principal
+        [VIEWS.ITINERARY]: 'blue',      // Timeline del viaje
+        [VIEWS.PLANNING]: 'green',      // Gastos + Extras + Packing
+        [VIEWS.TRACKING]: 'purple'      // Mapa + Analytics
     },
     
     TAILWIND_VARIANTS: {
@@ -96,12 +94,10 @@ export const COLORS = {
 
 export const ICONS = {
     VIEWS: {
-        [VIEWS.SUMMARY]: 'dashboard',
-        [VIEWS.ITINERARY]: 'list_alt',
-        [VIEWS.TODAY]: 'today',
-        [VIEWS.MAP]: 'map',
-        [VIEWS.BUDGET]: 'account_balance_wallet',
-        [VIEWS.EXTRAS]: 'inventory_2'
+        [VIEWS.TODAY]: 'today',                    // Landing page principal
+        [VIEWS.ITINERARY]: 'list_alt',             // Timeline del viaje
+        [VIEWS.PLANNING]: 'checklist',             // Gastos + Extras + Packing
+        [VIEWS.TRACKING]: 'analytics'              // Mapa + Analytics
     }
 };
 

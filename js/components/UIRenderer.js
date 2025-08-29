@@ -199,9 +199,9 @@ export class UIRenderer {
         try {
             Logger.ui('💰 Updating budget summary cards');
             
-            // Solo actualizar si estamos en vista resumen
-            if (this.currentView !== VIEWS.SUMMARY) {
-                Logger.debug('Not in summary view, skipping budget summary update');
+            // Solo actualizar si estamos en vista planificación (donde está el presupuesto)
+            if (this.currentView !== VIEWS.PLANNING) {
+                Logger.debug('Not in planning view, skipping budget summary update');
                 return;
             }
 
@@ -901,44 +901,12 @@ export class UIRenderer {
     }
 
     /**
-     * Renderizar vista de gastos (header estilo Itinerario)
+     * 🗑️ OBSOLETO: renderGastos() - Migrado a renderPlanning()
+     * @deprecated Usar renderPlanning() en su lugar
      */
     renderGastos() {
-        Logger.ui('💰 Rendering budget section');
-        const mainContent = document.getElementById('main-content');
-        if (!mainContent) return;
-
-        try {
-            mainContent.innerHTML = `
-                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                    <!-- Header de Presupuesto -->
-                    <div class="mb-12">
-                        <div class="flex items-center gap-4 mb-4">
-                            <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400">account_balance_wallet</span>
-                            <div>
-                                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Presupuesto del Viaje</h1>
-                                <p class="text-lg text-slate-600 dark:text-slate-400">Controla tu presupuesto y registra todos los gastos de tu aventura</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contenido de Gastos -->
-                    <div id="budget" class="space-y-6 md:space-y-8">
-                        <!-- El contenido se generará dinámicamente -->
-                    </div>
-                </div>
-            `;
-            
-            // Renderizar presupuesto inmediatamente
-            setTimeout(() => {
-                this.renderBudget();
-            }, 100);
-            
-            Logger.success('✅ Budget structure rendered');
-        } catch (error) {
-            Logger.error('❌ Error rendering budget view:', error);
-            this.renderErrorView(error);
-        }
+        Logger.warning('⚠️ renderGastos() obsoleto - redirigiendo a PLANNING');
+        this.changeView(VIEWS.PLANNING);
     }
 
     /**
@@ -2257,10 +2225,20 @@ export class UIRenderer {
             Logger.ui('🛠️ Tools view detected, calling renderMainContent...');
         }
         
-        // Redirigir vistas obsoletas
-        if (view === 'extras') {
-            Logger.warning('⚠️ Vista "extras" obsoleta, redirigiendo a "planificacion"');
-            this.currentView = 'planificacion';
+        // Redirecciones para vistas obsoletas → NUEVA ESTRUCTURA 4 SECCIONES
+        const obsoleteRedirects = {
+            'extras': VIEWS.PLANNING,         // extras → planificacion
+            'gastos': VIEWS.PLANNING,         // gastos → planificacion  
+            'summary': VIEWS.TRACKING,        // summary → seguimiento
+            'resumen': VIEWS.TRACKING,        // resumen → seguimiento
+            'map': VIEWS.TRACKING,            // map → seguimiento
+            'mapa': VIEWS.TRACKING            // mapa → seguimiento
+        };
+        
+        if (obsoleteRedirects[view]) {
+            Logger.warning(`⚠️ Vista "${view}" obsoleta, redirigiendo a "${obsoleteRedirects[view]}"`);
+            this.currentView = obsoleteRedirects[view];
+            return; // Early return para evitar renderizar la vista obsoleta
         }
         
         this.renderMainContent();
