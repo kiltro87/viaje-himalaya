@@ -1856,27 +1856,50 @@ export class UIRenderer {
         // Renderizar el mapa usando la instancia global importada (DESPUÉS del contenido)
         setTimeout(() => {
             const mapContainer = document.getElementById('map-container');
+            Logger.debug('🔍 Looking for map-container in tracking view:', !!mapContainer);
+            
             if (mapContainer) {
-                // Usar mapRenderer importado globalmente
-                try {
-                    mapRenderer.renderMap(mapContainer);
-                    Logger.success('🗺️ Map rendered successfully in tracking view');
-                } catch (error) {
-                    Logger.error('❌ Error rendering map in tracking view:', error);
+                Logger.debug('📐 Map container dimensions:', {
+                    width: mapContainer.offsetWidth,
+                    height: mapContainer.offsetHeight,
+                    visible: mapContainer.offsetParent !== null
+                });
+                
+                // Verificar que mapRenderer existe y tiene el método renderMap
+                if (mapRenderer && typeof mapRenderer.renderMap === 'function') {
+                    try {
+                        mapRenderer.renderMap(mapContainer);
+                        Logger.success('🗺️ Map rendered successfully in tracking view');
+                    } catch (error) {
+                        Logger.error('❌ Error rendering map in tracking view:', error);
+                        mapContainer.innerHTML = `
+                            <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
+                                <div class="text-center">
+                                    <span class="material-symbols-outlined text-6xl mb-4 block">map</span>
+                                    <p>Error al cargar el mapa: ${error.message}</p>
+                                    <button onclick="window.location.reload()" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard">
+                                        Reintentar
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    Logger.error('❌ MapRenderer not available or missing renderMap method');
                     mapContainer.innerHTML = `
                         <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
                             <div class="text-center">
-                                <span class="material-symbols-outlined text-6xl mb-4 block">map</span>
-                                <p>Error al cargar el mapa</p>
-                                <button onclick="window.location.reload()" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard">
-                                    Reintentar
-                                </button>
+                                <span class="material-symbols-outlined text-6xl mb-4 block">error</span>
+                                <p>MapRenderer no disponible</p>
+                                <p class="text-sm mt-2">Verifica que MapRenderer.js esté cargado correctamente</p>
                             </div>
                         </div>
                     `;
                 }
+            } else {
+                Logger.error('❌ Map container not found in tracking view');
             }
-        }, 300); // Delay para asegurar que el DOM esté listo
+        }, 500); // Aumentar delay para asegurar que el DOM esté completamente listo
     }
 
     /**
