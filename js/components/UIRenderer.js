@@ -1841,18 +1841,26 @@ export class UIRenderer {
             // Extraer solo las secciones de contenido (sin header y sin "Qué hacemos hoy")
             const sections = tempDiv.querySelectorAll('section');
             summaryStats.innerHTML = '';
-            sections.forEach(section => {
+            sections.forEach((section, index) => {
                 // Filtrar la sección "¿Qué hacemos hoy?" que está duplicada con la vista HOY
                 const sectionText = (section.textContent || '').toLowerCase();
+                const sectionHTML = (section.innerHTML || '').toLowerCase();
+                const sectionTitle = section.querySelector('h2')?.textContent || 'Unknown section';
+                
                 const isHoySection = sectionText.includes('qué hacemos hoy') || 
                                   sectionText.includes('que hacemos hoy') ||
-                                  sectionText.includes('hoy') && sectionText.includes('hacemos');
+                                  sectionHTML.includes('qué hacemos hoy') ||
+                                  sectionHTML.includes('que hacemos hoy') ||
+                                  (sectionText.includes('hoy') && sectionText.includes('hacemos'));
+                
+                Logger.debug(`🔍 Section ${index + 1}: "${sectionTitle}" - isHoySection: ${isHoySection}`);
+                Logger.debug(`📝 Text sample: "${sectionText.substring(0, 100)}..."`);
                 
                 if (!isHoySection) {
                     summaryStats.appendChild(section.cloneNode(true));
-                    Logger.debug('📊 Added section to tracking:', section.querySelector('h2')?.textContent || 'Unknown section');
+                    Logger.debug('📊 ✅ Added section to tracking:', sectionTitle);
                 } else {
-                    Logger.debug('🗑️ Filtered out "Hoy" section from tracking');
+                    Logger.debug('🗑️ ❌ Filtered out "Hoy" section from tracking:', sectionTitle);
                 }
             });
             

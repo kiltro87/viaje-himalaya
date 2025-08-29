@@ -365,20 +365,12 @@ export class MapRenderer {
         // Añadir lugares cercanos
         const markers = this.createNearbyPlaceMarkers(map, dayId);
         
-        // Forzar redibujado múltiple para asegurar renderizado
-        setTimeout(() => {
-            map.invalidateSize();
-            // Ajustar vista después de invalidar el tamaño
-            this.adjustModalMapView(map, coords, markers, dayId);
-            Logger.debug(`🗺️ Map invalidated and view adjusted for day: ${dayId}`);
-        }, 200);
-        
-        // Segundo ajuste de vista para asegurar zoom correcto
+        // Una sola llamada para ajustar vista después de que el mapa esté listo
         setTimeout(() => {
             map.invalidateSize();
             this.adjustModalMapView(map, coords, markers, dayId);
-            Logger.debug(`🗺️ Final view adjustment for day: ${dayId}`);
-        }, 500);
+            Logger.debug(`🗺️ Map view adjusted for day: ${dayId} - User interaction now enabled`);
+        }, 300);
         
         Logger.success(`Modal map created successfully for day: ${dayId}`);
     }
@@ -497,14 +489,7 @@ export class MapRenderer {
             }
         }
         
-        // Forzar actualización del tamaño después de ajustar vista
-        setTimeout(() => {
-            map.invalidateSize();
-            // Re-aplicar la vista calculada dinámicamente
-            this.adjustModalMapView(map, coords, markers, dayId);
-        }, 300);
-        
-        Logger.debug(`🗺️ Modal map view optimized with direct zoom to location`);
+        Logger.debug(`🗺️ Modal map view optimized - user can now interact freely`);
     }
 
     /**
