@@ -22,10 +22,17 @@
 
 class Logger {
     constructor() {
-        // Detectar si estamos en móvil para reducir logging
+        // Detectar entorno y configurar logging apropiado
         this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        this.isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         this.isEnabled = true;
-        this.logLevel = this.isMobile ? 'ERROR' : 'DEBUG'; // Menos logging en móvil
+        
+        // Configuración de niveles según entorno
+        if (this.isLocalhost) {
+            this.logLevel = 'INFO';     // Desarrollo: INFO, WARNING, ERROR, SUCCESS
+        } else {
+            this.logLevel = 'ERROR';    // Producción: solo ERROR y SUCCESS
+        }
         // Usar colores consistentes con Design Tokens
         this.categories = {
             INIT: { emoji: '🚀', color: '#3B82F6', tailwind: 'text-blue-600', enabled: true },
@@ -166,26 +173,12 @@ class Logger {
 // Crear instancia global del logger
 const loggerInstance = new Logger();
 
-// Configuración por defecto para desarrollo
+// Configuración automática aplicada en constructor según entorno
+// Desarrollo (localhost): INFO, WARNING, ERROR, SUCCESS
+// Producción: ERROR, SUCCESS únicamente
+
+// Disponible globalmente para debugging manual
 if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        loggerInstance.configure({
-            enabled: true,
-            logLevel: 'DEBUG'
-        });
-    } else {
-        // Configuración para producción
-        loggerInstance.configure({
-            enabled: true,
-            logLevel: 'WARNING',
-            categories: {
-                DEBUG: false,
-                PERFORMANCE: false
-            }
-        });
-    }
-    
-    // También disponible globalmente
     window.Logger = loggerInstance;
 }
 

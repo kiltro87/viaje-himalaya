@@ -31,8 +31,8 @@ export const APP_CONFIG = {
     LOGGING: {
         ENABLED_IN_DEV: true,
         ENABLED_IN_PROD: true,
-        DEV_LOG_LEVEL: 'DEBUG',
-        PROD_LOG_LEVEL: 'WARNING'
+        DEV_LOG_LEVEL: 'INFO',        // Reducido: solo INFO+ en desarrollo
+        PROD_LOG_LEVEL: 'ERROR'       // Reducido: solo ERROR+ en producción
     }
 };
 
