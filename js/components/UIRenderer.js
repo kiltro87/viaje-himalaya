@@ -1824,7 +1824,10 @@ export class UIRenderer {
 
         // Renderizar el resumen/analytics COMPLETO usando SummaryRenderer (SIN sección duplicada "Hoy")
         const summaryStats = document.getElementById('summary-stats');
+        Logger.debug('🔍 Looking for summary-stats container:', !!summaryStats);
+        
         if (summaryStats) {
+            Logger.debug('📊 Processing summary-stats content...');
             // Crear un contenedor temporal para que SummaryRenderer funcione
             const tempContainer = document.createElement('div');
             tempContainer.id = 'main-content';
@@ -1832,14 +1835,18 @@ export class UIRenderer {
             
             // Renderizar usando SummaryRenderer completo
             this.summaryRenderer.renderSummary();
+            Logger.debug('📊 SummaryRenderer executed');
             
             // Copiar el contenido generado (excluyendo el header que ya está)
             const generatedContent = tempContainer.innerHTML;
+            Logger.debug('📊 Generated content length:', generatedContent.length);
+            
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = generatedContent;
             
             // Extraer solo las secciones de contenido (sin header y sin "Qué hacemos hoy")
             const sections = tempDiv.querySelectorAll('section');
+            Logger.debug('📊 Found sections in SummaryRenderer output:', sections.length);
             summaryStats.innerHTML = '';
             sections.forEach((section, index) => {
                 // Filtrar la sección "¿Qué hacemos hoy?" que está duplicada con la vista HOY
@@ -1866,12 +1873,21 @@ export class UIRenderer {
             
             // Limpiar contenedor temporal
             document.body.removeChild(tempContainer);
+            Logger.debug('📊 Summary-stats processing completed');
+        } else {
+            Logger.error('❌ summary-stats container not found!');
         }
 
+        // Verificar que el HTML básico esté en el DOM
+        Logger.debug('🔍 Checking if basic tracking HTML is in DOM...');
+        const trackingContainer = document.querySelector('#main-content .bg-white.dark\\:bg-slate-800');
+        Logger.debug('🔍 Tracking container found:', !!trackingContainer);
+        
         // Renderizar el mapa usando la instancia global importada (DESPUÉS del contenido)
         setTimeout(() => {
             const mapContainer = document.getElementById('map-container');
             Logger.debug('🔍 Looking for map-container in tracking view:', !!mapContainer);
+            Logger.debug('🔍 All elements with id map-container:', document.querySelectorAll('#map-container').length);
             
             if (mapContainer) {
                 Logger.debug('📐 Map container dimensions:', {
