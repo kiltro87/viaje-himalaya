@@ -1823,45 +1823,31 @@ export class UIRenderer {
         `;
 
         // Renderizar el resumen/analytics COMPLETO usando SummaryRenderer (SIN sección duplicada "Hoy")
-        const summaryStats = document.getElementById('summary-stats');
-        Logger.debug('🔍 Looking for summary-stats container:', !!summaryStats);
+                    const summaryStats = document.getElementById('summary-stats');
         
         if (summaryStats) {
-            Logger.debug('📊 Processing summary-stats content...');
-            
-            // ESTRATEGIA NUEVA: Renderizar directamente en summary-stats temporalmente
+            // Renderizar SummaryRenderer directamente en main-content
             const mainContent = document.getElementById('main-content');
             const originalHTML = mainContent.innerHTML;
             
-            // Renderizar SummaryRenderer directamente en main-content
             this.summaryRenderer.renderSummary();
-            Logger.debug('📊 SummaryRenderer executed directly');
             
             // Extraer solo las secciones de contenido (sin header y sin "Qué hacemos hoy")
             const sections = mainContent.querySelectorAll('section');
-            Logger.debug('📊 Found sections in main-content:', sections.length);
             
             const summaryContent = [];
             sections.forEach((section, index) => {
-                // Filtrar SOLO la sección "¿Qué hacemos hoy?" (muy específica)
-                const sectionText = (section.textContent || '').toLowerCase();
+                // Filtrar SOLO la sección específica "¿Qué hacemos hoy?" 
                 const sectionHTML = (section.innerHTML || '').toLowerCase();
                 const sectionTitle = section.querySelector('h2')?.textContent || 'Unknown section';
                 
-                // Filtro MUY específico solo para la sección exacta "¿Qué hacemos hoy?"
-                const isHoySection = sectionHTML.includes('qué hacemos hoy') || 
-                                  sectionHTML.includes('que hacemos hoy');
-                
-                Logger.debug(`🔍 Section ${index + 1}: "${sectionTitle}" - isHoySection: ${isHoySection}`);
-                Logger.debug(`📝 Text sample: "${sectionText.substring(0, 100)}..."`);
+                // Solo filtrar si contiene EXACTAMENTE el texto "¿Qué hacemos hoy?"
+                const isHoySection = sectionHTML.includes('¿qué hacemos hoy?') || 
+                                  sectionHTML.includes('¿que hacemos hoy?');
                 
                 if (!isHoySection) {
-                    // Asegurarse de que las tarjetas mantengan el estilo original
                     const clonedSection = section.cloneNode(true);
                     summaryContent.push(clonedSection);
-                    Logger.debug('📊 ✅ Added section to tracking:', sectionTitle);
-                } else {
-                    Logger.debug('🗑️ ❌ Filtered out "Hoy" section from tracking:', sectionTitle);
                 }
             });
             
@@ -1880,79 +1866,29 @@ export class UIRenderer {
                 summaryStatsRestored.appendChild(wrapper);
             }
             
-            Logger.debug('📊 Summary-stats processing completed with', summaryContent.length, 'sections');
-        } else {
-            Logger.error('❌ summary-stats container not found!');
         }
 
-        // Verificar que el HTML básico esté en el DOM
-        Logger.debug('🔍 Checking if basic tracking HTML is in DOM...');
-        const trackingContainer = document.querySelector('#main-content .bg-white.dark\\:bg-slate-800');
-        Logger.debug('🔍 Tracking container found:', !!trackingContainer);
-        
         // Renderizar el mapa usando la instancia global importada (DESPUÉS del contenido)
         setTimeout(() => {
             const mapContainer = document.getElementById('map-container');
-            Logger.debug('🔍 Looking for map-container in tracking view:', !!mapContainer);
-            Logger.debug('🔍 All elements with id map-container:', document.querySelectorAll('#map-container').length);
             
-            if (mapContainer) {
-                Logger.debug('📐 Map container dimensions:', {
-                    width: mapContainer.offsetWidth,
-                    height: mapContainer.offsetHeight,
-                    visible: mapContainer.offsetParent !== null
-                });
-                
-                // Verificar que mapRenderer existe y tiene el método renderMap
-                if (mapRenderer && typeof mapRenderer.renderMap === 'function') {
-                    try {
-                        // Añadir un indicador de carga
-                        mapContainer.innerHTML = `
-                            <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
-                                <div class="text-center">
-                                    <span class="material-symbols-outlined text-6xl mb-4 block animate-spin">autorenew</span>
-                                    <p>Cargando mapa...</p>
-                                </div>
-                            </div>
-                        `;
-                        
-                        // Renderizar el mapa después de un pequeño delay
-                        setTimeout(() => {
-                            mapRenderer.renderMap(mapContainer);
-                            Logger.success('🗺️ Map rendered successfully in tracking view');
-                        }, 100);
-                    } catch (error) {
-                        Logger.error('❌ Error rendering map in tracking view:', error);
-                        mapContainer.innerHTML = `
-                            <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
-                                <div class="text-center">
-                                    <span class="material-symbols-outlined text-6xl mb-4 block">map</span>
-                                    <p>Error al cargar el mapa: ${error.message}</p>
-                                    <button onclick="window.location.reload()" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard">
-                                        Reintentar
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                } else {
-                    Logger.error('❌ MapRenderer not available or missing renderMap method');
-                    Logger.debug('🔍 MapRenderer debug info:', {
-                        mapRenderer: !!mapRenderer,
-                        renderMapMethod: mapRenderer ? typeof mapRenderer.renderMap : 'N/A'
-                    });
+            if (mapRenderer && typeof mapRenderer.renderMap === 'function' && mapContainer) {
+                try {
+                    mapRenderer.renderMap(mapContainer);
+                } catch (error) {
+                    Logger.error('❌ Error rendering map in tracking view:', error);
                     mapContainer.innerHTML = `
                         <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
                             <div class="text-center">
-                                <span class="material-symbols-outlined text-6xl mb-4 block">error</span>
-                                <p>MapRenderer no disponible</p>
-                                <p class="text-sm mt-2">Verifica que MapRenderer.js esté cargado correctamente</p>
+                                <span class="material-symbols-outlined text-6xl mb-4 block">map</span>
+                                <p>Error al cargar el mapa</p>
+                                <button onclick="window.location.reload()" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard">
+                                    Reintentar
+                                </button>
                             </div>
                         </div>
                     `;
                 }
-            } else {
-                Logger.error('❌ Map container not found in tracking view');
             }
         }, 500); // Aumentar delay para asegurar que el DOM esté completamente listo
     }
