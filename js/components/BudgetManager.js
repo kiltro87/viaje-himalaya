@@ -603,6 +603,17 @@ export class BudgetManager {
             <!-- Resumen de presupuesto -->
             <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-6">
                 
+                <!-- Header de Presupuesto -->
+                <div class="mb-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400">account_balance_wallet</span>
+                        <div>
+                            <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Gestión de Presupuesto</h2>
+                            <p class="text-slate-600 dark:text-slate-400">Controla tu presupuesto y registra todos los gastos</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Resumen General Simplificado -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">

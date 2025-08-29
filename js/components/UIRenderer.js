@@ -1726,20 +1726,9 @@ export class UIRenderer {
 
                 <!-- Sección de Presupuesto -->
                 <div id="budget-section" class="mb-12">
-                    <!-- Header de Presupuesto -->
-                    <div class="mb-8">
-                        <div class="flex items-center gap-4 mb-4">
-                            <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400">account_balance_wallet</span>
-                            <div>
-                                <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Gestión de Presupuesto</h2>
-                                <p class="text-slate-600 dark:text-slate-400">Controla tu presupuesto y registra todos los gastos</p>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <!-- Contenedor para el BudgetManager -->
                     <div id="budget-content">
-                        <!-- El BudgetManager se renderizará aquí -->
+                        <!-- El BudgetManager se renderizará aquí con título integrado -->
                     </div>
                 </div>
 
