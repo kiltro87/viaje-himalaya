@@ -143,6 +143,11 @@ body {
         padding-top: 1.5rem !important;
         padding-bottom: 1.5rem !important;
     }
+    
+    /* ✅ Reducir padding-bottom excesivo en contenedores principales */
+    .pb-32 {
+        padding-bottom: 2rem !important; /* En lugar de 8rem, más apropiado para móvil */
+    }
 }
 
 /* ============================================================================
@@ -181,14 +186,14 @@ body {
 /* Asegurar que la navegación no interfiera */
 @media (max-width: 640px) {
     body {
-        padding-bottom: 6rem;
+        padding-bottom: 7rem; /* Aumentado para el menú más alto (5rem + margen) */
     }
     
     #bottom-nav {
-        width: 98%;
-        max-width: none;
-        height: 4rem;
-        grid-template-columns: repeat(6, 1fr);
+        width: 95%;
+        max-width: 24rem; /* max-w-96 equivalente a lg (max-w-lg) */
+        height: 5rem; /* h-20 equivalente */
+        grid-template-columns: repeat(4, 1fr); /* ✅ Actualizado a 4 columnas */
     }
     
     #bottom-nav .nav-btn {
@@ -463,11 +468,12 @@ html {
 
 @media (max-width: 896px) and (orientation: landscape) {
     #bottom-nav {
-        height: 3rem;
+        height: 3.5rem; /* Más espacio para landscape */
+        grid-template-columns: repeat(4, 1fr); /* ✅ Consistente con 4 columnas */
     }
     
     body {
-        padding-bottom: 4rem;
+        padding-bottom: 4.5rem; /* Ajustado para nueva altura */
     }
     
     .hidden.md\:block {
