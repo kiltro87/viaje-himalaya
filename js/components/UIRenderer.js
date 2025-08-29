@@ -1828,26 +1828,20 @@ export class UIRenderer {
         
         if (summaryStats) {
             Logger.debug('📊 Processing summary-stats content...');
-            // Crear un contenedor temporal para que SummaryRenderer funcione
-            const tempContainer = document.createElement('div');
-            tempContainer.id = 'main-content';
-            document.body.appendChild(tempContainer);
             
-            // Renderizar usando SummaryRenderer completo
+            // ESTRATEGIA NUEVA: Renderizar directamente en summary-stats temporalmente
+            const mainContent = document.getElementById('main-content');
+            const originalHTML = mainContent.innerHTML;
+            
+            // Renderizar SummaryRenderer directamente en main-content
             this.summaryRenderer.renderSummary();
-            Logger.debug('📊 SummaryRenderer executed');
-            
-            // Copiar el contenido generado (excluyendo el header que ya está)
-            const generatedContent = tempContainer.innerHTML;
-            Logger.debug('📊 Generated content length:', generatedContent.length);
-            
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = generatedContent;
+            Logger.debug('📊 SummaryRenderer executed directly');
             
             // Extraer solo las secciones de contenido (sin header y sin "Qué hacemos hoy")
-            const sections = tempDiv.querySelectorAll('section');
-            Logger.debug('📊 Found sections in SummaryRenderer output:', sections.length);
-            summaryStats.innerHTML = '';
+            const sections = mainContent.querySelectorAll('section');
+            Logger.debug('📊 Found sections in main-content:', sections.length);
+            
+            const summaryContent = [];
             sections.forEach((section, index) => {
                 // Filtrar la sección "¿Qué hacemos hoy?" que está duplicada con la vista HOY
                 const sectionText = (section.textContent || '').toLowerCase();
@@ -1864,16 +1858,22 @@ export class UIRenderer {
                 Logger.debug(`📝 Text sample: "${sectionText.substring(0, 100)}..."`);
                 
                 if (!isHoySection) {
-                    summaryStats.appendChild(section.cloneNode(true));
+                    summaryContent.push(section.cloneNode(true));
                     Logger.debug('📊 ✅ Added section to tracking:', sectionTitle);
                 } else {
                     Logger.debug('🗑️ ❌ Filtered out "Hoy" section from tracking:', sectionTitle);
                 }
             });
             
-            // Limpiar contenedor temporal
-            document.body.removeChild(tempContainer);
-            Logger.debug('📊 Summary-stats processing completed');
+            // Restaurar el HTML original del tracking y agregar las secciones filtradas
+            mainContent.innerHTML = originalHTML;
+            const summaryStatsRestored = document.getElementById('summary-stats');
+            summaryStatsRestored.innerHTML = '';
+            summaryContent.forEach(section => {
+                summaryStatsRestored.appendChild(section);
+            });
+            
+            Logger.debug('📊 Summary-stats processing completed with', summaryContent.length, 'sections');
         } else {
             Logger.error('❌ summary-stats container not found!');
         }
