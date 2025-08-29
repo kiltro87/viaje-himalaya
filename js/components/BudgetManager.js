@@ -629,17 +629,15 @@ export class BudgetManager {
                         <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="expenses-count">${stateManager.getState('expenses').length}</p>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Filtros de Categoría -->
-            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-6">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">filter_list</span>
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white">Análisis por Categorías</h3>
+                
+                <!-- Separador visual -->
+                <div class="border-t border-slate-200 dark:border-slate-700 pt-6 mt-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">filter_list</span>
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">Análisis por Categorías</h3>
+                        </div>
                     </div>
-
-                </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3" id="budget-category-filters">
                     ${allCategories.map(cat => {
                         const icon = this.getCategoryIcon(cat);
@@ -649,6 +647,7 @@ export class BudgetManager {
                             <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${cat}</span>
                         </button>`;
                     }).join('')}
+                </div>
                 </div>
             </div>
             
