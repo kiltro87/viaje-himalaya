@@ -288,8 +288,8 @@ export class UIRenderer {
                         <div class="flex items-center gap-3 mb-6">
                             <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">trending_up</span>
                             <h3 class="text-xl font-bold text-slate-900 dark:text-white">Progreso del Viaje</h3>
-                        </div>
-                        
+                    </div>
+                    
                         <div class="space-y-4">
                             <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
                                 <div class="flex justify-between items-center mb-2">
@@ -299,27 +299,27 @@ export class UIRenderer {
                                 <div class="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
                                     <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-normal" style="width: 0%"></div>
                                 </div>
-                            </div>
+                                </div>
                             
                             <div class="grid grid-cols-2 gap-3 text-center">
                                 <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
                                     <div class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itineraryData.length}</div>
                                     <div class="text-xs text-slate-600 dark:text-slate-400">días totales</div>
-                                </div>
+                            </div>
                                 <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
                                     <div class="text-2xl font-bold text-slate-900 dark:text-white" id="remaining-days">-</div>
                                     <div class="text-xs text-slate-600 dark:text-slate-400">días restantes</div>
-                                </div>
-                            </div>
                         </div>
-                    </div>
+                                </div>
+                                </div>
+                                </div>
 
                     <!-- Información del clima de hoy -->
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">wb_sunny</span>
                             <h3 class="text-xl font-bold text-slate-900 dark:text-white">Clima de Hoy</h3>
-                        </div>
+                            </div>
                         
                         <div id="today-weather-info" class="space-y-4">
                             <!-- Contenido dinámico del clima -->
@@ -347,10 +347,10 @@ export class UIRenderer {
         Logger.ui('📅 Updating today dynamic content (improved implementation)');
         
         try {
-            // Actualizar contenido del today-main-content (como en la versión original)
-            this.updateTodayMainContent();
-            
-            // Actualizar fecha en header
+        // Actualizar contenido del today-main-content (como en la versión original)
+        this.updateTodayMainContent();
+        
+        // Actualizar fecha en header
             this.updateTodayDateHeader();
             
             // Actualizar progreso del viaje
@@ -632,24 +632,24 @@ export class UIRenderer {
                     contentHTML += `
                         <div class="space-y-3 mb-6">
                             
-                            <div class="space-y-3">
+                        <div class="space-y-3">
                                 <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
                                     <h5 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
                                         <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-400">schedule</span>
-                                        Plan Principal
+                                    Plan Principal
                                     </h5>
                                     <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.planA}</p>
-                                </div>`;
+                            </div>`;
                     
                     if (currentDayData.planB) {
                         contentHTML += `
                                 <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
                                     <h5 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
                                         <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-400">alt_route</span>
-                                        Plan Alternativo
+                                    Plan Alternativo
                                     </h5>
                                     <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.planB}</p>
-                                </div>`;
+                            </div>`;
                     }
                     contentHTML += `</div>`;
                 }
@@ -1425,10 +1425,10 @@ export class UIRenderer {
                     <div class="bg-white dark:bg-slate-800 radius-card p-6 shadow-card shadow-card-hover border border-slate-200 dark:border-slate-700 transition-standard">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined text-2xl ${location.color}">${location.icon}</span>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 dark:text-white">${location.location}</h3>
-                                    <p class="text-sm text-slate-600 dark:text-slate-400">${location.condition}</p>
+                            <span class="material-symbols-outlined text-2xl ${location.color}">${location.icon}</span>
+                            <div>
+                                <h3 class="font-bold text-slate-900 dark:text-white">${location.location}</h3>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">${location.condition}</p>
                                 </div>
                             </div>
                             <div class="text-right">
@@ -1726,7 +1726,21 @@ export class UIRenderer {
 
                 <!-- Sección de Presupuesto -->
                 <div id="budget-section" class="mb-12">
-                    <!-- El BudgetManager se renderizará aquí -->
+                    <!-- Header de Presupuesto -->
+                    <div class="mb-8">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400">account_balance_wallet</span>
+                            <div>
+                                <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Gestión de Presupuesto</h2>
+                                <p class="text-slate-600 dark:text-slate-400">Controla tu presupuesto y registra todos los gastos</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenedor para el BudgetManager -->
+                    <div id="budget-content">
+                        <!-- El BudgetManager se renderizará aquí -->
+                    </div>
                 </div>
 
                 <!-- Sección de Packing List -->
@@ -1765,9 +1779,9 @@ export class UIRenderer {
         `;
 
         // Renderizar el presupuesto en la sección dedicada
-        const budgetSection = document.getElementById('budget-section');
-        if (budgetSection) {
-            this.budgetManager.render(budgetSection);
+        const budgetContent = document.getElementById('budget-content');
+        if (budgetContent) {
+            this.budgetManager.render(budgetContent);
         }
 
         // Cargar packing list (si existe)
