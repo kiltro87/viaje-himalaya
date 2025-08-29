@@ -1813,15 +1813,7 @@ export class UIRenderer {
                 const h3Title = section.querySelector('h3')?.textContent || '';
                 const isHoySection = h2Title.includes('¿Qué hacemos hoy?');
                 
-                // Debug temporal - agregar a URL ?debug=true para ver
-                if (window.location.search.includes('debug=true')) {
-                    console.log(`🔍 SECTION ${index}:`, {
-                        h2Title,
-                        h3Title,
-                        isHoySection,
-                        innerHTML: section.innerHTML.substring(0, 100) + '...'
-                    });
-                }
+
                 
                 if (!isHoySection) {
                     const clonedSection = section.cloneNode(true);
