@@ -1614,124 +1614,9 @@ export class UIRenderer {
     // - renderPlanning() → PlanningRenderer
     // - renderTracking() → TrackingRenderer
 
-    /**
-     * Helper: Cargar packing list REAL con PackingListManager
-     */
-    async loadPackingList() {
-        const packingContent = document.getElementById('packing-list-content');
-        if (!packingContent) return;
+    // MÉTODO ELIMINADO - Ahora se usa PlanningRenderer.loadPackingList()
 
-        // Usar datos REALES de tripConfig en lugar de Firestore
-        const packingData = tripConfig.packingListData || {};
-        const categories = Object.keys(packingData);
-        
-        if (categories.length === 0) {
-            // Fallback si no hay datos en tripConfig
-            packingContent.innerHTML = `
-                <div class="text-center py-8">
-                    <div class="mb-4">
-                        <span class="material-symbols-outlined text-4xl text-slate-400">inventory_2</span>
-                    </div>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">No hay datos de equipaje en la configuración</p>
-                </div>
-            `;
-        } else {
-            // Mostrar resumen de las categorías de tripConfig
-            const totalItems = Object.values(packingData).flat().length;
-            const categoriesPreview = categories.slice(0, 3);
-            
-            packingContent.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center p-3 bg-teal-50 dark:bg-teal-900/20 radius-standard">
-                        <span class="font-medium text-teal-800 dark:text-teal-200">Lista de equipaje</span>
-                        <span class="text-2xl font-bold text-teal-600 dark:text-teal-400">${totalItems}</span>
-                        <span class="text-sm text-teal-700 dark:text-teal-300">items</span>
-                    </div>
-                    
-                    <div class="space-y-2">
-                        <h4 class="font-medium text-slate-700 dark:text-slate-300">Categorías:</h4>
-                        ${categoriesPreview.map(category => `
-                            <div class="flex items-center gap-2 text-sm">
-                                <span class="w-4 h-4 text-teal-600">📦</span>
-                                <span class="text-slate-600 dark:text-slate-400">${category} (${packingData[category].length} items)</span>
-                            </div>
-                        `).join('')}
-                        ${categories.length > 3 ? `<div class="text-xs text-slate-500">... y ${categories.length - 3} categorías más</div>` : ''}
-                    </div>
-                    
-                    <div class="text-center">
-                        <button id="show-full-packing-list" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white radius-standard transition-standard">
-                            Ver Lista Completa
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Event listener para mostrar lista completa
-            const showButton = document.getElementById('show-full-packing-list');
-            if (showButton) {
-                showButton.addEventListener('click', () => {
-                    this.renderFullPackingListFromConfig(packingContent, packingData);
-                });
-            }
-        }
-    }
-
-    /**
-     * Helper: Renderizar lista completa de equipaje desde tripConfig
-     */
-    renderFullPackingListFromConfig(container, packingData) {
-        try {
-            const categories = Object.keys(packingData);
-            
-            container.innerHTML = `
-                <div class="space-y-6">
-                    <div class="flex justify-between items-center">
-                        <h4 class="text-lg font-bold text-slate-900 dark:text-white">Lista Completa de Equipaje</h4>
-                        <button id="collapse-packing-list" class="text-sm text-teal-600 dark:text-teal-400 hover:underline">
-                            ← Volver al resumen
-                        </button>
-                    </div>
-                    
-                    ${categories.map(category => `
-                        <div class="bg-slate-50 dark:bg-slate-700 radius-standard p-4">
-                            <h5 class="font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-                                <span class="text-teal-600">📦</span> ${category}
-                                <span class="text-sm text-slate-500">(${packingData[category].length} items)</span>
-                            </h5>
-                            <div class="grid md:grid-cols-2 gap-2">
-                                ${packingData[category].map(item => `
-                                    <div class="flex items-center gap-3 p-2 bg-white dark:bg-slate-600 radius-standard text-sm">
-                                        <input type="checkbox" class="w-4 h-4 text-teal-600">
-                                        <span class="text-slate-700 dark:text-slate-300">${item}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            
-            // Event listener para volver
-            const collapseBtn = document.getElementById('collapse-packing-list');
-            if (collapseBtn) {
-                collapseBtn.addEventListener('click', () => {
-                    this.loadPackingList(); // Volver al resumen
-                });
-            }
-            
-        } catch (error) {
-            Logger.error('Error rendering full packing list from config:', error);
-            container.innerHTML = `
-                <div class="text-center py-8">
-                    <p class="text-red-600 dark:text-red-400 mb-4">Error al mostrar la lista completa</p>
-                    <button onclick="this.loadPackingList()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white radius-standard transition-standard">
-                        Volver al resumen
-                    </button>
-                </div>
-            `;
-        }
-    }
+    // MÉTODO ELIMINADO - Ahora se usa PlanningRenderer
 
     /**
      * Helper: Renderizar lista completa de equipaje (Firestore - deprecated)
@@ -1839,7 +1724,8 @@ export class UIRenderer {
     /**
      * Helper: Cargar agencias de viaje
      */
-    loadAgencies() {
+    // MÉTODO ELIMINADO - Ahora se usa PlanningRenderer.loadAgencies()
+    loadAgencies_DEPRECATED() {
         const agenciesContent = document.getElementById('agencies-content');
         if (!agenciesContent) return;
 
@@ -1915,7 +1801,8 @@ export class UIRenderer {
     /**
      * Helper: Cargar información de alojamientos
      */
-    loadAccommodations() {
+    // MÉTODO ELIMINADO - Ahora se usa PlanningRenderer.loadAccommodations()
+    loadAccommodations_DEPRECATED() {
         const accommodationsContent = document.getElementById('accommodations-content');
         if (!accommodationsContent) return;
 
