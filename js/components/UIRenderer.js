@@ -1663,7 +1663,7 @@ export class UIRenderer {
                         <div class="text-sm text-slate-600 dark:text-slate-400">países</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">€3,500</div>
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="today-total-budget">€0</div>
                         <div class="text-sm text-slate-600 dark:text-slate-400">presupuesto</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
@@ -1673,6 +1673,39 @@ export class UIRenderer {
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * 🧮 CALCULAR PRESUPUESTO TOTAL REAL
+     * Calcula el presupuesto total desde tripConfig.budgetData
+     */
+    calculateTotalBudget() {
+        try {
+            const budgetCategories = tripConfig.budgetData?.budgetData || {};
+            let totalBudget = 0;
+            
+            // Iterar por todas las categorías del presupuesto
+            Object.values(budgetCategories).forEach(categoryItems => {
+                if (Array.isArray(categoryItems)) {
+                    categoryItems.forEach(item => {
+                        const cost = parseFloat(item.cost) || 0;
+                        totalBudget += cost;
+                        
+                        // Si hay subitems, también sumarlos
+                        if (item.subItems && Array.isArray(item.subItems)) {
+                            item.subItems.forEach(subItem => {
+                                totalBudget += parseFloat(subItem.cost) || 0;
+                            });
+                        }
+                    });
+                }
+            });
+            
+            return totalBudget;
+        } catch (error) {
+            Logger.error('Error calculating total budget:', error);
+            return 0;
+        }
     }
 
     /**
@@ -1690,6 +1723,13 @@ export class UIRenderer {
             const totalDaysElement = document.getElementById('today-total-days');
             if (totalDaysElement) {
                 totalDaysElement.textContent = totalDays.toString();
+            }
+            
+            // Actualizar presupuesto real
+            const budgetElement = document.getElementById('today-total-budget');
+            if (budgetElement) {
+                const totalBudget = this.calculateTotalBudget();
+                budgetElement.textContent = `€${totalBudget.toLocaleString('es-ES')}`;
             }
             
             // Calcular y actualizar progreso
