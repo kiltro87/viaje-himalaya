@@ -102,6 +102,7 @@ export class TodayRenderer {
         this.updateTodayDateHeader();
         this.updateTodayMainContent();
         this.updateTodayWeather();
+        this.updateTripProgress();
     }
 
     updateTodayDateHeader() {
@@ -384,7 +385,27 @@ export class TodayRenderer {
     }
 
     getTripStartDate() {
-        return new Date('2025-03-15');
+        try {
+            // Primero intentar obtener la fecha desde calendarData
+            if (tripConfig.calendarData && tripConfig.calendarData.startDate) {
+                return new Date(tripConfig.calendarData.startDate);
+            }
+            
+            // Fallback: usar la fecha del primer día del itinerario
+            if (tripConfig.itineraryData && tripConfig.itineraryData.length > 0) {
+                const firstDay = tripConfig.itineraryData[0];
+                if (firstDay.date) {
+                    return new Date(firstDay.date);
+                }
+            }
+            
+            // Último fallback: fecha hardcodeada
+            Logger.warning('⚠️ Using hardcoded trip start date');
+            return new Date('2025-03-15');
+        } catch (error) {
+            Logger.error('❌ Error getting trip start date:', error);
+            return new Date('2025-03-15');
+        }
     }
 
     updateTodayDynamicContent() {

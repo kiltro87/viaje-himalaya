@@ -148,7 +148,7 @@ export class PlanningRenderer {
             return;
         }
 
-        const totalItems = tripConfig.packingListData.reduce((total, category) => total + category.items.length, 0);
+        const totalItems = Object.values(tripConfig.packingListData).reduce((total, items) => total + items.length, 0);
         const checkedItems = Object.values(saved).filter(Boolean).length;
         const completionPercentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
 
@@ -167,15 +167,14 @@ export class PlanningRenderer {
             </div>
         `;
 
-        tripConfig.packingListData.forEach(category => {
-            const categoryItems = category.items || [];
+        Object.entries(tripConfig.packingListData).forEach(([categoryName, categoryItems]) => {
             const categoryChecked = categoryItems.filter(item => saved[item]).length;
             
             html += `
                 <div class="mb-6">
                     <div class="flex items-center gap-3 mb-4">
-                        <span class="material-symbols-outlined text-xl text-blue-600 dark:text-blue-400">${this.getCategoryIcon(category.category)}</span>
-                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${category.category}</h3>
+                        <span class="material-symbols-outlined text-xl text-blue-600 dark:text-blue-400">${this.getCategoryIcon(categoryName)}</span>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${categoryName}</h3>
                         <span class="text-sm text-slate-500 dark:text-slate-400">(${categoryChecked}/${categoryItems.length})</span>
                     </div>
                     
@@ -222,55 +221,48 @@ export class PlanningRenderer {
             return;
         }
 
+        // Usar datos reales de tripConfig
+        const agencies = tripConfig.agenciesData;
+        
         agenciesContent.innerHTML = `
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
                     <div class="flex items-center gap-3 mb-4">
-                        <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">hiking</span>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">WeRoad Nepal</h3>
+                        <span class="material-symbols-outlined text-2xl ${agencies.weroad.color}">${agencies.weroad.icon}</span>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">${agencies.weroad.name}</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">${agencies.weroad.tour}</p>
+                        </div>
                     </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Precio:</span>
-                            <span class="text-lg font-bold text-green-600 dark:text-green-400">€1,100</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Duración:</span>
-                            <span class="text-sm text-slate-900 dark:text-white">10 días</span>
-                        </div>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                            Aventura completa por Nepal incluyendo Katmandú, Pokhara, Chitwan y trekking en el Himalaya. 
-                            Incluye alojamiento, transporte interno, guías locales y actividades principales.
-                        </p>
-                        <a href="https://weroad.es" target="_blank" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium">
-                            <span class="material-symbols-outlined text-sm">open_in_new</span>
-                            Ver detalles
+                    <p class="text-slate-700 dark:text-slate-300 mb-4">${agencies.weroad.description}</p>
+                    <div class="flex gap-3">
+                        <a href="${agencies.weroad.url}" target="_blank" 
+                           class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white radius-standard transition-standard text-sm">
+                            Ver Paquete
                         </a>
+                        <span class="px-3 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 radius-standard text-sm font-medium">
+                            ${agencies.weroad.price}
+                        </span>
                     </div>
                 </div>
 
                 <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
                     <div class="flex items-center gap-3 mb-4">
-                        <span class="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">temple_buddhist</span>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Best of Bhutan</h3>
+                        <span class="material-symbols-outlined text-2xl ${agencies.bhutan.color}">${agencies.bhutan.icon}</span>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">${agencies.bhutan.name}</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">${agencies.bhutan.tour}</p>
+                        </div>
                     </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Precio:</span>
-                            <span class="text-lg font-bold text-green-600 dark:text-green-400">€1,602</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Duración:</span>
-                            <span class="text-sm text-slate-900 dark:text-white">8 días</span>
-                        </div>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                            Tour premium por Bután visitando Thimphu, Paro, Punakha y el famoso Nido del Tigre. 
-                            Incluye todos los permisos, guía certificado, alojamiento de lujo y experiencias culturales únicas.
-                        </p>
-                        <a href="https://bestofbhutan.com" target="_blank" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium">
-                            <span class="material-symbols-outlined text-sm">open_in_new</span>
-                            Ver detalles
+                    <p class="text-slate-700 dark:text-slate-300 mb-4">${agencies.bhutan.description}</p>
+                    <div class="flex gap-3">
+                        <a href="${agencies.bhutan.url}" target="_blank" 
+                           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard text-sm">
+                            Ver Tour
                         </a>
+                        <span class="px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 radius-standard text-sm font-medium">
+                            ${agencies.bhutan.price}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -312,87 +304,53 @@ export class PlanningRenderer {
             return;
         }
 
-        accommodationsContent.innerHTML = `
-            <div class="space-y-6">
-                <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">hotel</span>
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Nepal - Katmandú</h3>
-                        </div>
-                        <span class="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs font-medium px-3 py-1 rounded-full">
-                            Confirmado
-                        </span>
-                    </div>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <h4 class="font-semibold text-slate-900 dark:text-white mb-2">Hotel Himalaya</h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                                Hotel 4 estrellas en el corazón de Thamel, perfecto para explorar la ciudad.
-                            </p>
-                            <div class="text-xs text-slate-500 dark:text-slate-500">
-                                📍 Thamel, Katmandú • ⭐ 4.2/5 • 🛏️ Habitación doble
-                            </div>
-                        </div>
-                        <div>
-                            <div class="text-sm space-y-1">
-                                <div class="flex justify-between">
-                                    <span class="text-slate-600 dark:text-slate-400">Check-in:</span>
-                                    <span class="text-slate-900 dark:text-white">15 Mar 2025</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-slate-600 dark:text-slate-400">Check-out:</span>
-                                    <span class="text-slate-900 dark:text-white">25 Mar 2025</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-slate-600 dark:text-slate-400">Noches:</span>
-                                    <span class="text-slate-900 dark:text-white">10 noches</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        // Extraer información de alojamientos del tripConfig (sin inventar datos)
+        const accommodationsByLocation = {};
+        
+        tripConfig.itineraryData.forEach(day => {
+            if (day.accommodation && day.accommodation !== 'Vuelo nocturno') {
+                const location = day.location || 'Ubicación no especificada';
+                if (!accommodationsByLocation[location]) {
+                    accommodationsByLocation[location] = [];
+                }
+                if (!accommodationsByLocation[location].includes(day.accommodation)) {
+                    accommodationsByLocation[location].push(day.accommodation);
+                }
+            }
+        });
 
-                <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">hotel</span>
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Bután - Paro/Thimphu</h3>
-                        </div>
-                        <span class="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs font-medium px-3 py-1 rounded-full">
-                            Confirmado
-                        </span>
-                    </div>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <h4 class="font-semibold text-slate-900 dark:text-white mb-2">Hoteles Locales Premium</h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                                Alojamientos tradicionales butaneses con todas las comodidades modernas.
-                            </p>
-                            <div class="text-xs text-slate-500 dark:text-slate-500">
-                                📍 Paro & Thimphu • ⭐ 4.0/5 • 🛏️ Habitación doble
-                            </div>
-                        </div>
-                        <div>
-                            <div class="text-sm space-y-1">
-                                <div class="flex justify-between">
-                                    <span class="text-slate-600 dark:text-slate-400">Check-in:</span>
-                                    <span class="text-slate-900 dark:text-white">25 Mar 2025</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-slate-600 dark:text-slate-400">Check-out:</span>
-                                    <span class="text-slate-900 dark:text-white">02 Abr 2025</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-slate-600 dark:text-slate-400">Noches:</span>
-                                    <span class="text-slate-900 dark:text-white">8 noches</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        let accommodationsHTML = '<div class="space-y-4">';
+        
+        if (Object.keys(accommodationsByLocation).length === 0) {
+            accommodationsHTML += `
+                <div class="text-center py-8">
+                    <span class="material-symbols-outlined text-4xl text-slate-400 dark:text-slate-600 mb-4 block">hotel</span>
+                    <p class="text-slate-500 dark:text-slate-400">Información de alojamientos incluida en el paquete de viaje</p>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            Object.entries(accommodationsByLocation).forEach(([location, hotels]) => {
+                accommodationsHTML += `
+                    <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
+                        <h4 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">location_on</span>
+                            ${location}
+                        </h4>
+                        <div class="space-y-2">
+                            ${hotels.map(hotel => `
+                                <div class="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                                    <span class="material-symbols-outlined text-sm text-slate-500">hotel</span>
+                                    <span>${hotel}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        accommodationsHTML += '</div>';
+        accommodationsContent.innerHTML = accommodationsHTML;
 
         Logger.success('✅ Accommodations information rendered');
     }

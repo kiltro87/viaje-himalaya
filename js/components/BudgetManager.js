@@ -1027,7 +1027,7 @@ export class BudgetManager {
                                                                                         <span class="budget-inline-category-text">${cat}</span>
                                                                                     </button>
                                                                                     <span class="budget-inline-category-icon absolute left-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-xs text-slate-500 pointer-events-none">
-                                                                                        ${this.getCategoryIcon(cat)}
+                                                                                        ${getBudgetCategoryIcon(cat)}
                                                                                     </span>
                                                                                     <span class="absolute right-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-xs text-slate-500 pointer-events-none">
                                                                                         expand_more
@@ -1037,7 +1037,7 @@ export class BudgetManager {
                                                                                     <div class="budget-inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-item-id="${subItemId}">
                                                                                         ${allCategories.map(category => `
                                                                                             <div class="budget-inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-xs" data-value="${category}" data-item-id="${subItemId}">
-                                                                                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${this.getCategoryIcon(category)}</span>
+                                                                                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${getBudgetCategoryIcon(category)}</span>
                                                                                                 <span class="text-slate-900 dark:text-white">${category}</span>
                                                                                             </div>
                                                                                         `).join('')}
@@ -1107,7 +1107,7 @@ export class BudgetManager {
                                                                         <span class="budget-inline-category-text">${cat}</span>
                                                                     </button>
                                                                     <span class="budget-inline-category-icon absolute left-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-sm text-slate-500 pointer-events-none">
-                                                                        ${this.getCategoryIcon(cat)}
+                                                                        ${getBudgetCategoryIcon(cat)}
                                                                     </span>
                                                                     <span class="absolute right-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-sm text-slate-500 pointer-events-none">
                                                                         expand_more
@@ -1117,7 +1117,7 @@ export class BudgetManager {
                                                                     <div class="budget-inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-item-id="${itemId}">
                                                                         ${allCategories.map(category => `
                                                                             <div class="budget-inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-sm" data-value="${category}" data-item-id="${itemId}">
-                                                                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${this.getCategoryIcon(category)}</span>
+                                                                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${getBudgetCategoryIcon(category)}</span>
                                                                                 <span class="text-slate-900 dark:text-white">${category}</span>
                                                                             </div>
                                                                         `).join('')}
@@ -1184,7 +1184,7 @@ export class BudgetManager {
                                                                 <span class="inline-category-text">${exp.category}</span>
                                                             </button>
                                                             <span class="inline-category-icon absolute left-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-sm text-slate-500 pointer-events-none">
-                                                                ${this.getCategoryIcon(exp.category)}
+                                                                ${getBudgetCategoryIcon(exp.category)}
                                                             </span>
                                                             <span class="absolute right-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-sm text-slate-500 pointer-events-none">
                                                                 expand_more
@@ -1194,7 +1194,7 @@ export class BudgetManager {
                                                             <div class="inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-expense-id="${exp.id}">
                                                                 ${allCategories.map(cat => `
                                                                     <div class="inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-sm" data-value="${cat}" data-expense-id="${exp.id}">
-                                                                        <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${this.getCategoryIcon(cat)}</span>
+                                                                        <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${getBudgetCategoryIcon(cat)}</span>
                                                                         <span class="text-slate-900 dark:text-white">${cat}</span>
                                                                     </div>
                                                                 `).join('')}
@@ -1431,7 +1431,7 @@ export class BudgetManager {
                         e.preventDefault();
                         const expenseId = option.dataset.expenseId;
                         const category = option.dataset.value;
-                        const icon = this.getCategoryIcon(category);
+                        const icon = getBudgetCategoryIcon(category);
                         
                         // Actualizar UI del dropdown
                         const btn = document.querySelector(`.inline-category-btn[data-expense-id="${expenseId}"]`);
@@ -1517,7 +1517,7 @@ export class BudgetManager {
                         e.preventDefault();
                         const itemId = option.dataset.itemId;
                         const category = option.dataset.value;
-                        const icon = this.getCategoryIcon(category);
+                        const icon = getBudgetCategoryIcon(category);
                         
                         // Actualizar UI del dropdown
                         const btn = document.querySelector(`.budget-inline-category-btn[data-item-id="${itemId}"]`);
@@ -1671,7 +1671,7 @@ export class BudgetManager {
         // Actualizar dropdown personalizado de categoría
         if (categoryInput) categoryInput.value = category;
         if (categoryText) categoryText.textContent = category;
-        if (categoryIcon) categoryIcon.textContent = this.getCategoryIcon(category);
+        if (categoryIcon) categoryIcon.textContent = getBudgetCategoryIcon(category);
         if (categoryBtn) {
             categoryBtn.classList.remove('text-slate-500');
             categoryBtn.classList.add('text-slate-900', 'dark:text-white');

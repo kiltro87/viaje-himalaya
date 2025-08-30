@@ -41,7 +41,7 @@ export class DaySimulator {
             const uiRenderer = stateManager.getState('instances.uiRenderer');
             if (uiRenderer && typeof uiRenderer.getTripStartDate === 'function') {
                 this.tripStartDate = uiRenderer.getTripStartDate();
-                Logger.info('🎯 Trip start date from UIRenderer:', this.tripStartDate);
+                Logger.ui('🎯 Trip start date from UIRenderer:', this.tripStartDate);
                 return this.tripStartDate;
             }
 

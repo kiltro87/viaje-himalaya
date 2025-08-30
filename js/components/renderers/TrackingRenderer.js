@@ -89,7 +89,32 @@ export class TrackingRenderer {
             });
             
             // Restaurar el contenido original del main-content
-            this.renderTracking();
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = `
+                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                    <div class="mb-12">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="material-symbols-outlined text-6xl text-green-600 dark:text-green-400">analytics</span>
+                            <div>
+                                <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Seguimiento</h1>
+                                <p class="text-lg text-slate-600 dark:text-slate-400">Analiza tu aventura en tiempo real</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="summary-stats" class="mb-8">
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-2 relative z-10">
+                        <div class="flex items-center gap-3 mb-4 p-4">
+                            <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">map</span>
+                            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Mapa del Viaje</h2>
+                        </div>
+                        <div id="map-container" class="w-full h-[80vh] min-h-[600px] rounded-xl overflow-hidden relative">
+                        </div>
+                    </div>
+                </div>
+            `;
             
             // Insertar las secciones filtradas en summary-stats
             const summaryStatsContainer = document.getElementById('summary-stats');
