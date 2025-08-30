@@ -620,17 +620,13 @@ export class UIRenderer {
                 const dayNumber = dayDiff + 1;
                 
                 let contentHTML = `
-                    <!-- Tarjeta principal del día - Diseño mejorado -->
                     <div class="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-900 radius-card overflow-hidden shadow-card border border-blue-200 dark:border-slate-700 mb-6">
-                        <!-- Patrón decorativo de fondo -->
                         <div class="absolute inset-0 opacity-5">
                             <div class="absolute top-4 right-4 w-32 h-32 bg-blue-600 rounded-full blur-3xl"></div>
                             <div class="absolute bottom-4 left-4 w-24 h-24 bg-indigo-600 rounded-full blur-2xl"></div>
                         </div>
                         
-                        <!-- Contenido principal -->
                         <div class="relative p-6 md:p-8">
-                            <!-- Header con badge del día -->
                             <div class="flex items-start justify-between mb-6">
                                 <div class="flex items-center gap-4">
                                     <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -645,13 +641,11 @@ export class UIRenderer {
                                     </div>
                                 </div>
                                 
-                                <!-- Icono decorativo -->
                                 <div class="hidden md:block opacity-20">
                                     <span class="material-symbols-outlined text-6xl text-blue-600 dark:text-blue-400">landscape</span>
                                 </div>
                             </div>
                             
-                            <!-- Título y descripción -->
                             <div class="mb-6">
                                 <h3 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white mb-4 leading-tight">${currentDayData.title}</h3>
                                 <p class="text-slate-600 dark:text-slate-300 text-lg leading-relaxed">${currentDayData.description}</p>
@@ -659,7 +653,6 @@ export class UIRenderer {
                         
                 if (currentDayData.planA) {
                     contentHTML += `
-                            <!-- Planes del día con diseño mejorado -->
                             <div class="space-y-4 mb-6">`;
                     
                     contentHTML += `
