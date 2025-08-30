@@ -392,20 +392,26 @@ export class TodayRenderer {
         try {
             // Primero intentar obtener la fecha desde calendarData
             if (tripConfig.calendarData && tripConfig.calendarData.startDate) {
-                return new Date(tripConfig.calendarData.startDate);
+                const startDate = new Date(tripConfig.calendarData.startDate);
+                Logger.debug('📅 Trip start from calendarData:', startDate);
+                return startDate;
             }
             
             // Fallback: usar la fecha del primer día del itinerario
             if (tripConfig.itineraryData && tripConfig.itineraryData.length > 0) {
                 const firstDay = tripConfig.itineraryData[0];
                 if (firstDay.date) {
-                    return new Date(firstDay.date);
+                    const startDate = new Date(firstDay.date);
+                    Logger.debug('📅 Trip start from first day:', startDate);
+                    return startDate;
                 }
             }
             
             // Último fallback: fecha hardcodeada
             Logger.warning('⚠️ Using hardcoded trip start date');
-            return new Date('2025-03-15');
+            const fallbackDate = new Date('2025-03-15');
+            Logger.debug('📅 Trip start fallback:', fallbackDate);
+            return fallbackDate;
         } catch (error) {
             Logger.error('❌ Error getting trip start date:', error);
             return new Date('2025-03-15');
