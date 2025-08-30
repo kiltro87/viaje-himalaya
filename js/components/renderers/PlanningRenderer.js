@@ -1,4 +1,4 @@
-import { Logger } from '../../utils/Logger.js';
+import Logger from '../../utils/Logger.js';
 import { getPackingCategoryIcon } from '../../utils/CategoryUtils.js';
 import { tripConfig } from '../../config/tripConfig.js';
 import stateManager from '../../utils/StateManager.js';
