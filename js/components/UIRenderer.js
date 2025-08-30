@@ -363,8 +363,11 @@ export class UIRenderer {
      * 📅 ACTUALIZAR HEADER DE FECHA DE HOY
      */
     updateTodayDateHeader() {
-        const dateElement = document.getElementById('today-current-date');
-        if (!dateElement) return;
+        const dateElement = document.getElementById('today-date');
+        if (!dateElement) {
+            Logger.warning('⚠️ Element #today-date not found');
+            return;
+        }
 
         try {
             const today = stateManager.getCurrentDate();
