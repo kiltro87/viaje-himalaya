@@ -166,10 +166,12 @@ export class PlanningRenderer {
             expectedKeyFormat: 'Ropa-Camisetas de manga larga (5-7)',
             actualKeysFormat: Object.keys(saved).slice(0, 5),
             // Mostrar algunos valores guardados
-            sampleSavedItems: Object.keys(saved).slice(0, 5).map(key => ({
+            sampleSavedItems: Object.keys(saved).slice(0, 10).map(key => ({
                 key,
                 value: saved[key]
-            }))
+            })),
+            // Mostrar todas las claves guardadas para debug
+            allSavedKeys: Object.keys(saved)
         });
         
         if (!tripConfig.packingListData || Object.keys(tripConfig.packingListData).length === 0) {

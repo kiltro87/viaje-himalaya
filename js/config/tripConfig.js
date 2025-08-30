@@ -90,6 +90,7 @@ export const tripConfig = {
             "id": "day-4",
             "phase": "nepal",
             "country": "Nepal",
+            "location": "Pokhara",
             "title": "Rafting en el Trisuli y Llegada a Pokhara",
             "description": "Viaje por carretera hacia Pokhara con una parada para una emocionante sesión de rafting en el río Trisuli. Tarde en el tranquilo barrio tibetano.",
             "image": "https://cdn.getyourguide.com/image/format=auto,fit=contain,gravity=auto,quality=60,width=1440,height=650,dpr=1/tour_img/e4dc6366c7816be975f4947353bf8202ae7451d1c058c6ed928c49f9e870f54b.jpeg",
