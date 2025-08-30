@@ -620,70 +620,107 @@ export class UIRenderer {
                 const dayNumber = dayDiff + 1;
                 
                 let contentHTML = `
-                    <div class="flex items-center gap-4 mb-6">
-                        <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">${activityIcon}</span>
-                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">${activityType}</h2>
-                    </div>
-                    
-                    <!-- Tarjeta principal del día -->
-                    <div class="bg-white dark:bg-slate-800 radius-card p-6 border border-slate-200 dark:border-slate-700 mb-6">
-                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">${currentDayData.title}</h3>
-                        <p class="text-slate-600 dark:text-slate-400 mb-6 text-lg leading-relaxed">${currentDayData.description}</p>`;
+                    <!-- Tarjeta principal del día - Diseño mejorado -->
+                    <div class="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-900 radius-card overflow-hidden shadow-card border border-blue-200 dark:border-slate-700 mb-6">
+                        <!-- Patrón decorativo de fondo -->
+                        <div class="absolute inset-0 opacity-5">
+                            <div class="absolute top-4 right-4 w-32 h-32 bg-blue-600 rounded-full blur-3xl"></div>
+                            <div class="absolute bottom-4 left-4 w-24 h-24 bg-indigo-600 rounded-full blur-2xl"></div>
+                        </div>
+                        
+                        <!-- Contenido principal -->
+                        <div class="relative p-6 md:p-8">
+                            <!-- Header con badge del día -->
+                            <div class="flex items-start justify-between mb-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                        <span class="material-symbols-outlined text-white text-2xl">${activityIcon}</span>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">DÍA ${dayNumber}</span>
+                                            <span class="bg-white/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 text-xs font-medium px-3 py-1 rounded-full">${currentDayData.location || 'En ruta'}</span>
+                                        </div>
+                                        <h2 class="text-sm font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">${activityType}</h2>
+                                    </div>
+                                </div>
+                                
+                                <!-- Icono decorativo -->
+                                <div class="hidden md:block opacity-20">
+                                    <span class="material-symbols-outlined text-6xl text-blue-600 dark:text-blue-400">landscape</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Título y descripción -->
+                            <div class="mb-6">
+                                <h3 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white mb-4 leading-tight">${currentDayData.title}</h3>
+                                <p class="text-slate-600 dark:text-slate-300 text-lg leading-relaxed">${currentDayData.description}</p>
+                            </div>`;
                         
                 if (currentDayData.planA) {
                     contentHTML += `
-                        <div class="space-y-3 mb-6">
-                            
-                        <div class="space-y-3">
-                                <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
-                                    <h5 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-400">schedule</span>
-                                    Plan Principal
-                                    </h5>
-                                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.planA}</p>
-                            </div>`;
+                            <!-- Planes del día con diseño mejorado -->
+                            <div class="space-y-4 mb-6">`;
+                    
+                    contentHTML += `
+                                <div class="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl p-5 border border-white/40 dark:border-slate-600/40">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-white text-sm">schedule</span>
+                                        </div>
+                                        <h5 class="font-bold text-slate-900 dark:text-white">Plan Principal</h5>
+                                    </div>
+                                    <p class="text-slate-600 dark:text-slate-300 leading-relaxed">${currentDayData.planA}</p>
+                                </div>`;
                     
                     if (currentDayData.planB) {
                         contentHTML += `
-                                <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
-                                    <h5 class="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-sm text-slate-600 dark:text-slate-400">alt_route</span>
-                                    Plan Alternativo
-                                    </h5>
-                                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">${currentDayData.planB}</p>
-                            </div>`;
+                                <div class="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl p-5 border border-white/40 dark:border-slate-600/40">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-white text-sm">alt_route</span>
+                                        </div>
+                                        <h5 class="font-bold text-slate-900 dark:text-white">Plan Alternativo</h5>
+                                    </div>
+                                    <p class="text-slate-600 dark:text-slate-300 leading-relaxed">${currentDayData.planB}</p>
+                                </div>`;
                     }
                     contentHTML += `</div>`;
                 }
                 
-                contentHTML += `
-                    </div>
-                    
-                    <div class="grid md:grid-cols-2 gap-4">`;
+                            <!-- Información adicional con cards flotantes -->
+                            <div class="grid md:grid-cols-2 gap-4">`;
                 
                 if (currentDayData.consejo) {
                     contentHTML += `
-                        <div class="bg-blue-50 dark:bg-blue-900/20 radius-card p-6 border border-blue-200 dark:border-blue-800">
-                            <div class="flex items-center gap-2 mb-3">
-                                <span class="material-symbols-outlined text-lg text-blue-600 dark:text-blue-400">lightbulb</span>
-                                <h4 class="font-semibold text-slate-900 dark:text-white">Consejo</h4>
-                            </div>
-                            <p class="text-slate-600 dark:text-slate-400">${currentDayData.consejo}</p>
-                        </div>`;
+                                <div class="bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-2xl p-5 border border-amber-200 dark:border-amber-800/40 shadow-sm">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center shadow-md">
+                                            <span class="material-symbols-outlined text-white text-lg">lightbulb</span>
+                                        </div>
+                                        <h4 class="font-bold text-slate-900 dark:text-white">Consejo del Día</h4>
+                                    </div>
+                                    <p class="text-slate-600 dark:text-slate-300 leading-relaxed">${currentDayData.consejo}</p>
+                                </div>`;
                 }
                 
                 if (currentDayData.bocado) {
                     contentHTML += `
-                        <div class="bg-green-50 dark:bg-green-900/20 radius-card p-6 border border-green-200 dark:border-green-800">
-                            <div class="flex items-center gap-2 mb-3">
-                                <span class="material-symbols-outlined text-lg text-green-600 dark:text-green-400">restaurant</span>
-                                <h4 class="font-semibold text-slate-900 dark:text-white">Bocado</h4>
-                            </div>
-                            <p class="text-slate-600 dark:text-slate-400">${currentDayData.bocado}</p>
-                        </div>`;
+                                <div class="bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/20 dark:to-green-900/20 rounded-2xl p-5 border border-emerald-200 dark:border-emerald-800/40 shadow-sm">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-green-500 rounded-xl flex items-center justify-center shadow-md">
+                                            <span class="material-symbols-outlined text-white text-lg">restaurant</span>
+                                        </div>
+                                        <h4 class="font-bold text-slate-900 dark:text-white">Bocado Local</h4>
+                                    </div>
+                                    <p class="text-slate-600 dark:text-slate-300 leading-relaxed">${currentDayData.bocado}</p>
+                                </div>`;
                 }
                 
-                contentHTML += `</div>`;
+                contentHTML += `
+                            </div>
+                        </div>
+                    </div>`;
                 mainContentContainer.innerHTML = contentHTML;
             } else {
                 // Antes o después del viaje
