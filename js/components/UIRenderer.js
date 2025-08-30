@@ -1645,15 +1645,75 @@ export class UIRenderer {
         const mainContent = document.getElementById('main-content');
         if (!mainContent) return;
 
-        // Reutilizar renderToday() existente pero agregar micro-stats
-        this.renderToday();
-        
-        // Añadir micro-stats al final del contenido CON PADDING-BOTTOM
-        const existingContent = mainContent.innerHTML;
-        mainContent.innerHTML = existingContent + `
-            <!-- Micro-stats específicas de HOY (dinámicas y contextales) -->
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+        mainContent.innerHTML = `
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-48 sm:pb-52 lg:pb-56">
+                <!-- Header de Hoy -->
+                <div class="mb-12">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="material-symbols-outlined text-6xl text-orange-600 dark:text-orange-400">today</span>
+                        <div>
+                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Hoy en tu Viaje</h1>
+                            <p class="text-lg text-slate-600 dark:text-slate-400">Tu compañero de aventura día a día</p>
+                        </div>
+                    </div>
+                    <div class="text-sm text-slate-500 dark:text-slate-500" id="today-date">Cargando fecha...</div>
+                </div>
+
+                <!-- Estado y progreso del viaje -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Progreso del viaje -->
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">trending_up</span>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Progreso del Viaje</h3>
+                        </div>
+                    
+                        <div class="space-y-4">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm font-medium text-blue-800 dark:text-blue-200">Días completados</span>
+                                    <span class="text-xs text-blue-600 dark:text-blue-400" id="trip-progress-percentage">0%</span>
+                                </div>
+                                <div class="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+                                    <div id="progress-bar" class="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-standard" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3 text-center">
+                                <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
+                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itineraryData.length}</div>
+                                    <div class="text-xs text-slate-600 dark:text-slate-400">días totales</div>
+                                </div>
+                                <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
+                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="days-elapsed">0</div>
+                                    <div class="text-xs text-slate-600 dark:text-slate-400">días transcurridos</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clima de hoy -->
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">wb_sunny</span>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Clima de Hoy</h3>
+                        </div>
+                        
+                        <div id="today-weather-info" class="space-y-4">
+                            <!-- Contenido dinámico del clima -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actividades del día -->
+                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                    <div id="today-main-content" class="min-h-[200px]">
+                        <!-- Contenido dinámico de actividades -->
+                    </div>
+                </div>
+
+                <!-- Micro-stats específicas de HOY (integradas en el flujo) -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
                         <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="today-current-day">Día 1</div>
                         <div class="text-sm text-slate-600 dark:text-slate-400">de 18</div>
@@ -1673,6 +1733,31 @@ export class UIRenderer {
                 </div>
             </div>
         `;
+
+        // Cargar contenido dinámico después de renderizar el HTML
+        this.loadTodayContent();
+    }
+
+    /**
+     * 🔄 CARGAR CONTENIDO DINÁMICO DE HOY
+     * Método auxiliar para cargar el contenido específico del día
+     */
+    loadTodayContent() {
+        // Actualizar fecha
+        this.updateTodayDateHeader();
+        
+        // Cargar información del día en el contenedor principal
+        const mainContentContainer = document.getElementById('today-main-content');
+        if (mainContentContainer) {
+            this.loadTodayMainInfo(mainContentContainer);
+        }
+        
+        // Actualizar clima
+        this.updateTodayWeather();
+        
+        // Actualizar micro-stats
+        this.updateTodayMicroStats();
+    }
     }
 
     /**
