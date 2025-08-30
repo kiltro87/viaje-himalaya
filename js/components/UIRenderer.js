@@ -1712,23 +1712,23 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Micro-stats específicas de HOY (integradas en el flujo) -->
+                <!-- Micro-stats ÚNICAS de HOY (información específica del día actual) -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="today-current-day">Día 1</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">de 18</div>
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="today-location">📍</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">ubicación</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="today-remaining-days">17</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">días restantes</div>
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="today-activity">🏔️</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">actividad</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="today-spent-so-far">€0</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">gastado hasta hoy</div>
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="today-weather">🌤️</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">clima</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400" id="today-progress-percent">0%</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">completado</div>
+                        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400" id="today-country">🇳🇵</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">país</div>
                     </div>
                 </div>
             </div>
@@ -1790,8 +1790,8 @@ export class UIRenderer {
     }
 
     /**
-     * 📊 ACTUALIZAR MICRO-STATS DE HOY
-     * Actualiza las estadísticas específicas y dinámicas del día actual
+     * 📊 ACTUALIZAR MICRO-STATS ÚNICAS DE HOY
+     * Actualiza información específica del día actual (ubicación, actividad, clima, país)
      */
     updateTodayMicroStats() {
         try {
@@ -1800,81 +1800,81 @@ export class UIRenderer {
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
             const totalDays = tripConfig.itineraryData.length;
             
-            // Calcular día actual y días restantes
-            let currentDay, remainingDays;
+            // Calcular día actual del viaje
+            let currentDay;
             if (dayDiff < 0) {
-                // Antes del viaje
-                currentDay = 0;
-                remainingDays = totalDays;
+                currentDay = 0; // Antes del viaje
             } else if (dayDiff >= 0 && dayDiff < totalDays) {
-                // Durante el viaje
-                currentDay = dayDiff + 1;
-                remainingDays = totalDays - currentDay;
+                currentDay = dayDiff + 1; // Durante el viaje
             } else {
-                // Después del viaje
-                currentDay = totalDays;
-                remainingDays = 0;
+                currentDay = totalDays; // Después del viaje
             }
             
-            // Actualizar día actual
-            const currentDayElement = document.getElementById('today-current-day');
-            if (currentDayElement) {
-                if (currentDay === 0) {
-                    currentDayElement.textContent = '¡Pronto!';
-                } else if (currentDay > totalDays) {
-                    currentDayElement.textContent = '¡Terminado!';
+            // Obtener datos del día actual
+            let currentDayData = null;
+            if (currentDay > 0 && currentDay <= totalDays) {
+                currentDayData = tripConfig.itineraryData[currentDay - 1];
+            }
+            
+            // Actualizar ubicación del día
+            const locationElement = document.getElementById('today-location');
+            if (locationElement) {
+                if (!currentDayData) {
+                    locationElement.textContent = '🏠 Casa';
                 } else {
-                    currentDayElement.textContent = `Día ${currentDay}`;
+                    const location = currentDayData.location || 'En ruta';
+                    locationElement.textContent = location.length > 12 ? 
+                        location.substring(0, 12) + '...' : location;
                 }
             }
             
-            // Actualizar días restantes
-            const remainingDaysElement = document.getElementById('today-remaining-days');
-            if (remainingDaysElement) {
-                remainingDaysElement.textContent = remainingDays.toString();
-            }
-            
-            // Calcular gastos hasta la fecha actual
-            const spentElement = document.getElementById('today-spent-so-far');
-            if (spentElement) {
-                const expenses = stateManager.getState('expenses') || [];
-                const totalSpent = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
-                spentElement.textContent = `€${Math.round(totalSpent).toLocaleString('es-ES')}`;
-            }
-            
-            // Calcular y actualizar progreso
-            const progressElement = document.getElementById('today-progress-percent');
-            if (progressElement) {
-                let progress = 0;
-                
-                if (dayDiff < 0) {
-                    progress = 0;
-                } else if (dayDiff >= 0 && dayDiff < totalDays) {
-                    progress = Math.round((currentDay / totalDays) * 100);
+            // Actualizar actividad del día
+            const activityElement = document.getElementById('today-activity');
+            if (activityElement) {
+                if (!currentDayData) {
+                    activityElement.textContent = '✈️ Preparar';
                 } else {
-                    progress = 100;
-                }
-                
-                progressElement.textContent = `${progress}%`;
-                
-                // Cambiar color según el progreso (más dinámico)
-                progressElement.className = progressElement.className.replace(/text-\w+-\d+/g, '');
-                if (progress === 0) {
-                    progressElement.classList.add('text-slate-600', 'dark:text-slate-400');
-                } else if (progress < 25) {
-                    progressElement.classList.add('text-red-600', 'dark:text-red-400');
-                } else if (progress < 75) {
-                    progressElement.classList.add('text-orange-600', 'dark:text-orange-400');
-                } else if (progress < 100) {
-                    progressElement.classList.add('text-green-600', 'dark:text-green-400');
-                } else {
-                    progressElement.classList.add('text-blue-600', 'dark:text-blue-400'); // Azul para completado
+                    const activity = currentDayData.title || currentDayData.activity || 'Explorar';
+                    activityElement.textContent = activity.length > 12 ? 
+                        activity.substring(0, 12) + '...' : activity;
                 }
             }
             
-            Logger.debug('Today micro-stats updated:', { currentDay, remainingDays, progress, dayDiff });
+            // Actualizar clima del día
+            const weatherElement = document.getElementById('today-weather');
+            if (weatherElement && currentDayData) {
+                // Buscar datos climáticos por ubicación
+                const location = currentDayData.location;
+                const weatherData = tripConfig.weatherLocations && tripConfig.weatherLocations[location];
+                if (weatherData) {
+                    weatherElement.textContent = `${weatherData.temp_avg}°C`;
+                } else {
+                    weatherElement.textContent = '🌤️ Agradable';
+                }
+            } else if (weatherElement) {
+                weatherElement.textContent = '🏠 Local';
+            }
+            
+            // Actualizar país del día
+            const countryElement = document.getElementById('today-country');
+            if (countryElement) {
+                if (!currentDayData) {
+                    countryElement.textContent = '🇪🇸 España';
+                } else {
+                    const phase = currentDayData.phase;
+                    if (phase === 'nepal') {
+                        countryElement.textContent = '🇳🇵 Nepal';
+                    } else if (phase === 'butan') {
+                        countryElement.textContent = '🇧🇹 Bután';
+                    } else {
+                        countryElement.textContent = '✈️ Vuelo';
+                    }
+                }
+            }
+            
+            Logger.debug('Today unique micro-stats updated:', { currentDay, currentDayData });
         } catch (error) {
-            Logger.error('Error updating today micro-stats:', error);
+            Logger.error('Error updating today unique micro-stats:', error);
         }
     }
 
