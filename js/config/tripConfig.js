@@ -7,11 +7,11 @@
  * vuelos, clima, agencias y equipaje.
  * 
  * Estructura de datos:
- * - itineraryData: Array con todos los días del viaje (24 días)
+ * - itineraryData: Array con todos los días del viaje (18 días)
+ *   Cada día incluye: id, phase, country, location, title, description, places[], coords, icon, etc.
  * - budgetData: Presupuesto categorizado con items detallados
  * - flightsData: Información de vuelos de ida y vuelta
  * - packingListData: Lista de equipaje por categorías
- * - placesByDay: Lugares de interés por día del itinerario
  * - weatherData: Información climática por fases del viaje
  * - weatherLocations: Datos climáticos detallados por ciudades
  * - agenciesData: Información de agencias y servicios
