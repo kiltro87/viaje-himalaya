@@ -54,6 +54,7 @@ export const tripConfig = {
             "id": "day-2",
             "phase": "nepal",
             "country": "Nepal",
+            "location": "Katmandú",
             "title": "Llegada a Katmandú",
             "description": "Llegada al aeropuerto, trámites de visado y traslado al hotel en Thamel para un primer contacto con la ciudad.",
             "image": "https://www.conmochila.com/wp-content/uploads/2019/12/thamel-kathmandu-01.jpg",
@@ -771,8 +772,8 @@ export const tripConfig = {
                 return firstDay.date;
             }
             // Si no hay fecha específica, usar una fecha por defecto (se puede ajustar)
-            // Para desarrollo, usar una fecha pasada para ver el progreso
-            return '2024-10-01';
+            // Para desarrollo, usar una fecha futura para simular el viaje
+            return '2025-10-09';
         },
         getTotalDays() {
             return tripConfig.itineraryData.length;
