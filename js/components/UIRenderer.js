@@ -1758,7 +1758,6 @@ export class UIRenderer {
         // Actualizar micro-stats
         this.updateTodayMicroStats();
     }
-    }
 
     /**
      * 🧮 CALCULAR PRESUPUESTO TOTAL REAL
