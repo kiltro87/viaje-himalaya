@@ -1635,6 +1635,11 @@ export class UIRenderer {
                     <div class="text-sm text-slate-500 dark:text-slate-500" id="today-date">Cargando fecha...</div>
                 </div>
 
+                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                    <div id="today-main-content" class="min-h-[200px]">
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                         <div class="flex items-center gap-3 mb-6">
@@ -1674,11 +1679,6 @@ export class UIRenderer {
                         
                         <div id="today-weather-info" class="space-y-4">
                         </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
-                    <div id="today-main-content" class="min-h-[200px]">
                     </div>
                 </div>
 
