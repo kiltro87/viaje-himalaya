@@ -186,7 +186,7 @@ body {
 /* Asegurar que la navegación no interfiera */
 @media (max-width: 640px) {
     body {
-        padding-bottom: 12rem; /* Aumentado para garantizar scroll completo */
+        padding-bottom: 15rem; /* Máximo padding para garantizar visibilidad total */
     }
     
     #bottom-nav {

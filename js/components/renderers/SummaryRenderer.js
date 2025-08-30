@@ -110,26 +110,34 @@ export class SummaryRenderer {
                     </div>
                 </section>
 
-                <!-- Grid de Estadísticas (exacto del original) -->
+                <!-- Grid de Estadísticas (formato 2 filas con icono al lado del número) -->
                 <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl mb-4 block">calendar_month</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">${totalDays}</p>
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-2xl">calendar_month</span>
+                            <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">${totalDays}</p>
+                        </div>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">días de aventura</p>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl mb-4 block">public</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">${totalCountries}</p>
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-2xl">public</span>
+                            <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">${totalCountries}</p>
+                        </div>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">países visitados</p>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl mb-4 block">account_balance_wallet</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">€${grandTotal.toFixed(0)}</p>
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-2xl">account_balance_wallet</span>
+                            <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">€${grandTotal.toFixed(0)}</p>
+                        </div>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">presupuesto total</p>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700 text-center">
-                        <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 text-3xl mb-4 block">trending_up</span>
-                        <p class="text-3xl font-bold text-slate-800 dark:text-slate-200">€${costPerDay.toFixed(0)}</p>
+                    <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 text-2xl">trending_up</span>
+                            <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">€${costPerDay.toFixed(0)}</p>
+                        </div>
                         <p class="text-slate-600 dark:text-slate-400 text-sm">coste por día</p>
                     </div>
                 </section>
