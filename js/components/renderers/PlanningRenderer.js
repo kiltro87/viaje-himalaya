@@ -170,16 +170,16 @@ export class PlanningRenderer {
                                 <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">${categoryIcon}</span>
                                 <div>
                                     <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${cleanCategoryName}</h3>
-                                    <p class="text-sm text-slate-600 dark:text-slate-400">${categoryPacked}/${categoryTotal} completados</p>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400 category-items-count">${categoryPacked}/${categoryTotal} completados</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="text-right">
-                                    <div class="text-lg font-bold text-blue-600 dark:text-blue-400">${categoryPercentage}%</div>
-                                    <div class="w-12 h-1.5 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
-                                        <div class="h-full bg-blue-600 dark:bg-blue-400 transition-all duration-300" 
+                                    <div class="w-16 h-2 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
+                                        <div class="h-full bg-blue-600 dark:bg-blue-400 transition-all duration-300 category-progress-bar" 
                                              style="width: ${categoryPercentage}%"></div>
                                     </div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 category-percentage">${categoryPercentage}%</div>
                                 </div>
                                 <span class="material-symbols-outlined text-slate-400 transform transition-transform category-chevron">
                                     expand_more
@@ -224,8 +224,8 @@ export class PlanningRenderer {
                 </div>
             </div>
 
-            <!-- Categorías con desplegables -->
-            <div class="space-y-4" id="packing-categories">
+            <!-- Categorías con desplegables en grid 2x2 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="packing-categories">
                 ${categoriesHTML}
             </div>
         `;
@@ -330,16 +330,18 @@ export class PlanningRenderer {
         const categoryTotal = categoryItems.length;
         const categoryPercentage = categoryTotal > 0 ? Math.round((categoryPacked / categoryTotal) * 100) : 0;
 
-        // Actualizar estadísticas de la categoría
+        // Actualizar estadísticas de la categoría usando las nuevas clases
         const categoryHeader = container.querySelector(`[data-category="${category}"]`);
         if (categoryHeader) {
-            const itemsText = categoryHeader.querySelector('p');
-            const percentageText = categoryHeader.querySelector('.text-2xl');
-            const progressBar = categoryHeader.querySelector('.h-full');
+            const itemsCount = categoryHeader.querySelector('.category-items-count');
+            const percentageText = categoryHeader.querySelector('.category-percentage');
+            const progressBar = categoryHeader.querySelector('.category-progress-bar');
             
-            if (itemsText) itemsText.textContent = `${categoryPacked}/${categoryTotal} items completados`;
+            if (itemsCount) itemsCount.textContent = `${categoryPacked}/${categoryTotal} completados`;
             if (percentageText) percentageText.textContent = `${categoryPercentage}%`;
             if (progressBar) progressBar.style.width = `${categoryPercentage}%`;
+            
+            Logger.debug(`📊 Updated category ${category}: ${categoryPacked}/${categoryTotal} (${categoryPercentage}%)`);
         }
     }
 
