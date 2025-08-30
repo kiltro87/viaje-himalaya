@@ -29,14 +29,8 @@ export class PlanningRenderer {
                     <div id="budget-container"></div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
-                        <span class="material-symbols-outlined text-teal-600 dark:text-teal-400">inventory_2</span>
-                        Lista de Equipaje
-                    </h2>
-                    <div id="packing-list-content">
-                        <p class="text-slate-600 dark:text-slate-400">Cargando lista de equipaje...</p>
-                    </div>
+                <div id="packing-list-content">
+                    <p class="text-slate-600 dark:text-slate-400">Cargando lista de equipaje...</p>
                 </div>
 
                 <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
