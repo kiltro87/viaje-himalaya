@@ -66,7 +66,7 @@ export class SummaryRenderer {
         const costPerDay = Math.max(grandTotal, totalSpent) / totalDays;
 
         mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
                 <!-- Header con imagen de fondo restaurado -->
                 <header class="relative h-96 radius-card overflow-hidden shadow-card border border-slate-200 dark:border-slate-700">
                     <div class="absolute inset-0 bg-cover bg-center transition-standard" style="background-image: url('https://www.lasociedadgeografica.com/blog/uploads/2019/10/bhutan-peaceful-tours-nido-del-tigre.jpg'); transform: scale(1.1);"></div>

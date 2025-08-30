@@ -264,7 +264,7 @@ export class UIRenderer {
         if (!mainContent) return;
 
         mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
                 <!-- Header de Hoy -->
                 <div class="mb-12">
                     <div class="flex items-center gap-4 mb-4">
@@ -765,7 +765,7 @@ export class UIRenderer {
 
         try {
             mainContent.innerHTML = `
-                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                     <div class="flex items-center gap-3 mb-8">
                         <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">flight</span>
                         <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Información de Vuelos</h2>
@@ -862,7 +862,7 @@ export class UIRenderer {
         try {
             // Usar mismo patrón de header que Itinerario
             mainContent.innerHTML = `
-                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+                <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                     <!-- Header de Extras (estilo Itinerario) -->
                     <div class="mb-12">
                         <div class="flex items-center gap-4 mb-4">
@@ -1646,7 +1646,7 @@ export class UIRenderer {
         if (!mainContent) return;
 
         mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                 <!-- Header de Hoy -->
                 <div class="mb-12">
                     <div class="flex items-center gap-4 mb-4">
@@ -1888,7 +1888,7 @@ export class UIRenderer {
         if (!mainContent) return;
 
         mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                 <!-- Header de Planificación -->
                 <div class="mb-12">
                     <div class="flex items-center gap-4 mb-4">
@@ -1972,7 +1972,7 @@ export class UIRenderer {
         if (!mainContent) return;
 
         mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                 <!-- Header de Seguimiento -->
                 <div class="mb-12">
                     <div class="flex items-center gap-4 mb-4">
@@ -2040,7 +2040,7 @@ export class UIRenderer {
             // Agregar las secciones con el wrapper correcto para mantener el estilo
             if (summaryContent.length > 0) {
                 const wrapper = document.createElement('div');
-                wrapper.className = 'space-y-8 md:space-y-12 lg:space-y-16';
+                wrapper.className = 'space-y-6 md:space-y-8';
                 summaryContent.forEach(section => {
                     wrapper.appendChild(section);
                 });

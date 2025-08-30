@@ -144,22 +144,9 @@ body {
         padding-bottom: 1.5rem !important;
     }
     
-    /* ✅ Aumentar padding-bottom para evitar solapamiento con menú de navegación */
+    /* ✅ Restaurar padding-bottom normal - usar body padding en su lugar */
     .pb-32 {
-        padding-bottom: 8rem !important; /* Suficiente para menú (80px + 16px = 96px) + margen */
-    }
-    
-    /* Paddings especiales más grandes también necesitan ajuste */
-    .pb-48 {
-        padding-bottom: 8rem !important;
-    }
-    
-    .pb-52 {
-        padding-bottom: 8rem !important; 
-    }
-    
-    .pb-56 {
-        padding-bottom: 8rem !important;
+        padding-bottom: 2rem !important; /* Valores normales, body se encarga del menú */
     }
 }
 
@@ -199,7 +186,7 @@ body {
 /* Asegurar que la navegación no interfiera */
 @media (max-width: 640px) {
     body {
-        padding-bottom: 7rem; /* Aumentado para el menú más alto (5rem + margen) */
+        padding-bottom: 9rem; /* Suficiente para menú (96px) + margen extra */
     }
     
     #bottom-nav {
