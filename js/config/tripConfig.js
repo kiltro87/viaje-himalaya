@@ -178,6 +178,7 @@ export const tripConfig = {
             "id": "day-7",
             "phase": "nepal",
             "country": "Nepal",
+            "location": "Pokhara",
             "title": "Aguas Termales y Regreso a Pokhara",
             "description": "Caminata corta de descenso (2-3h) para un baño en aguas termales en Jhimodanda y regreso en jeep a Pokhara.",
             "image": "https://media.tacdn.com/media/attractions-splice-spp-674x446/06/73/e2/fd.jpg",
