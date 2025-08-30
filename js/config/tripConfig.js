@@ -39,10 +39,13 @@ export const tripConfig = {
             "id": "day-1",
             "phase": "nepal",
             "country": "Nepal",
+            "location": "Madrid",
             "title": "Salida desde Madrid",
             "description": "El viaje comienza con el vuelo nocturno desde Madrid-Barajas (MAD) con destino a Katmandú.",
             "image": "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80",
-            
+            "places": [
+                { "name": "Aeropuerto de Madrid-Barajas (MAD)", "coords": [40.4936, -3.5668], "icon": "✈️", "description": "Punto de partida del viaje" }
+            ],
             "icon": "✈️",
             "planA": "Embarque en el vuelo nocturno de Qatar Airways. Acomódate para el primer trayecto largo hasta Doha. Cena y desayuno a bordo.",
             "planB": "Asegúrate de haber hecho el check-in online para elegir un buen asiento.",
@@ -62,6 +65,11 @@ export const tripConfig = {
                 27.7172,
                 85.324
             ],
+            "places": [
+                { "name": "Aeropuerto Internacional Tribhuvan (KTM)", "coords": [27.6966, 85.3533], "icon": "🛬", "description": "Punto de llegada a Nepal" },
+                { "name": "Thamel", "coords": [27.7172, 85.3138], "icon": "🛍️", "description": "Barrio turístico y centro neurálgico" },
+                { "name": "Jardín de los Sueños", "coords": [27.7172, 85.3150], "icon": "🌳", "description": "Oasis de paz de estilo neoclásico" }
+            ],
             "icon": "🛬",
             "planA": "Llegada a KTM. Pasa por inmigración para obtener el visado on-arrival. Recoge tu equipaje y busca al representante del tour o toma un taxi prepago al hotel en Thamel. Check-in y tiempo para refrescarse.",
             "planB": "Si llegas con energía, da un primer paseo por las caóticas y fascinantes calles de Thamel para ubicarte. Para un respiro, visita el cercano Jardín de los Sueños.",
@@ -73,12 +81,19 @@ export const tripConfig = {
             "id": "day-3",
             "phase": "nepal",
             "country": "Nepal",
+            "location": "Katmandú",
             "title": "Plaza Durbar y Encuentro WeRoad",
             "description": "Mañana libre para explorar el corazón histórico de Katmandú, la Plaza Durbar, antes de unirte al grupo de WeRoad por la tarde para la cena de bienvenida.",
             "image": "https://www.lasociedadgeografica.com/blog/uploads/2020/09/katmandu-square-nepal-tourism.jpg",
             "coords": [
                 27.7048,
                 85.3074
+            ],
+            "places": [
+                { "name": "Plaza Durbar de Katmandú", "coords": [27.7048, 85.3074], "icon": "🏛️", "description": "Corazón histórico y Patrimonio UNESCO" },
+                { "name": "Kumari Chowk", "coords": [27.7045, 85.3065], "icon": "🙏", "description": "Residencia de la diosa viviente" },
+                { "name": "Asan Tole", "coords": [27.708, 85.311], "icon": "🌶️", "description": "Mercado local auténtico y bullicioso" },
+                { "name": "Hotel Manang (o similar)", "coords": [27.7172, 85.3138], "icon": "🏨", "description": "Punto de encuentro WeRoad" }
             ],
             "icon": "🏛️",
             "planA": "Aprovecha la mañana para visitar la Plaza Durbar de Katmandú, Patrimonio de la Humanidad. Explora el Palacio Real de Hanuman Dhoka y busca a la diosa viviente en el Kumari Chowk. Por la tarde, check-in en el Hotel Manang o similar para el encuentro con el grupo WeRoad y la cena de bienvenida.",
@@ -98,6 +113,12 @@ export const tripConfig = {
             "coords": [
                 28.2096,
                 83.9856
+            ],
+            "places": [
+                { "name": "Río Trisuli", "coords": [27.87, 84.76], "icon": "🚣", "description": "Rafting de aguas bravas" },
+                { "name": "Pokhara", "coords": [28.2096, 83.9856], "icon": "🏞️", "description": "Ciudad a orillas del lago Phewa" },
+                { "name": "Barrio Tibetano (Pokhara)", "coords": [28.216, 83.96], "icon": "🏘️", "description": "Asentamiento con templo y artesanía" },
+                { "name": "Lago Phewa", "coords": [28.2096, 83.9856], "icon": "⛵", "description": "Vistas al Annapurna y Templo Tal Barahi" }
             ],
             "icon": "🚣",
             "planA": "Salida temprano por carretera hacia Pokhara (aprox. 6 horas). Parada para una sesión de rafting en el río Trisuli. Llegada a Pokhara y check-in en el Hotel White Pearl o similar. Por la tarde, visita al barrio tibetano, con sus casas de colores, su templo y tiendas de artesanía. Atardecer paseando por Lakeside.",
