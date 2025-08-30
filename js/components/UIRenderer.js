@@ -1653,7 +1653,7 @@ export class UIRenderer {
         mainContent.innerHTML = existingContent + `
             <!-- Micro-stats específicas de HOY (dinámicas y contextales) -->
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
                         <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="today-current-day">Día 1</div>
                         <div class="text-sm text-slate-600 dark:text-slate-400">de 18</div>
