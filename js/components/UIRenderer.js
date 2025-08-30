@@ -1646,7 +1646,7 @@ export class UIRenderer {
         if (!mainContent) return;
 
         mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-48 sm:pb-52 lg:pb-56">
+            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-8 md:space-y-12 lg:space-y-16 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                 <!-- Header de Hoy -->
                 <div class="mb-12">
                     <div class="flex items-center gap-4 mb-4">
@@ -1723,8 +1723,8 @@ export class UIRenderer {
                         <div class="text-sm text-slate-600 dark:text-slate-400">días restantes</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="today-total-budget">€0</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">presupuesto total</div>
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="today-spent-so-far">€0</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">gastado hasta hoy</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
                         <div class="text-2xl font-bold text-orange-600 dark:text-orange-400" id="today-progress-percent">0%</div>
@@ -1834,11 +1834,12 @@ export class UIRenderer {
                 remainingDaysElement.textContent = remainingDays.toString();
             }
             
-            // Actualizar presupuesto real (mantener por relevancia)
-            const budgetElement = document.getElementById('today-total-budget');
-            if (budgetElement) {
-                const totalBudget = this.calculateTotalBudget();
-                budgetElement.textContent = `€${Math.round(totalBudget).toLocaleString('es-ES')}`;
+            // Calcular gastos hasta la fecha actual
+            const spentElement = document.getElementById('today-spent-so-far');
+            if (spentElement) {
+                const expenses = stateManager.getState('expenses') || [];
+                const totalSpent = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+                spentElement.textContent = `€${Math.round(totalSpent).toLocaleString('es-ES')}`;
             }
             
             // Calcular y actualizar progreso

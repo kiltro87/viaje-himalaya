@@ -144,9 +144,22 @@ body {
         padding-bottom: 1.5rem !important;
     }
     
-    /* ✅ Reducir padding-bottom excesivo en contenedores principales */
+    /* ✅ Aumentar padding-bottom para evitar solapamiento con menú de navegación */
     .pb-32 {
-        padding-bottom: 2rem !important; /* En lugar de 8rem, más apropiado para móvil */
+        padding-bottom: 8rem !important; /* Suficiente para menú (80px + 16px = 96px) + margen */
+    }
+    
+    /* Paddings especiales más grandes también necesitan ajuste */
+    .pb-48 {
+        padding-bottom: 8rem !important;
+    }
+    
+    .pb-52 {
+        padding-bottom: 8rem !important; 
+    }
+    
+    .pb-56 {
+        padding-bottom: 8rem !important;
     }
 }
 
