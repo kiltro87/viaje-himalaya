@@ -359,10 +359,7 @@ export class UIRenderer {
             // Actualizar información climática
             this.updateTodayWeather();
             
-            // Actualizar micro-stats si estamos en la vista HOY
-        if (this.currentView === VIEWS.TODAY) {
-            this.updateTodayMicroStats();
-        }
+
         
         Logger.success('✅ Today dynamic content updated successfully');
         } catch (error) {
@@ -1733,9 +1730,7 @@ export class UIRenderer {
         
         // Actualizar clima
         this.updateTodayWeather();
-        
-        // Actualizar micro-stats
-        this.updateTodayMicroStats();
+
     }
 
     /**
@@ -1852,9 +1847,7 @@ export class UIRenderer {
         
         // Cargar información de alojamientos
         this.loadAccommodations();
-        
-        // Actualizar micro-stats dinámicamente
-        this.updateTodayMicroStats();
+
     }
 
     /**
