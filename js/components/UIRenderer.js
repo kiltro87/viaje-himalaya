@@ -1712,35 +1712,23 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Micro-stats ÚTILES de HOY (formato 2 filas con icono al lado) -->
+                <!-- Micro-stats ÚNICAS de HOY (información específica del día actual) -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 border border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">location_on</span>
-                            <div class="text-xl font-bold text-slate-800 dark:text-slate-200" id="today-location">Katmandú</div>
-                        </div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">ubicación hoy</div>
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="today-location">📍</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">ubicación</div>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 border border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="material-symbols-outlined text-purple-600 dark:text-purple-400">schedule</span>
-                            <div class="text-xl font-bold text-slate-800 dark:text-slate-200" id="today-duration">8h</div>
-                        </div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">duración actividades</div>
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="today-activity">🏔️</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">actividad</div>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 border border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="material-symbols-outlined text-green-600 dark:text-green-400">account_balance_wallet</span>
-                            <div class="text-xl font-bold text-slate-800 dark:text-slate-200" id="today-budget">€120</div>
-                        </div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">presupuesto día</div>
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="today-weather">🌤️</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">clima</div>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 border border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="material-symbols-outlined text-orange-600 dark:text-orange-400">distance</span>
-                            <div class="text-xl font-bold text-slate-800 dark:text-slate-200" id="today-distance">12km</div>
-                        </div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">distancia aprox</div>
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
+                        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400" id="today-country">🇳🇵</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">país</div>
                     </div>
                 </div>
             </div>
@@ -1802,8 +1790,8 @@ export class UIRenderer {
     }
 
     /**
-     * 📊 ACTUALIZAR MICRO-STATS ÚTILES DE HOY
-     * Actualiza información realmente útil del día actual (ubicación, duración, presupuesto, distancia)
+     * 📊 ACTUALIZAR MICRO-STATS ÚNICAS DE HOY
+     * Actualiza información específica del día actual (ubicación, actividad, clima, país)
      */
     updateTodayMicroStats() {
         try {
@@ -1832,66 +1820,61 @@ export class UIRenderer {
             const locationElement = document.getElementById('today-location');
             if (locationElement) {
                 if (!currentDayData) {
-                    locationElement.textContent = 'Casa';
+                    locationElement.textContent = '🏠 Casa';
                 } else {
                     const location = currentDayData.location || 'En ruta';
-                    locationElement.textContent = location.length > 10 ? 
-                        location.substring(0, 10) + '...' : location;
+                    locationElement.textContent = location.length > 12 ? 
+                        location.substring(0, 12) + '...' : location;
                 }
             }
             
-            // Actualizar duración estimada del día
-            const durationElement = document.getElementById('today-duration');
-            if (durationElement) {
+            // Actualizar actividad del día
+            const activityElement = document.getElementById('today-activity');
+            if (activityElement) {
                 if (!currentDayData) {
-                    durationElement.textContent = '0h';
+                    activityElement.textContent = '✈️ Preparar';
                 } else {
-                    // Estimar duración basada en actividades del día
-                    const activities = currentDayData.activities || [];
-                    const estimatedHours = Math.max(6, Math.min(12, activities.length * 2));
-                    durationElement.textContent = `${estimatedHours}h`;
+                    const activity = currentDayData.title || currentDayData.activity || 'Explorar';
+                    activityElement.textContent = activity.length > 12 ? 
+                        activity.substring(0, 12) + '...' : activity;
                 }
             }
             
-            // Actualizar presupuesto estimado del día
-            const budgetElement = document.getElementById('today-budget');
-            if (budgetElement) {
-                if (!currentDayData) {
-                    budgetElement.textContent = '€0';
+            // Actualizar clima del día
+            const weatherElement = document.getElementById('today-weather');
+            if (weatherElement && currentDayData) {
+                // Buscar datos climáticos por ubicación
+                const location = currentDayData.location;
+                const weatherData = tripConfig.weatherLocations && tripConfig.weatherLocations[location];
+                if (weatherData) {
+                    weatherElement.textContent = `${weatherData.temp_avg}°C`;
                 } else {
-                    // Calcular presupuesto aproximado del día
-                    const totalBudget = this.calculateTotalBudget();
-                    const budgetPerDay = Math.round(totalBudget / totalDays);
-                    budgetElement.textContent = `€${budgetPerDay}`;
+                    weatherElement.textContent = '🌤️ Agradable';
                 }
+            } else if (weatherElement) {
+                weatherElement.textContent = '🏠 Local';
             }
             
-            // Actualizar distancia aproximada del día
-            const distanceElement = document.getElementById('today-distance');
-            if (distanceElement) {
+            // Actualizar país del día
+            const countryElement = document.getElementById('today-country');
+            if (countryElement) {
                 if (!currentDayData) {
-                    distanceElement.textContent = '0km';
+                    countryElement.textContent = '🇪🇸 España';
                 } else {
-                    // Estimar distancia basada en actividades y ubicación
-                    const activities = currentDayData.activities || [];
-                    const location = currentDayData.location || '';
-                    let estimatedKm = 5; // Base mínima
-                    
-                    if (location.includes('Trekking') || currentDayData.title?.includes('Trekking')) {
-                        estimatedKm = Math.floor(Math.random() * 15) + 10; // 10-25km para trekking
-                    } else if (activities.length > 3) {
-                        estimatedKm = Math.floor(Math.random() * 20) + 5; // 5-25km para muchas actividades
+                    const phase = currentDayData.phase;
+                    if (phase === 'nepal') {
+                        countryElement.textContent = '🇳🇵 Nepal';
+                    } else if (phase === 'butan') {
+                        countryElement.textContent = '🇧🇹 Bután';
                     } else {
-                        estimatedKm = Math.floor(Math.random() * 10) + 2; // 2-12km para actividades normales
+                        countryElement.textContent = '✈️ Vuelo';
                     }
-                    
-                    distanceElement.textContent = `${estimatedKm}km`;
                 }
             }
             
-            Logger.debug('Today useful micro-stats updated:', { currentDay, currentDayData });
+            Logger.debug('Today unique micro-stats updated:', { currentDay, currentDayData });
         } catch (error) {
-            Logger.error('Error updating today useful micro-stats:', error);
+            Logger.error('Error updating today unique micro-stats:', error);
         }
     }
 
