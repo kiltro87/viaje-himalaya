@@ -1712,25 +1712,7 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Micro-stats ÚNICAS de HOY (información específica del día actual) -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="today-location">📍</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">ubicación</div>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="today-activity">🏔️</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">actividad</div>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="today-weather">🌤️</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">clima</div>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400" id="today-country">🇳🇵</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">país</div>
-                    </div>
-                </div>
+
             </div>
         `;
 
@@ -1789,94 +1771,7 @@ export class UIRenderer {
         }
     }
 
-    /**
-     * 📊 ACTUALIZAR MICRO-STATS ÚNICAS DE HOY
-     * Actualiza información específica del día actual (ubicación, actividad, clima, país)
-     */
-    updateTodayMicroStats() {
-        try {
-            const today = stateManager.getCurrentDate();
-            const tripStartDate = this.getTripStartDate();
-            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
-            const totalDays = tripConfig.itineraryData.length;
-            
-            // Calcular día actual del viaje
-            let currentDay;
-            if (dayDiff < 0) {
-                currentDay = 0; // Antes del viaje
-            } else if (dayDiff >= 0 && dayDiff < totalDays) {
-                currentDay = dayDiff + 1; // Durante el viaje
-            } else {
-                currentDay = totalDays; // Después del viaje
-            }
-            
-            // Obtener datos del día actual
-            let currentDayData = null;
-            if (currentDay > 0 && currentDay <= totalDays) {
-                currentDayData = tripConfig.itineraryData[currentDay - 1];
-            }
-            
-            // Actualizar ubicación del día
-            const locationElement = document.getElementById('today-location');
-            if (locationElement) {
-                if (!currentDayData) {
-                    locationElement.textContent = '🏠 Casa';
-                } else {
-                    const location = currentDayData.location || 'En ruta';
-                    locationElement.textContent = location.length > 12 ? 
-                        location.substring(0, 12) + '...' : location;
-                }
-            }
-            
-            // Actualizar actividad del día
-            const activityElement = document.getElementById('today-activity');
-            if (activityElement) {
-                if (!currentDayData) {
-                    activityElement.textContent = '✈️ Preparar';
-                } else {
-                    const activity = currentDayData.title || currentDayData.activity || 'Explorar';
-                    activityElement.textContent = activity.length > 12 ? 
-                        activity.substring(0, 12) + '...' : activity;
-                }
-            }
-            
-            // Actualizar clima del día
-            const weatherElement = document.getElementById('today-weather');
-            if (weatherElement && currentDayData) {
-                // Buscar datos climáticos por ubicación
-                const location = currentDayData.location;
-                const weatherData = tripConfig.weatherLocations && tripConfig.weatherLocations[location];
-                if (weatherData) {
-                    weatherElement.textContent = `${weatherData.temp_avg}°C`;
-                } else {
-                    weatherElement.textContent = '🌤️ Agradable';
-                }
-            } else if (weatherElement) {
-                weatherElement.textContent = '🏠 Local';
-            }
-            
-            // Actualizar país del día
-            const countryElement = document.getElementById('today-country');
-            if (countryElement) {
-                if (!currentDayData) {
-                    countryElement.textContent = '🇪🇸 España';
-                } else {
-                    const phase = currentDayData.phase;
-                    if (phase === 'nepal') {
-                        countryElement.textContent = '🇳🇵 Nepal';
-                    } else if (phase === 'butan') {
-                        countryElement.textContent = '🇧🇹 Bután';
-                    } else {
-                        countryElement.textContent = '✈️ Vuelo';
-                    }
-                }
-            }
-            
-            Logger.debug('Today unique micro-stats updated:', { currentDay, currentDayData });
-        } catch (error) {
-            Logger.error('Error updating today unique micro-stats:', error);
-        }
-    }
+
 
     /**
      * 🎯 NUEVA ESTRUCTURA - PLANNING (gastos + extras + packing)
