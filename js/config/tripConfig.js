@@ -131,12 +131,17 @@ export const tripConfig = {
             "id": "day-5",
             "phase": "nepal",
             "country": "Nepal",
+            "location": "Ghandruk",
             "title": "Trekking a Ghandruk (1.940m)",
             "description": "Comienzo del trekking. Viaje en jeep y caminata de 5-6h (8 km) a través de selva y pueblos hasta el asentamiento Gurung de Ghandruk.",
             "image": "https://himalayan-masters.com/wp-content/uploads/2024/08/Gurung-Cottage-Ghandruk.webp",
             "coords": [
                 28.375,
                 83.81
+            ],
+            "places": [
+                { "name": "Ghandruk", "coords": [28.375, 83.81], "icon": "🏔️", "description": "Pueblo Gurung a 1.940m" },
+                { "name": "Museo Gurung (Ghandruk)", "coords": [28.375, 83.81], "icon": "🏛️", "description": "Cultura e historia local" }
             ],
             "icon": "🏔️",
             "planA": "Traslado en jeep hasta Landruk (aprox. 4h). Inicio de la caminata desde Jhinu Danda. La ruta pasa por Saulibazaar (parada para almorzar) y atraviesa senderos selváticos y pequeños pueblos. Llegada a Ghandruk por la tarde. Visita al museo local para entender la cultura Gurung. Noche en una pensión local.",
@@ -149,12 +154,18 @@ export const tripConfig = {
             "id": "day-6",
             "phase": "nepal",
             "country": "Nepal",
+            "location": "Chhomrong",
             "title": "Trekking a Chhomrong (2.170m)",
             "description": "Segunda jornada de trekking (6-7h, 8 km) hasta Chhomrong, la puerta de entrada al Santuario del Annapurna, con vistas espectaculares.",
             "image": "https://media.istockphoto.com/id/1493335414/es/foto/hermosa-estupa-de-budismo-tibetano-en-el-pueblo-de-chhomrong-con-el-monte-annapurna-al-sur-en.jpg?s=612x612&w=0&k=20&c=A5-ydGKKdxpFmvEYeaNQeZvYtMIX59ue3a3yl_oE3H8=",
             "coords": [
                 28.415,
                 83.82
+            ],
+            "places": [
+                { "name": "Chhomrong", "coords": [28.415, 83.82], "icon": "🏔️", "description": "Puerta del Santuario del Annapurna (2.170m)" },
+                { "name": "Annapurna Sur (vista)", "coords": [28.52, 83.81], "icon": "⛰️", "description": "Pico de 7.219m" },
+                { "name": "Machhapuchhre (vista)", "coords": [28.49, 83.94], "icon": "⛰️", "description": "Montaña sagrada 'Cola de Pez' (6.993m)" }
             ],
             "icon": "🏔️",
             "planA": "Desayuno con vistas. La ruta de hoy incluye un ascenso a Kimrung Danda para almorzar, seguido de un descenso hasta Chhomrong. Este pueblo es el último antes del Campo Base del Annapurna. Disfruta del atardecer sobre el Annapurna Sur y el Machhapuchhre. Noche en pensión local.",
@@ -257,6 +268,7 @@ export const tripConfig = {
             "id": "day-12",
             "phase": "butan",
             "country": "Bután",
+            "location": "Thimphu",
             "title": "Llegada a Bután y Capital Thimphu",
             "description": "Vuelo panorámico a Paro y traslado a la capital, Thimphu. Visita al Museo Nacional, al Buda Dordenma y al centro de tejido.",
             "image": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Buddha_Dordenma.jpg",
