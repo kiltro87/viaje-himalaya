@@ -317,10 +317,10 @@ export class DaySimulator {
 
         // Botones de navegación rápida
         quickViewBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', async () => {
                 const targetView = btn.dataset.view;
                 if (window.changeView && targetView) {
-                    window.changeView(targetView);
+                    await window.changeView(targetView);
                     // Actualizar la vista mostrada en el panel
                     this.updateCurrentViewDisplay(targetView);
                     if (Logger && Logger.info) Logger.info(`🎮 Quick navigation to: ${targetView}`);

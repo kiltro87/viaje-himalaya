@@ -17,10 +17,16 @@ import Logger from './Logger.js';
  */
 export function getBudgetCategoryIcon(category) {
     const icons = {
+        'Transporte': 'directions_bus',
+        'Tour': 'tour',
+        'Comida y Bebida': 'restaurant',
+        'Entradas y Visados': 'confirmation_number',
+        'Varios': 'more_horiz',
+        'Contingencia': 'emergency',
+        // Categorías adicionales para compatibilidad
         'Vuelos': 'flight',
         'Alojamiento': 'hotel',
         'Comida': 'restaurant',
-        'Transporte': 'directions_bus',
         'Actividades': 'hiking',
         'Compras': 'shopping_bag',
         'Otros': 'category',
@@ -53,6 +59,43 @@ export function getPackingCategoryIcon(category) {
  */
 export function getBudgetCategoryColors(category) {
     const colors = {
+        'Transporte': {
+            bg: 'bg-orange-100 dark:bg-orange-900/30',
+            text: 'text-orange-800 dark:text-orange-200',
+            border: 'border-orange-200 dark:border-orange-800',
+            icon: 'text-orange-600 dark:text-orange-400'
+        },
+        'Tour': {
+            bg: 'bg-blue-100 dark:bg-blue-900/30',
+            text: 'text-blue-800 dark:text-blue-200',
+            border: 'border-blue-200 dark:border-blue-800',
+            icon: 'text-blue-600 dark:text-blue-400'
+        },
+        'Comida y Bebida': {
+            bg: 'bg-green-100 dark:bg-green-900/30',
+            text: 'text-green-800 dark:text-green-200',
+            border: 'border-green-200 dark:border-green-800',
+            icon: 'text-green-600 dark:text-green-400'
+        },
+        'Entradas y Visados': {
+            bg: 'bg-purple-100 dark:bg-purple-900/30',
+            text: 'text-purple-800 dark:text-purple-200',
+            border: 'border-purple-200 dark:border-purple-800',
+            icon: 'text-purple-600 dark:text-purple-400'
+        },
+        'Varios': {
+            bg: 'bg-slate-100 dark:bg-slate-700',
+            text: 'text-slate-800 dark:text-slate-200',
+            border: 'border-slate-200 dark:border-slate-600',
+            icon: 'text-slate-600 dark:text-slate-400'
+        },
+        'Contingencia': {
+            bg: 'bg-red-100 dark:bg-red-900/30',
+            text: 'text-red-800 dark:text-red-200',
+            border: 'border-red-200 dark:border-red-800',
+            icon: 'text-red-600 dark:text-red-400'
+        },
+        // Categorías adicionales para compatibilidad
         'Vuelos': {
             bg: 'bg-blue-100 dark:bg-blue-900/30',
             text: 'text-blue-800 dark:text-blue-200',
@@ -70,12 +113,6 @@ export function getBudgetCategoryColors(category) {
             text: 'text-green-800 dark:text-green-200',
             border: 'border-green-200 dark:border-green-800',
             icon: 'text-green-600 dark:text-green-400'
-        },
-        'Transporte': {
-            bg: 'bg-orange-100 dark:bg-orange-900/30',
-            text: 'text-orange-800 dark:text-orange-200',
-            border: 'border-orange-200 dark:border-orange-800',
-            icon: 'text-orange-600 dark:text-orange-400'
         },
         'Actividades': {
             bg: 'bg-red-100 dark:bg-red-900/30',
@@ -103,7 +140,7 @@ export function getBudgetCategoryColors(category) {
         }
     };
     
-    return colors[category] || colors['Otros'];
+    return colors[category] || colors['Varios'];
 }
 
 /**
@@ -142,7 +179,7 @@ export function getCategoryColors(category, type = 'budget') {
  */
 export function isValidCategory(category, type = 'budget') {
     const validCategories = {
-        budget: ['Vuelos', 'Alojamiento', 'Comida', 'Transporte', 'Actividades', 'Compras', 'Otros', 'Emergencia'],
+        budget: ['Transporte', 'Tour', 'Comida y Bebida', 'Entradas y Visados', 'Varios', 'Contingencia', 'Vuelos', 'Alojamiento', 'Comida', 'Actividades', 'Compras', 'Otros', 'Emergencia'],
         packing: ['Ropa', 'Calzado', 'Equipo', 'Documentos y Salud', 'Otros']
     };
     
@@ -155,7 +192,7 @@ export function isValidCategory(category, type = 'budget') {
  */
 export function getAllCategories(type = 'budget') {
     const categories = {
-        budget: ['Vuelos', 'Alojamiento', 'Comida', 'Transporte', 'Actividades', 'Compras', 'Otros', 'Emergencia'],
+        budget: ['Transporte', 'Tour', 'Comida y Bebida', 'Entradas y Visados', 'Varios', 'Contingencia', 'Vuelos', 'Alojamiento', 'Comida', 'Actividades', 'Compras', 'Otros', 'Emergencia'],
         packing: ['Ropa', 'Calzado', 'Equipo', 'Documentos y Salud', 'Otros']
     };
     

@@ -375,6 +375,10 @@ class StateManager {
      */
     getCurrentDate() {
         // Verificar si hay un Day Simulator global activo
+        if (window.DaySimulator && window.DaySimulator.isSimulating) {
+            return window.DaySimulator.getSimulatedDate();
+        }
+        
         const daySimulator = this.getState('instances.daySimulator');
         if (daySimulator && daySimulator.isSimulating) {
             return daySimulator.getSimulatedDate();

@@ -562,6 +562,7 @@ export class BudgetManager {
 
     render(container, tripConfigParam) {
         Logger.debug('💰 Renderizando presupuesto...');
+        Logger.debug('💰 BudgetManager.render called with container:', container);
         // Usar tripConfig importado si no se pasa como parámetro
         const tripConfigToUse = tripConfigParam || tripConfig;
         const budgetData = tripConfigToUse.budgetData.budgetData;
@@ -612,14 +613,18 @@ export class BudgetManager {
                         </h3>
                     </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3" id="budget-category-filters">
-                    ${allCategories.map(cat => {
+                    ${(() => {
+                        Logger.debug('💰 Generating category buttons for:', allCategories);
+                        return allCategories.map(cat => {
                         const icon = getBudgetCategoryIcon(cat);
                         const color = this.getCategoryColor(cat);
+                        Logger.debug(`🎨 Category: ${cat}, Icon: ${icon}, Color: ${color}`);
                         return `<button data-category="${cat}" class="budget-filter-btn group flex items-center gap-3 p-4 text-left bg-white dark:bg-slate-800 radius-standard border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 transition-standard">
                             <span class="material-symbols-outlined text-2xl ${color.replace('bg-', 'text-')} flex-shrink-0">${icon}</span>
                             <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${cat}</span>
                         </button>`;
-                    }).join('')}
+                        });
+                    })().join('')}
                 </div>
                 </div>
             </div>
@@ -684,6 +689,7 @@ export class BudgetManager {
                                 <div id="category-dropdown-list" class="fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-60 overflow-y-auto hidden" style="z-index: 99999 !important; min-width: 200px;">
                                     ${allCategories.map(cat => {
                                         const icon = getBudgetCategoryIcon(cat);
+                                        Logger.debug(`🎨 Dropdown Category: ${cat}, Icon: ${icon}`);
                                         return `
                                             <div class="category-option flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors" data-value="${cat}">
                                                 <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${icon}</span>

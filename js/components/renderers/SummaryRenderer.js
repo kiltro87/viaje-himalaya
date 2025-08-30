@@ -39,6 +39,70 @@ export class SummaryRenderer {
     }
 
     /**
+     * 📊 GENERAR SECCIONES DE RESUMEN
+     * 
+     * Genera las secciones de resumen sin renderizar en main-content.
+     * Útil para el TrackingRenderer que necesita solo las secciones.
+     * 
+     * @returns {string} HTML de las secciones
+     */
+    generateSummarySections() {
+        Logger.ui('📊 Generating summary sections');
+        
+        // Calcular estadísticas dinámicamente
+        const totalDays = tripConfig.itineraryData.length;
+        const totalCountries = tripConfig.calendarData.getTotalCountries();
+        
+        // Calcular presupuesto total y gastos reales dinámicamente
+        const grandTotal = this.calculateTotalBudget();
+        const totalSpent = this.calculateTotalSpent();
+        
+        // Calcular coste por día usando el mayor entre presupuesto y gasto real
+        const costPerDay = Math.max(grandTotal, totalSpent) / totalDays;
+
+        return `
+            <!-- Grid de Estadísticas (formato 2 filas: icono+número arriba, texto abajo) -->
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center justify-center gap-3 mb-2">
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-2xl">calendar_month</span>
+                        <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">${totalDays}</p>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm text-center">días de aventura</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center justify-center gap-3 mb-2">
+                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-2xl">public</span>
+                        <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">${totalCountries}</p>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm text-center">países visitados</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center justify-center gap-3 mb-2">
+                        <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-2xl">account_balance_wallet</span>
+                        <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">€${grandTotal.toFixed(0)}</p>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm text-center">presupuesto total</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center justify-center gap-3 mb-2">
+                        <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 text-2xl">trending_up</span>
+                        <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">€${costPerDay.toFixed(0)}</p>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm text-center">coste por día</p>
+                </div>
+            </section>
+
+            <!-- Análisis de Estilo de Viaje -->
+            <section class="bg-white dark:bg-slate-800 radius-card p-6 md:p-8 shadow-card border border-slate-200 dark:border-slate-700">
+                ${this.renderTripStyleAnalysis()}
+            </section>
+
+            ${this.renderFlightsSection()}
+        `;
+    }
+
+    /**
      * 📊 RENDERIZAR VISTA RESUMEN
      * 
      * Renderiza la vista completa de resumen del viaje incluyendo:

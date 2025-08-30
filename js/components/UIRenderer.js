@@ -130,7 +130,7 @@ export class UIRenderer {
      * Utiliza un mapeo de vistas a métodos de renderizado para
      * mantener un código limpio y escalable.
      */
-    renderMainContent() {
+    async renderMainContent() {
         Logger.ui(`🎨 Rendering main content for view: ${this.currentView}`);
         Logger.startPerformance('render-main-content');
 
@@ -145,9 +145,9 @@ export class UIRenderer {
                 const mainContent = document.getElementById('main-content');
                 itineraryRenderer.renderItinerary(mainContent);
             },
-            [VIEWS.PLANNING]: () => {
+            [VIEWS.PLANNING]: async () => {
                 Logger.ui('🎯 Rendering PLANNING view (gastos + extras + packing)');
-                this.planningRenderer.renderPlanning();
+                await this.planningRenderer.renderPlanning();
             },
             [VIEWS.TRACKING]: () => {
                 Logger.ui('📊 Rendering TRACKING view (mapa + analytics)');
@@ -159,7 +159,7 @@ export class UIRenderer {
         const renderer = viewRenderers[this.currentView];
         if (renderer) {
             try {
-                renderer();
+                await renderer();
                 Logger.endPerformance('render-main-content');
                 Logger.success(`✅ View '${this.currentView}' rendered successfully`);
             } catch (error) {
@@ -609,7 +609,7 @@ export class UIRenderer {
                                 <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">DÍA ${dayNumber}</span>
                                 <span class="text-slate-600 dark:text-slate-400 text-sm">${currentDayData.location || 'En ruta'}</span>
                             </div>
-                            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">${activityType}</h2>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">${activityType}</h2>
                         </div>
                     </div>
                     
@@ -1843,7 +1843,7 @@ export class UIRenderer {
     /**
      * Cambiar vista
      */
-    changeView(view) {
+    async changeView(view) {
         Logger.ui(`🔄 Changing view from '${this.currentView}' to '${view}'`);
         this.currentView = view;
         
@@ -1868,6 +1868,6 @@ export class UIRenderer {
             return; // Early return para evitar renderizar la vista obsoleta
         }
         
-        this.renderMainContent();
+        await this.renderMainContent();
     }
 }

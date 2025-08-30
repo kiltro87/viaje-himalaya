@@ -137,7 +137,19 @@ export class TodayRenderer {
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
             const totalDays = tripConfig.itineraryData.length;
             
-            Logger.debug('📊 Progress Debug:', { today, tripStartDate, dayDiff, totalDays });
+            // Debug adicional para DaySimulator
+            const isSimulating = window.DaySimulator && window.DaySimulator.isSimulating;
+            const simulatedDate = isSimulating ? window.DaySimulator.getSimulatedDate() : null;
+            
+            Logger.debug('📊 Progress Debug:', { 
+                today, 
+                tripStartDate, 
+                dayDiff, 
+                totalDays,
+                isSimulating,
+                simulatedDate,
+                realDate: new Date()
+            });
             
             let currentDay = 0;
             let progressPercentage = 0;
@@ -195,34 +207,55 @@ export class TodayRenderer {
             const tripStartDate = this.getTripStartDate();
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
             
-            Logger.debug('🌤️ Weather Debug:', { today, tripStartDate, dayDiff, totalDays: tripConfig.itineraryData.length });
+            // Debug adicional para DaySimulator
+            const isSimulating = window.DaySimulator && window.DaySimulator.isSimulating;
+            const simulatedDate = isSimulating ? window.DaySimulator.getSimulatedDate() : null;
+            
+            Logger.debug('🌤️ Weather Debug:', { 
+                today, 
+                tripStartDate, 
+                dayDiff, 
+                totalDays: tripConfig.itineraryData.length,
+                isSimulating,
+                simulatedDate,
+                realDate: new Date()
+            });
             
             if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
                 const currentDayData = tripConfig.itineraryData[dayDiff];
                 const location = currentDayData.location;
-                const weatherData = tripConfig.weatherLocations && tripConfig.weatherLocations[location];
+                
+                // Debug para clima
+                Logger.debug('🌤️ Climate Debug:', { 
+                    dayDiff, 
+                    currentDayData, 
+                    location,
+                    availableWeatherLocations: tripConfig.weatherLocations ? tripConfig.weatherLocations.map(w => w.location) : []
+                });
+                
+                const weatherData = tripConfig.weatherLocations && tripConfig.weatherLocations.find(w => w.location === location);
                 
                 if (weatherData) {
                     weatherContainer.innerHTML = `
                         <div class="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 text-center">
-                            <div class="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">${weatherData.temp_avg}°C</div>
-                            <div class="text-sm text-slate-600 dark:text-slate-400">Temperatura promedio</div>
+                            <div class="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">${weatherData.dayTemp}</div>
+                            <div class="text-sm text-slate-600 dark:text-slate-400">Temperatura diurna</div>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-3">
                             <div class="text-center">
-                                <div class="text-lg font-semibold text-slate-900 dark:text-white">${weatherData.temp_min}°C</div>
-                                <div class="text-xs text-slate-600 dark:text-slate-400">Mínima</div>
+                                <div class="text-lg font-semibold text-slate-900 dark:text-white">${weatherData.nightTemp}</div>
+                                <div class="text-xs text-slate-600 dark:text-slate-400">Nocturna</div>
                             </div>
                             <div class="text-center">
-                                <div class="text-lg font-semibold text-slate-900 dark:text-white">${weatherData.temp_max}°C</div>
-                                <div class="text-xs text-slate-600 dark:text-slate-400">Máxima</div>
+                                <span class="material-symbols-outlined ${weatherData.color} text-2xl">${weatherData.icon}</span>
+                                <div class="text-xs text-slate-600 dark:text-slate-400">Condiciones</div>
                             </div>
                         </div>
                         
                         <div class="text-center">
                             <div class="text-sm text-slate-600 dark:text-slate-400 mb-1">📍 ${location}</div>
-                            <div class="text-xs text-slate-500 dark:text-slate-500">${weatherData.description || 'Condiciones generales'}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-500">Clima típico de la región</div>
                         </div>
                     `;
                 } else {
@@ -391,30 +424,61 @@ export class TodayRenderer {
     getTripStartDate() {
         try {
             // Primero intentar obtener la fecha desde calendarData
-            if (tripConfig.calendarData && tripConfig.calendarData.startDate) {
-                const startDate = new Date(tripConfig.calendarData.startDate);
-                Logger.debug('📅 Trip start from calendarData:', startDate);
-                return startDate;
+            if (tripConfig.calendarData && tripConfig.calendarData.tripStartDate) {
+                Logger.debug('📅 Using tripStartDate from calendarData:', tripConfig.calendarData.tripStartDate);
+                return new Date(tripConfig.calendarData.tripStartDate);
             }
             
-            // Fallback: usar la fecha del primer día del itinerario
+            // Fallback: calcular desde getFormattedStartDate si está disponible
+            if (tripConfig.calendarData && typeof tripConfig.calendarData.getFormattedStartDate === 'function') {
+                const startDateString = tripConfig.calendarData.getFormattedStartDate();
+                Logger.debug('📅 Using getFormattedStartDate:', startDateString);
+                return new Date(startDateString);
+            }
+            
+            // Fallback: usar primera fecha del itinerario si está disponible
             if (tripConfig.itineraryData && tripConfig.itineraryData.length > 0) {
                 const firstDay = tripConfig.itineraryData[0];
                 if (firstDay.date) {
-                    const startDate = new Date(firstDay.date);
-                    Logger.debug('📅 Trip start from first day:', startDate);
-                    return startDate;
+                    Logger.debug('📅 Using first day date from itinerary:', firstDay.date);
+                    return new Date(firstDay.date);
                 }
             }
             
-            // Último fallback: fecha hardcodeada
-            Logger.warning('⚠️ Using hardcoded trip start date');
-            const fallbackDate = new Date('2025-03-15');
-            Logger.debug('📅 Trip start fallback:', fallbackDate);
-            return fallbackDate;
+            // Buscar la fecha del primer vuelo internacional (misma lógica que SummaryRenderer)
+            const firstInternationalFlight = tripConfig.flightsData.find(f => f.type === 'Internacional');
+            if (firstInternationalFlight && firstInternationalFlight.segments && firstInternationalFlight.segments.length > 0) {
+                const firstSegment = firstInternationalFlight.segments[0];
+                // Extraer la fecha del string "9 de Octubre 22:45"
+                const departureDate = firstSegment.fromDateTime;
+                const year = tripConfig.tripInfo.year; // Usar el año del tripConfig
+                
+                // Parsear la fecha (ej. "9 de Octubre 22:45" en 2025)
+                const months = {
+                    'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3, 'Mayo': 4, 'Junio': 5,
+                    'Julio': 6, 'Agosto': 7, 'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
+                };
+                
+                const match = departureDate.match(/(\d+) de (\w+)/);
+                if (match) {
+                    const day = parseInt(match[1]);
+                    const monthName = match[2];
+                    const month = months[monthName];
+                    if (month !== undefined) {
+                        const parsedDate = new Date(year, month, day);
+                        Logger.debug('📅 Trip start date parsed from flight data:', parsedDate);
+                        return parsedDate;
+                    }
+                }
+            }
+            
+            // Fallback final: fecha del vuelo basada en tripConfig
+            Logger.warning('⚠️ Could not determine trip start date from flights or itinerary, using default.');
+            return new Date('2025-10-09T22:45:00Z'); // Fecha por defecto si no se encuentra
+            
         } catch (error) {
             Logger.error('❌ Error getting trip start date:', error);
-            return new Date('2025-03-15');
+            return new Date('2025-10-09T22:45:00Z');
         }
     }
 

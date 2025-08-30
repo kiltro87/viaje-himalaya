@@ -60,9 +60,9 @@ if (Logger && Logger.success) Logger.success('UIRenderer created successfully');
  * @param {string} view - Vista de destino ('resumen', 'itinerario', 'hoy', 'mapa', 'gastos', 'extras')
  * @public
  */
-function changeView(view) {
+async function changeView(view) {
     if (Logger && Logger.event) Logger.event(`View change requested: ${view}`);
-    uiRenderer.changeView(view);
+    await uiRenderer.changeView(view);
 }
 
 /**
@@ -97,7 +97,7 @@ function setupNavigation() {
         const view = button.dataset.view;
         if (Logger && Logger.init) Logger.init(`Setting up navigation ${index + 1}: ${view}`);
         
-        button.addEventListener('click', (e) => {
+        button.addEventListener('click', async (e) => {
             e.preventDefault();
             if (Logger && Logger.event) {
                 Logger.event(`Navigation clicked: ${view}`, { 
@@ -113,7 +113,7 @@ function setupNavigation() {
             button.classList.add('active');
             
             // Cambiar vista
-            changeView(view);
+            await changeView(view);
         });
     });
     

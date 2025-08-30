@@ -315,8 +315,11 @@ export class PackingListManager {
                 }
             });
             
-            // Actualizar estadísticas si existe el componente
-            this.updatePackingStats();
+            // Actualizar estadísticas si existe el componente (con delay para asegurar que el DOM esté listo)
+            setTimeout(() => {
+                console.log('🔥 DELAYED PACKING STATS: About to call updatePackingStats()');
+                this.updatePackingStats();
+            }, 500);
             
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🎒 Error updating UI:', error);
@@ -328,15 +331,34 @@ export class PackingListManager {
      */
     updatePackingStats() {
         const statsContainer = document.getElementById('packing-stats');
-        if (!statsContainer) return;
+        if (!statsContainer) {
+            console.log('🔥 PACKING STATS: No stats container found');
+            return;
+        }
 
         try {
             // Contar directamente desde los checkboxes visibles en la UI
-            const checkboxes = document.querySelectorAll('#packing-list input[type="checkbox"]');
+            const checkboxes = document.querySelectorAll('.packing-list-container input[type="checkbox"]');
             const totalItems = checkboxes.length;
             const packedItems = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
             
-            console.log('🔥 PACKING STATS UPDATE:', { totalItems, packedItems });
+            console.log('🔥 PACKING STATS UPDATE:', { 
+                totalItems, 
+                packedItems,
+                checkboxesFound: checkboxes.length,
+                containerExists: !!document.querySelector('.packing-list-container'),
+                statsContainerExists: !!statsContainer,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Si no hay checkboxes, intentar de nuevo después de un momento
+            if (checkboxes.length === 0) {
+                console.log('🔥 PACKING STATS: No checkboxes found, retrying in 200ms...');
+                setTimeout(() => {
+                    this.updatePackingStats();
+                }, 200);
+                return;
+            }
             
             const stats = {
                 packed: packedItems,

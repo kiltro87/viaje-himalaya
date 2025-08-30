@@ -25,7 +25,7 @@ export class PlanningRenderer {
     /**
      * 🎯 RENDERIZAR VISTA PLANNING COMPLETA
      */
-    renderPlanning() {
+    async renderPlanning() {
         Logger.ui('🎯 Rendering PLANNING view (budget + packing + tools)');
         
         const mainContent = document.getElementById('main-content');
@@ -80,30 +80,36 @@ export class PlanningRenderer {
             </div>
         `;
 
-        this.loadPlanningContent();
+        await this.loadPlanningContent();
     }
 
-    loadPlanningContent() {
-        this.loadBudgetManager();
-        this.loadPackingList();
+    async loadPlanningContent() {
+        await this.loadBudgetManager();
+        await this.loadPackingList();
         this.loadAgencies();
         this.loadAccommodations();
     }
 
     async loadBudgetManager() {
         try {
+            Logger.debug('💰 PlanningRenderer.loadBudgetManager() called');
             const budgetContainer = document.getElementById('budget-container');
             if (!budgetContainer) {
                 Logger.warning('⚠️ Budget container not found');
                 return;
             }
+            Logger.debug('💰 Budget container found:', budgetContainer);
 
             let budgetManager = stateManager.getState('instances.budgetManager');
             if (!budgetManager) {
+                Logger.debug('💰 Creating new BudgetManager instance');
                 budgetManager = new BudgetManager();
                 stateManager.updateState('instances.budgetManager', budgetManager);
+            } else {
+                Logger.debug('💰 Using existing BudgetManager instance');
             }
 
+            Logger.debug('💰 About to call budgetManager.render()');
             await budgetManager.render(budgetContainer);
             Logger.success('✅ Budget manager loaded in planning view');
         } catch (error) {
@@ -113,6 +119,7 @@ export class PlanningRenderer {
 
     async loadPackingList() {
         Logger.ui('🎒 Rendering packing list');
+        Logger.debug('🎒 PlanningRenderer.loadPackingList() called');
         const container = document.getElementById('packing-list-content');
         if (!container) {
             Logger.warning('⚠️ Container #packing-list-content not found');
@@ -136,9 +143,36 @@ export class PlanningRenderer {
             }
         }
 
-        const saved = packingManager ? packingManager.getItems() : {};
+        // Usar sistema simple como en develop: localStorage + tripConfig
+        const saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
         
-        if (!tripConfig.packingListData || tripConfig.packingListData.length === 0) {
+        Logger.debug('🎒 Packing Debug:', { 
+            hasPackingData: !!tripConfig.packingListData, 
+            keysLength: tripConfig.packingListData ? Object.keys(tripConfig.packingListData).length : 0,
+            keys: tripConfig.packingListData ? Object.keys(tripConfig.packingListData) : [],
+            savedItems: saved,
+            savedItemsCount: Object.keys(saved).length,
+            usingSimpleSystem: true
+        });
+        
+        // Log adicional para debug específico
+        console.log('🔥 PACKING DETAILED DEBUG:', {
+            tripConfigKeys: tripConfig.packingListData ? Object.keys(tripConfig.packingListData) : [],
+            savedDataKeys: Object.keys(saved),
+            savedDataSample: Object.keys(saved).slice(0, 10),
+            localStorageKey: 'packingListV2',
+            systemType: 'simple-localStorage',
+            // Comparar formato de claves
+            expectedKeyFormat: 'Ropa-Camisetas de manga larga (5-7)',
+            actualKeysFormat: Object.keys(saved).slice(0, 5),
+            // Mostrar algunos valores guardados
+            sampleSavedItems: Object.keys(saved).slice(0, 5).map(key => ({
+                key,
+                value: saved[key]
+            }))
+        });
+        
+        if (!tripConfig.packingListData || Object.keys(tripConfig.packingListData).length === 0) {
             container.innerHTML = `
                 <div class="text-center py-8">
                     <span class="material-symbols-outlined text-4xl text-slate-400 dark:text-slate-600 mb-4 block">inventory_2</span>
@@ -181,9 +215,21 @@ export class PlanningRenderer {
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             `;
             
-            categoryItems.forEach(item => {
-                const isChecked = saved[item] || false;
+            categoryItems.forEach((item, index) => {
+                const itemKey = `${categoryName}-${item}`;
+                const isChecked = saved[itemKey] || false;
                 const checkboxId = `packing-${item.replace(/\s+/g, '-').toLowerCase()}`;
+                
+                // Debug para los primeros items
+                if (index < 2) {
+                    console.log(`🔥 CHECKBOX DEBUG [${categoryName}]:`, {
+                        item,
+                        itemKey,
+                        isChecked,
+                        savedValue: saved[itemKey],
+                        checkboxId
+                    });
+                }
                 
                 html += `
                     <label for="${checkboxId}" class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-standard ${isChecked ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : ''}">
@@ -192,7 +238,7 @@ export class PlanningRenderer {
                             id="${checkboxId}"
                             class="w-4 h-4 text-green-600 bg-slate-100 border-slate-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
                             ${isChecked ? 'checked' : ''}
-                            onchange="window.packingListManager?.toggleItem('${item}', this.checked)"
+                            data-item-key="${itemKey}"
                         >
                         <span class="text-sm text-slate-700 dark:text-slate-300 ${isChecked ? 'line-through opacity-75' : ''}">${item}</span>
                     </label>
@@ -205,12 +251,135 @@ export class PlanningRenderer {
             `;
         });
 
-        container.innerHTML = html;
+        container.innerHTML = `<div class="packing-list-container">${html}</div>`;
+        
+        // Debug: Verificar checkboxes generados
+        setTimeout(() => {
+            const checkboxes = document.querySelectorAll('.packing-list-container input[type="checkbox"]');
+            console.log('🔥 CHECKBOXES GENERATED:', {
+                totalCheckboxes: checkboxes.length,
+                checkedCheckboxes: Array.from(checkboxes).filter(cb => cb.checked).length,
+                checkboxIds: Array.from(checkboxes).map(cb => cb.id),
+                checkboxData: Array.from(checkboxes).map(cb => ({ id: cb.id, checked: cb.checked, item: cb.dataset.item }))
+            });
+        }, 100);
+        
+        // Configurar event listener simple como en develop
+        const packingContainer = container.querySelector('.packing-list-container');
+        if (packingContainer) {
+            packingContainer.addEventListener('change', (e) => {
+                if (e.target.matches('input[type="checkbox"]')) {
+                    const saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
+                    const itemKey = e.target.getAttribute('data-item-key');
+                    if (itemKey) {
+                        saved[itemKey] = e.target.checked;
+                        localStorage.setItem('packingListV2', JSON.stringify(saved));
+                        
+                        // Actualizar el estilo del texto
+                        const label = e.target.closest('label');
+                        const span = label.querySelector('span');
+                        if (span) {
+                            if (e.target.checked) {
+                                span.classList.add('line-through', 'opacity-75');
+                                label.classList.add('bg-green-50', 'dark:bg-green-900/20', 'border-green-200', 'dark:border-green-800');
+                            } else {
+                                span.classList.remove('line-through', 'opacity-75');
+                                label.classList.remove('bg-green-50', 'dark:bg-green-900/20', 'border-green-200', 'dark:border-green-800');
+                            }
+                        }
+                        
+                        // Actualizar estadísticas
+                        this.updatePackingStatsSimple(packingContainer);
+                        
+                        console.log('🎒 Packing item toggled:', itemKey, '=', e.target.checked);
+                    }
+                }
+            });
+        }
+        
         Logger.success('✅ Packing list rendered');
     }
 
     getCategoryIcon(category) {
         return getPackingCategoryIcon(category);
+    }
+
+    updatePackingStatsSimple(container) {
+        try {
+            const saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
+            const totalItems = Object.values(tripConfig.packingListData).reduce((total, items) => total + items.length, 0);
+            const checkedItems = Object.values(saved).filter(Boolean).length;
+            const completionPercentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+            // Actualizar estadísticas generales
+            const statsContainer = document.getElementById('packing-stats');
+            if (statsContainer) {
+                const itemsText = statsContainer.querySelector('.text-sm.font-bold');
+                const progressBar = statsContainer.querySelector('.bg-green-500');
+                const percentageText = statsContainer.querySelector('.text-xs');
+                
+                if (itemsText) itemsText.textContent = `${checkedItems}/${totalItems} items`;
+                if (progressBar) progressBar.style.width = `${completionPercentage}%`;
+                if (percentageText) percentageText.textContent = `${completionPercentage}% completado`;
+            }
+
+            // Actualizar estadísticas por categoría
+            Object.entries(tripConfig.packingListData).forEach(([categoryName, categoryItems]) => {
+                const categoryChecked = categoryItems.filter(item => saved[`${categoryName}-${item}`]).length;
+                // Buscar el h3 que contiene el nombre de la categoría y luego el span siguiente
+                const h3Elements = container.querySelectorAll('h3');
+                const categoryH3 = Array.from(h3Elements).find(h3 => h3.textContent.includes(categoryName));
+                if (categoryH3) {
+                    const categorySpan = categoryH3.nextElementSibling;
+                    if (categorySpan && categorySpan.tagName === 'SPAN') {
+                        categorySpan.textContent = `(${categoryChecked}/${categoryItems.length})`;
+                    }
+                }
+            });
+
+            Logger.debug(`Packing stats updated: ${checkedItems}/${totalItems} (${completionPercentage}%)`);
+        } catch (error) {
+            Logger.error('Error updating packing stats:', error);
+        }
+    }
+
+    updatePackingStats(container, packingManager) {
+        try {
+            const saved = packingManager ? packingManager.getItems() : {};
+            const totalItems = Object.values(tripConfig.packingListData).reduce((total, items) => total + items.length, 0);
+            const checkedItems = Object.values(saved).filter(Boolean).length;
+            const completionPercentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+            // Actualizar estadísticas generales
+            const statsContainer = container.querySelector('#packing-stats');
+            if (statsContainer) {
+                const itemsText = statsContainer.querySelector('.text-sm.font-bold');
+                const progressBar = statsContainer.querySelector('.bg-green-500');
+                const percentageText = statsContainer.querySelector('.text-xs');
+
+                if (itemsText) itemsText.textContent = `${checkedItems}/${totalItems} items`;
+                if (progressBar) progressBar.style.width = `${completionPercentage}%`;
+                if (percentageText) percentageText.textContent = `${completionPercentage}% completado`;
+            }
+
+            // Actualizar estadísticas por categoría
+            Object.entries(tripConfig.packingListData).forEach(([categoryName, categoryItems]) => {
+                const categoryChecked = categoryItems.filter(item => saved[item]).length;
+                // Buscar el h3 que contiene el nombre de la categoría y luego el span siguiente
+                const h3Elements = container.querySelectorAll('h3');
+                const categoryH3 = Array.from(h3Elements).find(h3 => h3.textContent.includes(categoryName));
+                if (categoryH3) {
+                    const categorySpan = categoryH3.nextElementSibling;
+                    if (categorySpan && categorySpan.tagName === 'SPAN') {
+                        categorySpan.textContent = `(${categoryChecked}/${categoryItems.length})`;
+                    }
+                }
+            });
+
+            Logger.debug(`Packing stats updated: ${checkedItems}/${totalItems} (${completionPercentage}%)`);
+        } catch (error) {
+            Logger.error('Error updating packing stats:', error);
+        }
     }
 
     loadAgencies() {

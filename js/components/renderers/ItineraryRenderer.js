@@ -173,20 +173,24 @@ export class ItineraryRenderer {
         };
         const colors = phaseColors[day.phase] || phaseColors['nepal'];
         
-        // Determinar el tipo de actividad para badge usando colores del esquema
+        // Determinar el tipo de actividad para badge usando iconos de Material Symbols
         const getActivityBadge = (icon) => {
             const badges = {
-                '✈️': { text: 'Vuelo', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300' },
-                '🏛️': { text: 'Cultural', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' },
-                '🏔️': { text: 'Trekking', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
-                '🚣': { text: 'Aventura', color: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300' },
-                '🎯': { text: 'Safari', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300' },
-                '🏞️': { text: 'Naturaleza', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' }
+                'flight': { text: 'Vuelo', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300' },
+                'temple_buddhist': { text: 'Cultural', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' },
+                'account_balance': { text: 'Cultural', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' },
+                'hiking': { text: 'Trekking', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+                'kayaking': { text: 'Aventura', color: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300' },
+                'pets': { text: 'Safari', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300' },
+                'restaurant': { text: 'Gastronomía', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' },
+                'hot_tub': { text: 'Relajación', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
+                'location_city': { text: 'Ciudad', color: 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' },
+                'place': { text: 'Lugar', color: 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' }
             };
             return badges[icon] || { text: 'Experiencia', color: 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' };
         };
         
-        const activityBadge = getActivityBadge(day.icon);
+        const activityBadge = getActivityBadge(activityIcon);
         
         if (day.image) {
             return `
@@ -217,7 +221,7 @@ export class ItineraryRenderer {
                         <!-- Icono grande en hover -->
                         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-standard transform translate-y-2 group-hover:translate-y-0">
                             <div class="w-12 h-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-card">
-                                <span class="text-2xl">${day.icon}</span>
+                                <span class="material-symbols-outlined text-2xl">${activityIcon}</span>
                             </div>
                         </div>
                     </div>
@@ -279,7 +283,7 @@ export class ItineraryRenderer {
                         <div class="flex items-center justify-center mb-6">
                             <div class="relative">
                                 <div class="w-16 h-16 ${colors.light} rounded-full flex items-center justify-center  transition-standard">
-                                    <span class="text-3xl">${day.icon}</span>
+                                    <span class="material-symbols-outlined text-3xl">${activityIcon}</span>
                                 </div>
                                 <div class="absolute inset-0 ${colors.bg} rounded-full opacity-0 group-hover:opacity-20 transition-standard"></div>
                             </div>

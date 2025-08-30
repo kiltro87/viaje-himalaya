@@ -770,7 +770,8 @@ export const tripConfig = {
                 return firstDay.date;
             }
             // Si no hay fecha específica, usar una fecha por defecto (se puede ajustar)
-            return '2025-03-15';
+            // Para desarrollo, usar una fecha pasada para ver el progreso
+            return '2024-10-01';
         },
         getTotalDays() {
             return tripConfig.itineraryData.length;
