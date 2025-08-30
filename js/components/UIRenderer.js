@@ -265,7 +265,6 @@ export class UIRenderer {
 
         mainContent.innerHTML = `
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
-                <!-- Header de Hoy -->
                 <div class="mb-12">
                     <div class="flex items-center gap-4 mb-4">
                         <span class="material-symbols-outlined text-6xl text-orange-600 dark:text-orange-400">today</span>
@@ -276,14 +275,10 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Resumen del día actual -->
                 <div id="today-main-content" class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-8">
-                    <!-- El contenido se generará dinámicamente -->
                 </div>
 
-                <!-- Estado y progreso del viaje -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Progreso del viaje -->
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">trending_up</span>
@@ -314,7 +309,6 @@ export class UIRenderer {
                                 </div>
                                 </div>
 
-                    <!-- Información del clima de hoy -->
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">wb_sunny</span>
@@ -322,12 +316,10 @@ export class UIRenderer {
                             </div>
                         
                         <div id="today-weather-info" class="space-y-4">
-                            <!-- Contenido dinámico del clima -->
                         </div>
                     </div>
                 </div>
 
-                <!-- Información del día (solo si hay vuelos) -->
                 ${this.renderFlightInfoForToday()}
 
 
@@ -681,7 +673,7 @@ export class UIRenderer {
                     contentHTML += `</div>`;
                 }
                 
-                            <!-- Información adicional con cards flotantes -->
+                contentHTML += `
                             <div class="grid md:grid-cols-2 gap-4">`;
                 
                 if (currentDayData.consejo) {
@@ -890,7 +882,6 @@ export class UIRenderer {
             // Usar mismo patrón de header que Itinerario
             mainContent.innerHTML = `
                 <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                    <!-- Header de Extras (estilo Itinerario) -->
                     <div class="mb-12">
                         <div class="flex items-center gap-4 mb-4">
                             <span class="material-symbols-outlined text-6xl text-purple-600 dark:text-purple-400">inventory_2</span>
@@ -901,19 +892,13 @@ export class UIRenderer {
                         </div>
                     </div>
 
-                    <!-- Lista de equipaje -->
                     <div id="packing-list" class="space-y-6 md:space-y-8">
-                        <!-- El contenido se generará dinámicamente -->
                     </div>
 
-                    <!-- Información climática -->
                     <div id="weather" class="space-y-6 md:space-y-8">
-                        <!-- El contenido se generará dinámicamente -->
                     </div>
 
-                    <!-- Información de Agencias -->
                     <div id="agencies" class="space-y-6 md:space-y-8">
-                        <!-- El contenido se generará dinámicamente -->
                     </div>
                 </div>
             `;
@@ -1079,7 +1064,6 @@ export class UIRenderer {
             </div>
 
             <div class="grid md:grid-cols-2 gap-6">
-                <!-- WeRoad Nepal -->
                 <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl ${agencies.weroad.color}">${agencies.weroad.icon}</span>
@@ -1101,7 +1085,6 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Best of Bhutan -->
                 <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl ${agencies.bhutan.color}">${agencies.bhutan.icon}</span>
@@ -1123,7 +1106,6 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Seguro de Viaje -->
                 <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl ${agencies.insurance.color}">${agencies.insurance.icon}</span>
@@ -1141,7 +1123,6 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Información de Emergencia -->
                 <div class="bg-red-50 dark:bg-red-900/20 radius-card p-6 border border-red-200 dark:border-red-800">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl text-red-600 dark:text-red-400">emergency</span>
@@ -1272,7 +1253,6 @@ export class UIRenderer {
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Lista de Equipaje</h2>
             </div>
             
-            <!-- Estadísticas de empacado -->
             <div id="packing-stats" class="mb-6"></div>
             
             <div class="grid gap-6 md:grid-cols-2">
@@ -1437,7 +1417,6 @@ export class UIRenderer {
                             </div>
                         </div>
                         
-                        <!-- Temperaturas principales -->
                         <div class="grid grid-cols-2 gap-3 mb-4">
                             <div class="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-center border border-orange-200 dark:border-orange-700 hover:shadow-md transition-standard">
                                 <span class="material-symbols-outlined text-orange-600 text-sm animate-pulse">wb_sunny</span>
@@ -1451,7 +1430,6 @@ export class UIRenderer {
                             </div>
                         </div>
                         
-                        <!-- Detalles climáticos -->
                         <div class="space-y-2 text-sm mb-4">
                             <div class="flex justify-between items-center">
                                 <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1">
@@ -1476,7 +1454,6 @@ export class UIRenderer {
                             </div>
                         </div>
                         
-                        <!-- Previsión 3 días -->
                         <div class="border-t border-slate-200 dark:border-slate-700 pt-3">
                             <div class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Previsión:</div>
                             <div class="flex justify-between">
@@ -1674,7 +1651,6 @@ export class UIRenderer {
 
         mainContent.innerHTML = `
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                <!-- Header de Hoy -->
                 <div class="mb-12">
                     <div class="flex items-center gap-4 mb-4">
                         <span class="material-symbols-outlined text-6xl text-orange-600 dark:text-orange-400">today</span>
@@ -1686,9 +1662,7 @@ export class UIRenderer {
                     <div class="text-sm text-slate-500 dark:text-slate-500" id="today-date">Cargando fecha...</div>
                 </div>
 
-                <!-- Estado y progreso del viaje -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Progreso del viaje -->
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">trending_up</span>
@@ -1719,7 +1693,6 @@ export class UIRenderer {
                         </div>
                     </div>
 
-                    <!-- Clima de hoy -->
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">wb_sunny</span>
@@ -1727,15 +1700,12 @@ export class UIRenderer {
                         </div>
                         
                         <div id="today-weather-info" class="space-y-4">
-                            <!-- Contenido dinámico del clima -->
                         </div>
                     </div>
                 </div>
 
-                <!-- Actividades del día -->
                 <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                     <div id="today-main-content" class="min-h-[200px]">
-                        <!-- Contenido dinámico de actividades -->
                     </div>
                 </div>
 
@@ -1809,7 +1779,6 @@ export class UIRenderer {
 
         mainContent.innerHTML = `
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                <!-- Header de Planificación -->
                 <div class="mb-12">
                     <div class="flex items-center gap-4 mb-4">
                         <span class="material-symbols-outlined text-6xl text-indigo-600 dark:text-indigo-400">checklist</span>
@@ -1820,15 +1789,11 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Sección de Presupuesto -->
                 <div id="budget-section" class="mb-12">
-                    <!-- Contenedor para el BudgetManager -->
                     <div id="budget-container">
-                        <!-- El BudgetManager se renderizará aquí con título integrado -->
                     </div>
                 </div>
 
-                <!-- Sección de Packing List -->
                 <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
                         <span class="material-symbols-outlined text-teal-600 dark:text-teal-400">inventory_2</span>
@@ -1839,25 +1804,21 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Sección de Agencias de Viaje -->
                 <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
                         <span class="material-symbols-outlined text-orange-600 dark:text-orange-400">business</span>
                         Agencias de Viaje
                     </h2>
                     <div id="agencies-content">
-                        <!-- Las agencias se renderizarán aquí -->
                     </div>
                 </div>
 
-                <!-- Sección de Alojamientos -->
                 <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
                         <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">hotel</span>
                         Alojamientos del Viaje
                     </h2>
                     <div id="accommodations-content">
-                        <!-- Los alojamientos se renderizarán aquí -->
                     </div>
                 </div>
             </div>
@@ -1891,7 +1852,6 @@ export class UIRenderer {
 
         mainContent.innerHTML = `
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                <!-- Header de Seguimiento -->
                 <div class="mb-12">
                     <div class="flex items-center gap-4 mb-4">
                         <span class="material-symbols-outlined text-6xl text-emerald-600 dark:text-emerald-400">analytics</span>
@@ -1904,19 +1864,15 @@ export class UIRenderer {
 
 
 
-                <!-- Resumen/Analytics aquí (se renderiza dinámicamente) -->
                 <div id="summary-stats" class="mb-8">
-                    <!-- Las estadísticas del resumen se renderizarán aquí -->
                 </div>
 
-                <!-- Mapa del Viaje -->
                 <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-2 relative z-10">
                     <div class="flex items-center gap-3 mb-4 p-4">
                         <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">map</span>
                         <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-200">Mapa del Viaje</h2>
                     </div>
                     <div id="map-container" class="w-full h-[80vh] min-h-[600px] rounded-xl overflow-hidden relative">
-                        <!-- El mapa se renderizará aquí -->
                     </div>
                 </div>
             </div>
@@ -2226,7 +2182,6 @@ export class UIRenderer {
         
         agenciesContent.innerHTML = `
             <div class="grid md:grid-cols-2 gap-6">
-                <!-- WeRoad Nepal -->
                 <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl ${agencies.weroad.color}">${agencies.weroad.icon}</span>
@@ -2247,7 +2202,6 @@ export class UIRenderer {
                     </div>
                 </div>
 
-                <!-- Best of Bhutan -->
                 <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="material-symbols-outlined text-2xl ${agencies.bhutan.color}">${agencies.bhutan.icon}</span>
@@ -2269,7 +2223,6 @@ export class UIRenderer {
                 </div>
             </div>
 
-            <!-- Información de Emergencia y Contactos -->
             <div class="mt-8 bg-red-50 dark:bg-red-900/20 radius-card p-6 border border-red-200 dark:border-red-800">
                 <h3 class="font-bold text-lg text-red-800 dark:text-red-200 mb-4 flex items-center gap-3">
                     <span class="material-symbols-outlined text-2xl ${agencies.emergency.color}">${agencies.emergency.icon}</span>
