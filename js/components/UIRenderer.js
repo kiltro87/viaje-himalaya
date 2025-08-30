@@ -1650,7 +1650,7 @@ export class UIRenderer {
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">21</div>
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="today-total-days">18</div>
                         <div class="text-sm text-slate-600 dark:text-slate-400">días</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
@@ -1662,12 +1662,65 @@ export class UIRenderer {
                         <div class="text-sm text-slate-600 dark:text-slate-400">presupuesto</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">45%</div>
+                        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400" id="today-progress-percent">0%</div>
                         <div class="text-sm text-slate-600 dark:text-slate-400">progreso</div>
                     </div>
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * 📊 ACTUALIZAR MICRO-STATS DE HOY
+     * Actualiza las estadísticas rápidas de la página principal
+     */
+    updateTodayMicroStats() {
+        try {
+            const today = stateManager.getCurrentDate();
+            const tripStartDate = this.getTripStartDate();
+            const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            const totalDays = tripConfig.itineraryData.length;
+            
+            // Actualizar total de días
+            const totalDaysElement = document.getElementById('today-total-days');
+            if (totalDaysElement) {
+                totalDaysElement.textContent = totalDays.toString();
+            }
+            
+            // Calcular y actualizar progreso
+            const progressElement = document.getElementById('today-progress-percent');
+            if (progressElement) {
+                let progress = 0;
+                
+                if (dayDiff < 0) {
+                    // Antes del viaje
+                    progress = 0;
+                } else if (dayDiff >= 0 && dayDiff < totalDays) {
+                    // Durante el viaje
+                    const completedDays = dayDiff + 1;
+                    progress = Math.round((completedDays / totalDays) * 100);
+                } else {
+                    // Después del viaje
+                    progress = 100;
+                }
+                
+                progressElement.textContent = `${progress}%`;
+                
+                // Cambiar color según el progreso
+                progressElement.className = progressElement.className.replace(/text-\w+-\d+/g, '');
+                if (progress < 25) {
+                    progressElement.classList.add('text-red-600', 'dark:text-red-400');
+                } else if (progress < 75) {
+                    progressElement.classList.add('text-orange-600', 'dark:text-orange-400');
+                } else {
+                    progressElement.classList.add('text-green-600', 'dark:text-green-400');
+                }
+            }
+            
+            Logger.debug('Today micro-stats updated:', { dayDiff, totalDays, progress });
+        } catch (error) {
+            Logger.error('Error updating today micro-stats:', error);
+        }
     }
 
     /**
@@ -1749,6 +1802,9 @@ export class UIRenderer {
         
         // Cargar información de alojamientos
         this.loadAccommodations();
+        
+        // Actualizar micro-stats dinámicamente
+        this.updateTodayMicroStats();
     }
 
     /**
