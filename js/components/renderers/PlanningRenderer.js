@@ -210,13 +210,16 @@ export class PlanningRenderer {
             `;
         }).join('');
 
-        container.innerHTML = `
-            <!-- Header consistente con la app -->
+        // Envolver todo en una tarjeta como las demás secciones
+        const packingCard = document.createElement('div');
+        packingCard.className = 'bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-12';
+        
+        packingCard.innerHTML = `
+            <!-- Header dentro de la tarjeta -->
             <div class="flex items-center gap-3 mb-6">
                 <span class="material-symbols-outlined text-3xl text-teal-600 dark:text-teal-400">luggage</span>
                 <div class="flex-1">
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Lista de Equipaje</h2>
-                    <p class="text-slate-600 dark:text-slate-400">Organiza todo lo necesario para tu aventura</p>
                 </div>
                 <div class="text-right">
                     <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="global-progress">${packedItems}/${totalItems}</div>
@@ -229,6 +232,9 @@ export class PlanningRenderer {
                 ${categoriesHTML}
             </div>
         `;
+        
+        container.innerHTML = '';
+        container.appendChild(packingCard);
 
         // Event listeners para desplegables
         container.querySelectorAll('.category-header').forEach(header => {
