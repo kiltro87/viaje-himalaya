@@ -34,7 +34,7 @@ import RealtimeSync from '../utils/RealtimeSync.js';
 import { ExpenseOrchestrator } from '../utils/ExpenseOrchestrator.js';
 import { container } from '../core/DependencyContainer.js';
 import { tripConfig } from '../config/tripConfig.js';
-import { getBudgetCategoryColors } from '../utils/StyleUtils.js';
+import { getBudgetCategoryColors, getBudgetCategoryIcon } from '../utils/CategoryUtils.js';
 import { COLORS, RADIUS, SHADOW } from '../config/DesignTokens.js';
 
 export class BudgetManager {
@@ -542,31 +542,7 @@ export class BudgetManager {
         Logger.ui('BudgetManager registered in StateManager');
     }
 
-    getCategoryIcon(category) {
-        // Limpiar el nombre de la categoría eliminando emojis
-        const cleanCategory = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
-        
-        const icons = {
-            'Ropa': 'checkroom',
-            'Calzado': 'footprint', 
-            'Equipo': 'backpack',
-            'Documentos y Salud': 'medical_services',
-            'Vuelos': 'flight',
-            'Alojamiento': 'hotel',
-            'Transporte': 'directions_bus',
-            'Comida': 'restaurant',
-            'Comida y Bebida': 'restaurant',
-            'Actividades': 'hiking',
-            'Visados': 'description',
-            'Entradas y Visados': 'description',
-            'Seguro': 'security',
-            'Equipamiento': 'backpack',
-            'Tour': 'tour',
-            'Varios': 'more_horiz',
-            'Contingencia': 'emergency'
-        };
-        return icons[cleanCategory] || icons[category] || 'inventory_2';
-    }
+    // MÉTODO ELIMINADO - Ahora se usa getBudgetCategoryIcon de CategoryUtils
 
     getCategoryColor(category) {
         // Usar Design Tokens para colores consistentes
@@ -592,7 +568,7 @@ export class BudgetManager {
         const allExpenses = Object.values(budgetData).flat();
         const allCategories = [...new Set(allExpenses.map(item => item.category))];
         const categoryOptionsHTML = allCategories.map(cat => {
-            const icon = this.getCategoryIcon(cat);
+            const icon = getBudgetCategoryIcon(cat);
             return `<option value="${cat}" data-icon="${icon}">${cat}</option>`;
         }).join('');
 
@@ -637,7 +613,7 @@ export class BudgetManager {
                     </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3" id="budget-category-filters">
                     ${allCategories.map(cat => {
-                        const icon = this.getCategoryIcon(cat);
+                        const icon = getBudgetCategoryIcon(cat);
                         const color = this.getCategoryColor(cat);
                         return `<button data-category="${cat}" class="budget-filter-btn group flex items-center gap-3 p-4 text-left bg-white dark:bg-slate-800 radius-standard border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 transition-standard">
                             <span class="material-symbols-outlined text-2xl ${color.replace('bg-', 'text-')} flex-shrink-0">${icon}</span>
@@ -707,7 +683,7 @@ export class BudgetManager {
                                 <!-- Lista desplegable -->
                                 <div id="category-dropdown-list" class="fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-60 overflow-y-auto hidden" style="z-index: 99999 !important; min-width: 200px;">
                                     ${allCategories.map(cat => {
-                                        const icon = this.getCategoryIcon(cat);
+                                        const icon = getBudgetCategoryIcon(cat);
                                         return `
                                             <div class="category-option flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors" data-value="${cat}">
                                                 <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${icon}</span>
@@ -800,7 +776,7 @@ export class BudgetManager {
                 const option = e.target.closest('.category-option');
                 if (option) {
                     const value = option.dataset.value;
-                    const icon = this.getCategoryIcon(value);
+                    const icon = getBudgetCategoryIcon(value);
                     
                     // Actualizar valores
                     categoryInput.value = value;
@@ -967,7 +943,7 @@ export class BudgetManager {
                 }, 0);
                 
                 const expensesTotal = catExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-                const categoryIcon = this.getCategoryIcon(cat);
+                const categoryIcon = getBudgetCategoryIcon(cat);
                 const categoryColor = this.getCategoryColor(cat);
                 
                 return `

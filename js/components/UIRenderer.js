@@ -30,6 +30,9 @@ import { WeatherRenderer } from './renderers/WeatherRenderer.js';
 import { mapRenderer } from './renderers/MapRenderer.js';
 import { itineraryRenderer } from './renderers/ItineraryRenderer.js';
 import { SummaryRenderer } from './renderers/SummaryRenderer.js';
+import { todayRenderer } from './renderers/TodayRenderer.js';
+import { planningRenderer } from './renderers/PlanningRenderer.js';
+import { trackingRenderer } from './renderers/TrackingRenderer.js';
 import { UIHelpers } from '../utils/UIHelpers.js';
 import stateManager from '../utils/StateManager.js';
 
@@ -55,6 +58,9 @@ export class UIRenderer {
         
         // Instancias de los renderizadores especializados
         this.summaryRenderer = new SummaryRenderer();
+        this.todayRenderer = todayRenderer;
+        this.planningRenderer = planningRenderer;
+        this.trackingRenderer = trackingRenderer;
         
         // Configurar observer para cambios de breakpoint
         this.setupResponsiveObserver();
@@ -132,7 +138,7 @@ export class UIRenderer {
         const viewRenderers = {
             [VIEWS.TODAY]: () => {
                 Logger.ui('🌅 Rendering TODAY view (landing page principal)');
-                this.renderTodayLanding();
+                this.todayRenderer.renderTodayLanding();
             },
             [VIEWS.ITINERARY]: () => {
                 Logger.ui('📅 Rendering ITINERARY view - delegating to ItineraryRenderer');
@@ -141,11 +147,11 @@ export class UIRenderer {
             },
             [VIEWS.PLANNING]: () => {
                 Logger.ui('🎯 Rendering PLANNING view (gastos + extras + packing)');
-                this.renderPlanning();
+                this.planningRenderer.renderPlanning();
             },
             [VIEWS.TRACKING]: () => {
                 Logger.ui('📊 Rendering TRACKING view (mapa + analytics)');
-                this.renderTracking();
+                this.trackingRenderer.renderTracking();
             }
         };
 
@@ -333,30 +339,11 @@ export class UIRenderer {
     }
 
     /**
-     * 🌅 ACTUALIZAR CONTENIDO DINÁMICO DE HOY (VERSIÓN MEJORADA)
+     * 🌅 ACTUALIZAR CONTENIDO DINÁMICO DE HOY (DELEGADO A TodayRenderer)
      */
     updateTodayDynamicContent() {
-        Logger.ui('📅 Updating today dynamic content (improved implementation)');
-        
-        try {
-        // Actualizar contenido del today-main-content (como en la versión original)
-        this.updateTodayMainContent();
-        
-        // Actualizar fecha en header
-            this.updateTodayDateHeader();
-            
-            // Actualizar progreso del viaje
-            this.updateTripProgress();
-            
-            // Actualizar información climática
-            this.updateTodayWeather();
-            
-
-        
-        Logger.success('✅ Today dynamic content updated successfully');
-        } catch (error) {
-            Logger.error('❌ Error updating today dynamic content:', error);
-        }
+        Logger.ui('📅 Updating today dynamic content - delegating to TodayRenderer');
+        this.todayRenderer.updateTodayDynamicContent();
     }
 
     /**
@@ -1616,313 +1603,16 @@ export class UIRenderer {
         }
     }
 
-    /**
-     * 🌅 NUEVA ESTRUCTURA - TODAY LANDING PAGE
-     * Combina la vista HOY con micro-stats como página principal
-     */
-    renderTodayLanding() {
-        Logger.ui('🌅 Rendering TODAY as landing page with micro-stats');
-        const mainContent = document.getElementById('main-content');
-        if (!mainContent) return;
-
-        mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                <div class="mb-12">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="material-symbols-outlined text-6xl text-orange-600 dark:text-orange-400">today</span>
-                        <div>
-                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Hoy en tu Viaje</h1>
-                            <p class="text-lg text-slate-600 dark:text-slate-400">Tu compañero de aventura día a día</p>
-                        </div>
-                    </div>
-                    <div class="text-sm text-slate-500 dark:text-slate-500" id="today-date">Cargando fecha...</div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
-                    <div id="today-main-content" class="min-h-[200px]">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
-                        <div class="flex items-center gap-3 mb-6">
-                            <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">trending_up</span>
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Progreso del Viaje</h3>
-                        </div>
-                    
-                        <div class="space-y-4">
-                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-sm font-medium text-blue-800 dark:text-blue-200">Días completados</span>
-                                    <span class="text-xs text-blue-600 dark:text-blue-400" id="trip-progress-percentage">0%</span>
-                                </div>
-                                <div class="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
-                                    <div id="progress-bar" class="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-standard" style="width: 0%"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-3 text-center">
-                                <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
-                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itineraryData.length}</div>
-                                    <div class="text-xs text-slate-600 dark:text-slate-400">días totales</div>
-                                </div>
-                                <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
-                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="days-elapsed">0</div>
-                                    <div class="text-xs text-slate-600 dark:text-slate-400">días transcurridos</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
-                        <div class="flex items-center gap-3 mb-6">
-                            <span class="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">wb_sunny</span>
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Clima de Hoy</h3>
-                        </div>
-                        
-                        <div id="today-weather-info" class="space-y-4">
-                        </div>
-                    </div>
-                </div>
-
-
-            </div>
-        `;
-
-        // Cargar contenido dinámico después de renderizar el HTML
-        this.loadTodayContent();
-    }
-
-    /**
-     * 🔄 CARGAR CONTENIDO DINÁMICO DE HOY
-     * Método auxiliar para cargar el contenido específico del día
-     */
-    loadTodayContent() {
-        // Actualizar fecha
-        this.updateTodayDateHeader();
-        
-        // Cargar información del día en el contenedor principal
-        this.updateTodayMainContent();
-        
-        // Actualizar clima
-        this.updateTodayWeather();
-
-    }
-
-    /**
-     * 🧮 CALCULAR PRESUPUESTO TOTAL REAL
-     * Calcula el presupuesto total desde tripConfig.budgetData
-     */
-    calculateTotalBudget() {
-        try {
-            const budgetCategories = tripConfig.budgetData?.budgetData || {};
-            let totalBudget = 0;
-            
-            // Iterar por todas las categorías del presupuesto
-            Object.values(budgetCategories).forEach(categoryItems => {
-                if (Array.isArray(categoryItems)) {
-                    categoryItems.forEach(item => {
-                        const cost = parseFloat(item.cost) || 0;
-                        totalBudget += cost;
-                        
-                        // Si hay subitems, también sumarlos
-                        if (item.subItems && Array.isArray(item.subItems)) {
-                            item.subItems.forEach(subItem => {
-                                totalBudget += parseFloat(subItem.cost) || 0;
-                            });
-                        }
-                    });
-                }
-            });
-            
-            return totalBudget;
-        } catch (error) {
-            Logger.error('Error calculating total budget:', error);
-            return 0;
-        }
-    }
+    // MÉTODOS EXTRAÍDOS A RENDERIZADORES ESPECIALIZADOS
+    // - renderTodayLanding() → TodayRenderer
+    // - loadTodayContent() → TodayRenderer  
+    // - calculateTotalBudget() → Ya existe en SummaryRenderer
 
 
 
-    /**
-     * 🎯 NUEVA ESTRUCTURA - PLANNING (gastos + extras + packing)
-     * Combina gestión de presupuesto, packing list y herramientas
-     */
-    renderPlanning() {
-        Logger.ui('🎯 Rendering PLANNING view (budget + packing + tools)');
-        const mainContent = document.getElementById('main-content');
-        if (!mainContent) return;
-
-        mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                <div class="mb-12">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="material-symbols-outlined text-6xl text-indigo-600 dark:text-indigo-400">checklist</span>
-                        <div>
-                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Planificación</h1>
-                            <p class="text-lg text-slate-600 dark:text-slate-400">Gestiona tu presupuesto, packing y preparativos del viaje</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="budget-section" class="mb-12">
-                    <div id="budget-container">
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
-                        <span class="material-symbols-outlined text-teal-600 dark:text-teal-400">inventory_2</span>
-                        Lista de Equipaje
-                    </h2>
-                    <div id="packing-list-content">
-                        <p class="text-slate-600 dark:text-slate-400">Cargando lista de equipaje...</p>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
-                        <span class="material-symbols-outlined text-orange-600 dark:text-orange-400">business</span>
-                        Agencias de Viaje
-                    </h2>
-                    <div id="agencies-content">
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
-                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">hotel</span>
-                        Alojamientos del Viaje
-                    </h2>
-                    <div id="accommodations-content">
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Renderizar el presupuesto en la sección dedicada
-        const budgetContainer = document.getElementById('budget-container');
-        if (budgetContainer) {
-            this.budgetManager.render(budgetContainer);
-        }
-
-        // Cargar packing list (si existe)
-        this.loadPackingList();
-        
-        // Cargar agencias de viaje
-        this.loadAgencies();
-        
-        // Cargar información de alojamientos
-        this.loadAccommodations();
-
-    }
-
-    /**
-     * 📊 NUEVA ESTRUCTURA - TRACKING (mapa + analytics)
-     * Combina mapa del viaje con analytics y progreso
-     */
-    renderTracking() {
-        Logger.ui('📊 Rendering TRACKING view (map + analytics)');
-        const mainContent = document.getElementById('main-content');
-        if (!mainContent) return;
-
-        mainContent.innerHTML = `
-            <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
-                <div class="mb-12">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="material-symbols-outlined text-6xl text-emerald-600 dark:text-emerald-400">analytics</span>
-                        <div>
-                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">Seguimiento</h1>
-                            <p class="text-lg text-slate-600 dark:text-slate-400">Mapa del viaje y análisis de progreso</p>
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <div id="summary-stats" class="mb-8">
-                </div>
-
-                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-2 relative z-10">
-                    <div class="flex items-center gap-3 mb-4 p-4">
-                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">map</span>
-                        <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-200">Mapa del Viaje</h2>
-                    </div>
-                    <div id="map-container" class="w-full h-[80vh] min-h-[600px] rounded-xl overflow-hidden relative">
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Renderizar el resumen/analytics COMPLETO usando SummaryRenderer (SIN sección duplicada "Hoy")
-                    const summaryStats = document.getElementById('summary-stats');
-        
-        if (summaryStats) {
-            // Renderizar SummaryRenderer directamente en main-content
-            const mainContent = document.getElementById('main-content');
-            const originalHTML = mainContent.innerHTML;
-            
-            this.summaryRenderer.renderSummary();
-            
-            // Extraer solo las secciones de contenido (sin header y sin "Qué hacemos hoy")
-            const sections = mainContent.querySelectorAll('section');
-            
-            const summaryContent = [];
-            sections.forEach((section, index) => {
-                // Filtrar SOLO la sección específica "¿Qué hacemos hoy?" usando el título h2
-                const h2Title = section.querySelector('h2')?.textContent || '';
-                const h3Title = section.querySelector('h3')?.textContent || '';
-                const isHoySection = h2Title.includes('¿Qué hacemos hoy?');
-                
-
-                
-                if (!isHoySection) {
-                    const clonedSection = section.cloneNode(true);
-                    summaryContent.push(clonedSection);
-                }
-            });
-            
-            // Restaurar el HTML original del tracking y agregar las secciones filtradas
-            mainContent.innerHTML = originalHTML;
-            const summaryStatsRestored = document.getElementById('summary-stats');
-            summaryStatsRestored.innerHTML = '';
-            
-            // Agregar las secciones con el wrapper correcto para mantener el estilo
-            if (summaryContent.length > 0) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'space-y-6 md:space-y-8';
-                summaryContent.forEach(section => {
-                    wrapper.appendChild(section);
-                });
-                summaryStatsRestored.appendChild(wrapper);
-            }
-            
-        }
-
-        // Renderizar el mapa usando la instancia global importada (DESPUÉS del contenido)
-        setTimeout(() => {
-            const mapContainer = document.getElementById('map-container');
-            
-            if (mapRenderer && typeof mapRenderer.renderMap === 'function' && mapContainer) {
-                try {
-                    mapRenderer.renderMap(mapContainer);
-                } catch (error) {
-                    Logger.error('❌ Error rendering map in tracking view:', error);
-                    mapContainer.innerHTML = `
-                        <div class="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
-                            <div class="text-center">
-                                <span class="material-symbols-outlined text-6xl mb-4 block">map</span>
-                                <p>Error al cargar el mapa</p>
-                                <button onclick="window.location.reload()" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard">
-                                    Reintentar
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-        }, 500); // Aumentar delay para asegurar que el DOM esté completamente listo
-    }
+    // MÉTODOS EXTRAÍDOS A RENDERIZADORES ESPECIALIZADOS
+    // - renderPlanning() → PlanningRenderer
+    // - renderTracking() → TrackingRenderer
 
     /**
      * Helper: Cargar packing list REAL con PackingListManager
