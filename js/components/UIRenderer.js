@@ -1651,24 +1651,24 @@ export class UIRenderer {
         // Añadir micro-stats al final del contenido CON PADDING-BOTTOM
         const existingContent = mainContent.innerHTML;
         mainContent.innerHTML = existingContent + `
-            <!-- Micro-stats rápidas (antes era parte de Resumen) -->
+            <!-- Micro-stats específicas de HOY (dinámicas y contextales) -->
             <div class="w-full max-w-none lg:max-w-6xl xl:max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 pb-32">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="today-total-days">18</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">días</div>
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="today-current-day">Día 1</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">de 18</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
-                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">2</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">países</div>
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="today-remaining-days">17</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">días restantes</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
                         <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="today-total-budget">€0</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">presupuesto</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">presupuesto total</div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card p-4 text-center border border-slate-200 dark:border-slate-700">
                         <div class="text-2xl font-bold text-orange-600 dark:text-orange-400" id="today-progress-percent">0%</div>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">progreso</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">completado</div>
                     </div>
                 </div>
             </div>
@@ -1710,7 +1710,7 @@ export class UIRenderer {
 
     /**
      * 📊 ACTUALIZAR MICRO-STATS DE HOY
-     * Actualiza las estadísticas rápidas de la página principal
+     * Actualiza las estadísticas específicas y dinámicas del día actual
      */
     updateTodayMicroStats() {
         try {
@@ -1719,17 +1719,45 @@ export class UIRenderer {
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
             const totalDays = tripConfig.itineraryData.length;
             
-            // Actualizar total de días
-            const totalDaysElement = document.getElementById('today-total-days');
-            if (totalDaysElement) {
-                totalDaysElement.textContent = totalDays.toString();
+            // Calcular día actual y días restantes
+            let currentDay, remainingDays;
+            if (dayDiff < 0) {
+                // Antes del viaje
+                currentDay = 0;
+                remainingDays = totalDays;
+            } else if (dayDiff >= 0 && dayDiff < totalDays) {
+                // Durante el viaje
+                currentDay = dayDiff + 1;
+                remainingDays = totalDays - currentDay;
+            } else {
+                // Después del viaje
+                currentDay = totalDays;
+                remainingDays = 0;
             }
             
-            // Actualizar presupuesto real
+            // Actualizar día actual
+            const currentDayElement = document.getElementById('today-current-day');
+            if (currentDayElement) {
+                if (currentDay === 0) {
+                    currentDayElement.textContent = '¡Pronto!';
+                } else if (currentDay > totalDays) {
+                    currentDayElement.textContent = '¡Terminado!';
+                } else {
+                    currentDayElement.textContent = `Día ${currentDay}`;
+                }
+            }
+            
+            // Actualizar días restantes
+            const remainingDaysElement = document.getElementById('today-remaining-days');
+            if (remainingDaysElement) {
+                remainingDaysElement.textContent = remainingDays.toString();
+            }
+            
+            // Actualizar presupuesto real (mantener por relevancia)
             const budgetElement = document.getElementById('today-total-budget');
             if (budgetElement) {
                 const totalBudget = this.calculateTotalBudget();
-                budgetElement.textContent = `€${totalBudget.toLocaleString('es-ES')}`;
+                budgetElement.textContent = `€${Math.round(totalBudget).toLocaleString('es-ES')}`;
             }
             
             // Calcular y actualizar progreso
@@ -1738,31 +1766,31 @@ export class UIRenderer {
                 let progress = 0;
                 
                 if (dayDiff < 0) {
-                    // Antes del viaje
                     progress = 0;
                 } else if (dayDiff >= 0 && dayDiff < totalDays) {
-                    // Durante el viaje
-                    const completedDays = dayDiff + 1;
-                    progress = Math.round((completedDays / totalDays) * 100);
+                    progress = Math.round((currentDay / totalDays) * 100);
                 } else {
-                    // Después del viaje
                     progress = 100;
                 }
                 
                 progressElement.textContent = `${progress}%`;
                 
-                // Cambiar color según el progreso
+                // Cambiar color según el progreso (más dinámico)
                 progressElement.className = progressElement.className.replace(/text-\w+-\d+/g, '');
-                if (progress < 25) {
+                if (progress === 0) {
+                    progressElement.classList.add('text-slate-600', 'dark:text-slate-400');
+                } else if (progress < 25) {
                     progressElement.classList.add('text-red-600', 'dark:text-red-400');
                 } else if (progress < 75) {
                     progressElement.classList.add('text-orange-600', 'dark:text-orange-400');
-                } else {
+                } else if (progress < 100) {
                     progressElement.classList.add('text-green-600', 'dark:text-green-400');
+                } else {
+                    progressElement.classList.add('text-blue-600', 'dark:text-blue-400'); // Azul para completado
                 }
             }
             
-            Logger.debug('Today micro-stats updated:', { dayDiff, totalDays, progress });
+            Logger.debug('Today micro-stats updated:', { currentDay, remainingDays, progress, dayDiff });
         } catch (error) {
             Logger.error('Error updating today micro-stats:', error);
         }
