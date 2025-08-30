@@ -159,7 +159,7 @@ export class TrackingRenderer {
             // Renderizar el mapa con un pequeño delay para asegurar que el DOM esté listo
             setTimeout(() => {
                 if (mapRenderer && typeof mapRenderer.renderMap === 'function') {
-                    mapRenderer.renderMap();
+                    mapRenderer.renderMap(mapContainer);
                     Logger.success('✅ Map loaded in tracking view');
                 } else {
                     Logger.error('❌ MapRenderer not available in tracking view');

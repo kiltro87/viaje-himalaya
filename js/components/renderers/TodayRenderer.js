@@ -137,6 +137,8 @@ export class TodayRenderer {
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
             const totalDays = tripConfig.itineraryData.length;
             
+            Logger.debug('📊 Progress Debug:', { today, tripStartDate, dayDiff, totalDays });
+            
             let currentDay = 0;
             let progressPercentage = 0;
             let progressColor = 'text-blue-600';
@@ -192,6 +194,8 @@ export class TodayRenderer {
             const today = stateManager.getCurrentDate();
             const tripStartDate = this.getTripStartDate();
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
+            
+            Logger.debug('🌤️ Weather Debug:', { today, tripStartDate, dayDiff, totalDays: tripConfig.itineraryData.length });
             
             if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
                 const currentDayData = tripConfig.itineraryData[dayDiff];
