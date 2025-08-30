@@ -1747,10 +1747,7 @@ export class UIRenderer {
         this.updateTodayDateHeader();
         
         // Cargar información del día en el contenedor principal
-        const mainContentContainer = document.getElementById('today-main-content');
-        if (mainContentContainer) {
-            this.loadTodayMainInfo(mainContentContainer);
-        }
+        this.updateTodayMainContent();
         
         // Actualizar clima
         this.updateTodayWeather();
