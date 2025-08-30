@@ -359,7 +359,12 @@ export class UIRenderer {
             // Actualizar información climática
             this.updateTodayWeather();
             
-            Logger.success('✅ Today dynamic content updated successfully');
+            // Actualizar micro-stats si estamos en la vista HOY
+        if (this.currentView === VIEWS.TODAY) {
+            this.updateTodayMicroStats();
+        }
+        
+        Logger.success('✅ Today dynamic content updated successfully');
         } catch (error) {
             Logger.error('❌ Error updating today dynamic content:', error);
         }
