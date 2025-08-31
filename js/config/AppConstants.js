@@ -40,7 +40,8 @@ export const VIEWS = {
     TODAY: 'hoy',           // Landing page principal
     ITINERARY: 'itinerario', // Timeline del viaje
     PLANNING: 'planificacion', // Gastos + Extras + Packing
-    TRACKING: 'seguimiento'    // Mapa + Analytics
+    TRACKING: 'seguimiento',    // Mapa + Analytics
+    OFFLINE_MAPS: 'mapas-offline' // Gestión de mapas offline
 };
 
 export const BREAKPOINTS = {
@@ -65,7 +66,8 @@ export const COLORS = {
         [VIEWS.TODAY]: 'orange',        // Landing page principal
         [VIEWS.ITINERARY]: 'blue',      // Timeline del viaje
         [VIEWS.PLANNING]: 'green',      // Gastos + Extras + Packing
-        [VIEWS.TRACKING]: 'purple'      // Mapa + Analytics
+        [VIEWS.TRACKING]: 'purple',     // Mapa + Analytics
+        [VIEWS.OFFLINE_MAPS]: 'indigo'  // Gestión de mapas offline
     },
     
     TAILWIND_VARIANTS: {
@@ -97,7 +99,8 @@ export const ICONS = {
         [VIEWS.TODAY]: 'today',                    // Landing page principal
         [VIEWS.ITINERARY]: 'list_alt',             // Timeline del viaje
         [VIEWS.PLANNING]: 'checklist',             // Gastos + Extras + Packing
-        [VIEWS.TRACKING]: 'analytics'              // Mapa + Analytics
+        [VIEWS.TRACKING]: 'analytics',             // Mapa + Analytics
+        [VIEWS.OFFLINE_MAPS]: 'offline_pin'        // Gestión de mapas offline
     }
 };
 

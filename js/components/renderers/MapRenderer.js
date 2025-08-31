@@ -29,6 +29,8 @@ import { DateUtils } from '../../utils/DateUtils.js';
 import { FormatUtils } from '../../utils/FormatUtils.js';
 import Logger from '../../utils/Logger.js';
 import stateManager from '../../utils/StateManager.js';
+import { OfflineMapManager } from '../../utils/OfflineMapManager.js';
+import { OfflineMapUI } from '../OfflineMapUI.js';
 
 export class MapRenderer {
     
@@ -38,6 +40,8 @@ export class MapRenderer {
     constructor() {
         this.map = null;
         this.routeCoords = [];
+        this.offlineMapManager = new OfflineMapManager();
+        this.offlineMapUI = new OfflineMapUI();
         Logger.init('MapRenderer initialized');
     }
 
@@ -596,6 +600,108 @@ export class MapRenderer {
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * 🗺️ RENDERIZAR INTERFAZ DE MAPAS OFFLINE
+     * 
+     * Renderiza la interfaz completa para gestionar mapas offline
+     */
+    async renderOfflineMapInterface(container) {
+        if (!container) {
+            Logger.error('No container provided for offline map interface');
+            return;
+        }
+
+        try {
+            Logger.init('Rendering offline map interface...');
+            
+            // Renderizar la interfaz
+            await this.offlineMapUI.initialize(container.id);
+            
+            Logger.success('Offline map interface rendered successfully');
+            
+        } catch (error) {
+            Logger.error('Error rendering offline map interface:', error);
+            
+            // Fallback UI
+            container.innerHTML = `
+                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                    <div class="text-center py-8">
+                        <span class="material-symbols-outlined text-4xl text-red-500 mb-4">error</span>
+                        <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200 mb-2">Error cargando mapas offline</h3>
+                        <p class="text-slate-600 dark:text-slate-400 mb-4">${error.message}</p>
+                        <button onclick="location.reload()" class="btn-primary">
+                            <span class="material-symbols-outlined">refresh</span>
+                            Recargar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * 📍 OBTENER ESTADO DE MAPAS OFFLINE
+     * 
+     * Obtiene información sobre el estado de los mapas offline
+     */
+    getOfflineMapStatus() {
+        return {
+            manager: this.offlineMapManager.getStatus(),
+            downloadStatus: this.offlineMapManager.getDownloadStatus(),
+            regions: this.offlineMapManager.travelRegions
+        };
+    }
+
+    /**
+     * 📥 DESCARGAR REGIÓN ESPECÍFICA
+     * 
+     * Descarga mapas para una región específica
+     */
+    async downloadMapRegion(regionKey, options = {}) {
+        try {
+            Logger.init(`Starting download for region: ${regionKey}`);
+            await this.offlineMapManager.downloadRegion(regionKey, options);
+            Logger.success(`Region ${regionKey} downloaded successfully`);
+            return true;
+        } catch (error) {
+            Logger.error(`Error downloading region ${regionKey}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * 📥 DESCARGAR TODAS LAS REGIONES
+     * 
+     * Descarga mapas para todas las regiones del viaje
+     */
+    async downloadAllMapRegions(options = {}) {
+        try {
+            Logger.init('Starting download for all regions');
+            await this.offlineMapManager.downloadAllRegions(options);
+            Logger.success('All regions downloaded successfully');
+            return true;
+        } catch (error) {
+            Logger.error('Error downloading all regions:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 🗑️ LIMPIAR MAPAS OFFLINE
+     * 
+     * Elimina todos los mapas offline almacenados
+     */
+    async clearOfflineMaps() {
+        try {
+            await this.offlineMapManager.clearAllMaps();
+            Logger.success('Offline maps cleared successfully');
+            return true;
+        } catch (error) {
+            Logger.error('Error clearing offline maps:', error);
+            throw error;
+        }
     }
 
     /**

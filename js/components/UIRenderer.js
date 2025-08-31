@@ -152,6 +152,10 @@ export class UIRenderer {
             [VIEWS.TRACKING]: () => {
                 Logger.ui('📊 Rendering TRACKING view (mapa + analytics)');
                 this.trackingRenderer.renderTracking();
+            },
+            [VIEWS.OFFLINE_MAPS]: () => {
+                Logger.ui('🗺️ Rendering OFFLINE_MAPS view (gestión de mapas offline)');
+                this.renderOfflineMaps();
             }
         };
 
@@ -1838,6 +1842,85 @@ export class UIRenderer {
         
         accommodationsHTML += '</div>';
         accommodationsContent.innerHTML = accommodationsHTML;
+    }
+
+    /**
+     * 🗺️ RENDERIZAR MAPAS OFFLINE
+     * 
+     * Renderiza la interfaz completa para gestionar mapas offline
+     */
+    renderOfflineMaps() {
+        Logger.ui('🗺️ Starting offline maps rendering');
+        Logger.startPerformance('render-offline-maps');
+
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) {
+            Logger.error('Main content container not found');
+            return;
+        }
+
+        try {
+            // Crear contenedor para la interfaz de mapas offline
+            mainContent.innerHTML = `
+                <div class="container mx-auto px-4 py-6">
+                    <div id="offline-maps-interface">
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                            <p class="text-slate-600 dark:text-slate-400">Cargando interfaz de mapas offline...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Inicializar la interfaz de mapas offline
+            const interfaceContainer = document.getElementById('offline-maps-interface');
+            if (interfaceContainer) {
+                // Usar el MapRenderer para renderizar la interfaz
+                mapRenderer.renderOfflineMapInterface(interfaceContainer)
+                    .then(() => {
+                        Logger.success('Offline maps interface rendered successfully');
+                    })
+                    .catch(error => {
+                        Logger.error('Error rendering offline maps interface:', error);
+                        
+                        // Mostrar error en la UI
+                        interfaceContainer.innerHTML = `
+                            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                                <div class="text-center py-8">
+                                    <span class="material-symbols-outlined text-4xl text-red-500 mb-4">error</span>
+                                    <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200 mb-2">Error cargando mapas offline</h3>
+                                    <p class="text-slate-600 dark:text-slate-400 mb-4">${error.message}</p>
+                                    <button onclick="window.changeView('${VIEWS.OFFLINE_MAPS}')" class="btn-primary">
+                                        <span class="material-symbols-outlined">refresh</span>
+                                        Reintentar
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+            }
+
+        } catch (error) {
+            Logger.error('Error in renderOfflineMaps:', error);
+            
+            mainContent.innerHTML = `
+                <div class="container mx-auto px-4 py-6">
+                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                        <div class="text-center py-8">
+                            <span class="material-symbols-outlined text-4xl text-red-500 mb-4">error</span>
+                            <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200 mb-2">Error crítico</h3>
+                            <p class="text-slate-600 dark:text-slate-400 mb-4">No se pudo cargar la interfaz de mapas offline</p>
+                            <button onclick="location.reload()" class="btn-primary">
+                                <span class="material-symbols-outlined">refresh</span>
+                                Recargar aplicación
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } finally {
+            Logger.endPerformance('render-offline-maps');
+        }
     }
 
     /**

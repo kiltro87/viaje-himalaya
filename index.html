@@ -343,5 +343,11 @@
     <!-- Indicadores de estado del Service Worker -->
     <div class="sw-status-indicator" style="display: none;">Cargando...</div>
     
+    <!-- Botón flotante para mapas offline -->
+    <button id="offline-maps-fab" class="fixed bottom-20 right-4 z-40 bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110" 
+            title="Mapas Offline" onclick="window.changeView && window.changeView('mapas-offline')">
+        <span class="material-symbols-outlined">offline_pin</span>
+    </button>
+    
 </body>
 </html>
