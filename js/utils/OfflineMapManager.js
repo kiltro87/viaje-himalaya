@@ -446,13 +446,16 @@ export class OfflineMapManager {
 
         const markers = [];
 
-        tripConfig.itineraryData.forEach(day => {
+        tripConfig.itineraryData.forEach((day, index) => {
             if (day.coordinates) {
+                // Extraer número de día del id (ej: "day-1" -> "1") o usar índice + 1
+                const dayNumber = day.id ? day.id.replace('day-', '') : (index + 1);
+                
                 const marker = L.marker([day.coordinates.lat, day.coordinates.lng])
                     .bindPopup(`
-                        <div class="font-semibold">${day.location}</div>
-                        <div class="text-sm text-gray-600">Día ${day.day}</div>
-                        <div class="text-xs">${day.description || ''}</div>
+                        <div class="font-semibold">${day.location || 'Ubicación'}</div>
+                        <div class="text-sm text-gray-600">Día ${dayNumber}</div>
+                        <div class="text-xs">${day.description || day.title || ''}</div>
                     `);
                 
                 markers.push(marker);
@@ -461,6 +464,8 @@ export class OfflineMapManager {
 
             // Añadir marcadores de lugares específicos
             if (day.places) {
+                const dayNumber = day.id ? day.id.replace('day-', '') : (index + 1);
+                
                 day.places.forEach(place => {
                     if (place.coords && place.coords.length === 2) {
                         const placeMarker = L.circleMarker([place.coords[0], place.coords[1]], {
@@ -472,7 +477,7 @@ export class OfflineMapManager {
                             fillOpacity: 0.8
                         }).bindPopup(`
                             <div class="font-medium">${place.name}</div>
-                            <div class="text-xs text-gray-500">Día ${day.day}</div>
+                            <div class="text-xs text-gray-500">Día ${dayNumber}</div>
                         `);
                         
                         markers.push(placeMarker);
