@@ -154,7 +154,7 @@ export const tripConfig = {
             "id": "day-6",
             "phase": "nepal",
             "country": "Nepal",
-            "location": "Chhomrong",
+            "location": "Pokhara",
             "title": "Trekking a Chhomrong (2.170m)",
             "description": "Segunda jornada de trekking (6-7h, 8 km) hasta Chhomrong, la puerta de entrada al Santuario del Annapurna, con vistas espectaculares.",
             "image": "https://media.istockphoto.com/id/1493335414/es/foto/hermosa-estupa-de-budismo-tibetano-en-el-pueblo-de-chhomrong-con-el-monte-annapurna-al-sur-en.jpg?s=612x612&w=0&k=20&c=A5-ydGKKdxpFmvEYeaNQeZvYtMIX59ue3a3yl_oE3H8=",
@@ -810,16 +810,16 @@ export const tripConfig = {
             segments: [ 
                 { 
                     from: 'MAD', 
-                    fromDateTime: '9 de Octubre 22:45', 
+                    fromDateTime: '9 de Octubre de 2025 22:45', 
                     to: 'DOH', 
-                    toDateTime: '10 de Octubre 06:30', 
+                    toDateTime: '10 de Octubre de 2025 06:30', 
                     layover: 'Tránsito de 2h 55m en Doha (DOH)' 
                 }, 
                 { 
                     from: 'DOH', 
-                    fromDateTime: '10 de Octubre 09:25', 
+                    fromDateTime: '10 de Octubre de 2025 09:25', 
                     to: 'KTM', 
-                    toDateTime: '10 de Octubre 16:45' 
+                    toDateTime: '10 de Octubre de 2025 16:45' 
                 } 
             ] 
         },
@@ -830,9 +830,9 @@ export const tripConfig = {
             segments: [
                 { 
                     from: 'KTM', 
-                    fromDateTime: '20 de Octubre 09:10', 
+                    fromDateTime: '20 de Octubre de 2025 09:10', 
                     to: 'PBH', 
-                    toDateTime: '20 de Octubre 10:30' 
+                    toDateTime: '20 de Octubre de 2025 10:30' 
                 }
             ] 
         },
@@ -843,9 +843,9 @@ export const tripConfig = {
             segments: [
                 { 
                     from: 'PBH', 
-                    fromDateTime: '25 de Octubre 07:05', 
+                    fromDateTime: '25 de Octubre de 2025 07:05', 
                     to: 'KTM', 
-                    toDateTime: '25 de Octubre 08:00' 
+                    toDateTime: '25 de Octubre de 2025 08:00' 
                 }
             ] 
         },
@@ -906,7 +906,7 @@ export const tripConfig = {
             tour: 'Nepal 360',
             website: 'www.weroad.es',
             url: 'https://www.weroad.es/viajes/nepal-360',
-            price: '€1,899',
+            price: '1,100€',
             description: 'Grupo de viajeros jóvenes (18-35 años) con itinerario completo de 15 días'
         },
         bhutan: {
@@ -915,7 +915,7 @@ export const tripConfig = {
             color: 'text-orange-600 dark:text-orange-400',
             tour: 'Best of Bhutan Tour (6 días)',
             url: 'https://www.bhutan-acorn.com/tour/6-days-best-of-bhutan-tour',
-            price: '€1,602',
+            price: '1,602€',
             description: 'Agencia local especializada en turismo sostenible en Bután',
             contact: 'Bhutan Acorn Tours & Treks'
         },

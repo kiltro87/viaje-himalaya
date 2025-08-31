@@ -28,6 +28,7 @@ import Logger from './utils/Logger.js';
 import { weatherConfig, checkWeatherConfig } from './config/weatherConfig.js';
 import { getDaySimulator } from './utils/DaySimulator.js';
 import stateManager from './utils/StateManager.js';
+import { initServiceWorkerCommunication } from './utils/ServiceWorkerUtils.js';
 
 // Verificar que Logger está disponible y iniciar logging
 if (Logger && typeof Logger.init === 'function') {
@@ -176,6 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const summary = Logger.getPerformanceSummary ? Logger.getPerformanceSummary() : {};
             Logger.success('Application initialized successfully', summary);
         }
+        
+        // Inicializar comunicación con Service Worker
+        if (Logger && Logger.init) Logger.init('Initializing Service Worker communication');
+        initServiceWorkerCommunication();
+        if (Logger && Logger.success) Logger.success('Service Worker communication initialized');
         
     } catch (error) {
         if (Logger && Logger.error) {

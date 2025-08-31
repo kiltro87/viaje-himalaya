@@ -5,9 +5,123 @@
  * notificaciones, geolocalización y mapas offline.
  * 
  * @author David Ferrer Figueroa
- * @version 2.0.0
+ * @version 5.0.0
  * @since 2024
  */
+
+// ============================================================================
+// COMUNICACIÓN CON SERVICE WORKER
+// ============================================================================
+
+/**
+ * Inicializa la comunicación con el Service Worker
+ */
+export function initServiceWorkerCommunication() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+    
+    // Escuchar actualizaciones del SW
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('🔄 Service Worker actualizado');
+      showUpdateNotification();
+    });
+    
+    // Verificar si hay SW esperando
+    navigator.serviceWorker.ready.then(registration => {
+      if (registration.waiting) {
+        showUpdateAvailable(registration.waiting);
+      }
+    });
+  }
+}
+
+/**
+ * Maneja mensajes del Service Worker
+ */
+function handleServiceWorkerMessage(event) {
+  const { type, data, version } = event.data;
+  
+  switch (type) {
+    case 'SW_ACTIVATED':
+      console.log(`🚀 Service Worker v${version} activado con funciones:`, data?.features);
+      showServiceWorkerStatus('online', `v${version} activo`);
+      break;
+      
+    case 'CACHE_UPDATED':
+      console.log('📦 Cache actualizado:', data);
+      break;
+      
+    case 'SYNC_COMPLETE':
+      console.log('🔄 Sincronización completada:', data);
+      updateSyncStatus('synced');
+      break;
+      
+    case 'OFFLINE_MODE':
+      console.log('📱 Modo offline activado');
+      showServiceWorkerStatus('offline', 'Sin conexión');
+      break;
+      
+    case 'ONLINE_MODE':
+      console.log('🌐 Conexión restaurada');
+      showServiceWorkerStatus('online', 'Conectado');
+      break;
+  }
+}
+
+/**
+ * Muestra el estado del Service Worker en la UI
+ */
+function showServiceWorkerStatus(status, message) {
+  const indicator = document.querySelector('.sw-status-indicator');
+  if (indicator) {
+    indicator.className = `sw-status-indicator ${status}`;
+    indicator.textContent = message;
+  }
+}
+
+/**
+ * Muestra notificación de actualización disponible
+ */
+function showUpdateAvailable(worker) {
+  const updateBanner = document.createElement('div');
+  updateBanner.className = 'update-banner';
+  updateBanner.innerHTML = `
+    <div class="update-content">
+      <span>🚀 Nueva versión disponible</span>
+      <button onclick="updateServiceWorker()" class="update-btn">Actualizar</button>
+    </div>
+  `;
+  
+  document.body.appendChild(updateBanner);
+  
+  window.updateServiceWorker = () => {
+    worker.postMessage({ type: 'SKIP_WAITING' });
+    updateBanner.remove();
+  };
+}
+
+/**
+ * Muestra notificación de actualización completada
+ */
+function showUpdateNotification() {
+  if (window.Logger) {
+    window.Logger.ui('Service Worker actualizado. Recargando...', 'success');
+  }
+  
+  setTimeout(() => {
+    window.location.reload();
+  }, 1000);
+}
+
+/**
+ * Actualiza el estado de sincronización
+ */
+function updateSyncStatus(status) {
+  const syncIndicator = document.querySelector('.sync-status');
+  if (syncIndicator) {
+    syncIndicator.className = `sync-status ${status}`;
+  }
+}
 
 // ============================================================================
 // FUNCIONES DE VERIFICACIÓN
