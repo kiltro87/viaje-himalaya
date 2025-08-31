@@ -416,7 +416,8 @@ export class OfflineMapManager {
             center: defaultCenter,
             zoom: defaultZoom,
             zoomControl: true,
-            attributionControl: true
+            attributionControl: true,
+            zIndex: 10 // Asegurar que esté por debajo del menú de navegación (z-40)
         });
 
         // Crear capa de tiles offline

@@ -40,9 +40,9 @@ export class OfflineMapUI {
                             <span class="material-symbols-outlined text-2xl text-blue-600">map</span>
                             <h2 class="text-xl font-semibold text-slate-800 dark:text-slate-200">Mapas Offline</h2>
                         </div>
-                        <button id="refresh-map-status" class="btn-secondary">
-                            <span class="material-symbols-outlined">refresh</span>
-                            Actualizar
+                        <button id="refresh-map-status" class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-colors duration-200 border border-slate-200 dark:border-slate-600">
+                            <span class="material-symbols-outlined text-lg">refresh</span>
+                            <span class="font-medium">Actualizar</span>
                         </button>
                     </div>
                     
@@ -74,9 +74,9 @@ export class OfflineMapUI {
                 <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200">Regiones del Viaje</h3>
-                        <button id="download-all-regions" class="btn-primary" ${this.mapManager.isDownloading ? 'disabled' : ''}>
-                            <span class="material-symbols-outlined">download</span>
-                            Descargar Todo
+                        <button id="download-all-regions" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg transition-colors duration-200 font-medium shadow-sm" ${this.mapManager.isDownloading ? 'disabled' : ''}>
+                            <span class="material-symbols-outlined text-lg">download</span>
+                            <span>Descargar Todo</span>
                         </button>
                     </div>
                     
@@ -109,13 +109,13 @@ export class OfflineMapUI {
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200">Mapa del Viaje</h3>
                         <div class="flex gap-2">
-                            <button id="show-current-location" class="btn-secondary">
-                                <span class="material-symbols-outlined">my_location</span>
-                                Mi Ubicación
+                            <button id="show-current-location" class="flex items-center gap-2 px-3 py-2 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 rounded-lg transition-colors duration-200 border border-emerald-200 dark:border-emerald-700">
+                                <span class="material-symbols-outlined text-lg">my_location</span>
+                                <span class="font-medium">Mi Ubicación</span>
                             </button>
-                            <button id="fit-to-route" class="btn-secondary">
-                                <span class="material-symbols-outlined">route</span>
-                                Ver Ruta
+                            <button id="fit-to-route" class="flex items-center gap-2 px-3 py-2 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-400 rounded-lg transition-colors duration-200 border border-purple-200 dark:border-purple-700">
+                                <span class="material-symbols-outlined text-lg">route</span>
+                                <span class="font-medium">Ver Ruta</span>
                             </button>
                         </div>
                     </div>
@@ -128,17 +128,17 @@ export class OfflineMapUI {
                     <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200 mb-4">Gestión de Mapas</h3>
                     
                     <div class="flex flex-wrap gap-3">
-                        <button id="clear-all-maps" class="btn-danger">
-                            <span class="material-symbols-outlined">delete</span>
-                            Limpiar Todo
+                        <button id="clear-all-maps" class="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 rounded-lg transition-colors duration-200 border border-red-200 dark:border-red-700 font-medium">
+                            <span class="material-symbols-outlined text-lg">delete_sweep</span>
+                            <span>Limpiar Todo</span>
                         </button>
-                        <button id="export-map-data" class="btn-secondary">
-                            <span class="material-symbols-outlined">download</span>
-                            Exportar Datos
+                        <button id="export-map-data" class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-colors duration-200 border border-slate-200 dark:border-slate-600 font-medium">
+                            <span class="material-symbols-outlined text-lg">file_download</span>
+                            <span>Exportar Datos</span>
                         </button>
-                        <button id="import-map-data" class="btn-secondary">
-                            <span class="material-symbols-outlined">upload</span>
-                            Importar Datos
+                        <button id="import-map-data" class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-colors duration-200 border border-slate-200 dark:border-slate-600 font-medium">
+                            <span class="material-symbols-outlined text-lg">file_upload</span>
+                            <span>Importar Datos</span>
                         </button>
                     </div>
                 </div>
@@ -152,39 +152,54 @@ export class OfflineMapUI {
     renderRegionsList() {
         const status = this.mapManager.getDownloadStatus();
         
-        return Object.entries(status).map(([key, region]) => `
-            <div class="region-item flex items-center justify-between p-4 border border-slate-200 dark:border-slate-700 rounded-lg">
+        return Object.entries(status).map(([key, region]) => {
+            // Iconos específicos por región
+            const regionIcons = {
+                'nepal': 'landscape',
+                'bhutan': 'temple_buddhist', 
+                'kathmandu': 'location_city',
+                'pokhara': 'water'
+            };
+            
+            const regionIcon = regionIcons[key] || 'map';
+            
+            return `
+            <div class="region-item flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white">
-                            ${region.downloaded ? 'check_circle' : 'map'}
+                    <div class="w-12 h-12 rounded-xl ${region.downloaded ? 'bg-green-100 dark:bg-green-900/30' : 'bg-blue-100 dark:bg-blue-900/30'} flex items-center justify-center border ${region.downloaded ? 'border-green-200 dark:border-green-700' : 'border-blue-200 dark:border-blue-700'}">
+                        <span class="material-symbols-outlined text-xl ${region.downloaded ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}">
+                            ${region.downloaded ? 'check_circle' : regionIcon}
                         </span>
                     </div>
                     
                     <div>
-                        <h4 class="font-medium text-slate-800 dark:text-slate-200">${region.name}</h4>
-                        <div class="text-sm text-slate-600 dark:text-slate-400">
-                            <span>Tamaño estimado: ${region.estimatedSize}</span>
-                            ${region.downloaded ? ' • <span class="text-green-600">Descargado</span>' : ''}
+                        <h4 class="font-semibold text-slate-800 dark:text-slate-200">${region.name}</h4>
+                        <div class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs">storage</span>
+                                ${region.estimatedSize}
+                            </span>
+                            ${region.downloaded ? '<span class="flex items-center gap-1 text-green-600 dark:text-green-400"><span class="material-symbols-outlined text-xs">check</span>Descargado</span>' : ''}
                         </div>
                     </div>
                 </div>
                 
                 <div class="flex items-center gap-2">
                     ${region.downloaded ? `
-                        <button class="btn-danger btn-sm delete-region" data-region="${key}">
-                            <span class="material-symbols-outlined">delete</span>
-                            Eliminar
+                        <button class="flex items-center gap-2 px-3 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 rounded-lg transition-colors duration-200 border border-red-200 dark:border-red-700 delete-region" data-region="${key}">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                            <span class="text-sm font-medium">Eliminar</span>
                         </button>
                     ` : `
-                        <button class="btn-primary btn-sm download-region" data-region="${key}" ${this.mapManager.isDownloading ? 'disabled' : ''}>
-                            <span class="material-symbols-outlined">download</span>
-                            Descargar
+                        <button class="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg transition-colors duration-200 font-medium shadow-sm download-region" data-region="${key}" ${this.mapManager.isDownloading ? 'disabled' : ''}>
+                            <span class="material-symbols-outlined text-sm">download</span>
+                            <span class="text-sm">Descargar</span>
                         </button>
                     `}
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     /**

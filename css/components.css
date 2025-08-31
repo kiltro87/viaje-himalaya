@@ -148,6 +148,48 @@
     }
 }
 
+/* ============================================================================
+ * OFFLINE MAPS STYLES
+ * ============================================================================ */
+
+/* Contenedor del mapa offline */
+#offline-map {
+    position: relative;
+    z-index: 1 !important;
+    width: 100%;
+    height: 24rem; /* h-96 */
+    border-radius: 0.5rem;
+    border: 1px solid rgb(226 232 240);
+    overflow: hidden;
+}
+
+.dark #offline-map {
+    border-color: rgb(51 65 85);
+}
+
+/* Asegurar que los controles del mapa no interfieran con la navegación */
+.leaflet-control-container {
+    position: relative !important;
+    z-index: 5 !important;
+}
+
+/* Controles de zoom del mapa */
+.leaflet-control-zoom {
+    z-index: 5 !important;
+}
+
+/* Popup del mapa */
+.leaflet-popup {
+    z-index: 10 !important;
+}
+
+/* Contenedor principal de mapas offline */
+.offline-maps-container {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 6rem; /* Espacio para el menú de navegación */
+}
+
 /* Navegación inferior */
 #bottom-nav {
     backdrop-filter: blur(20px);
