@@ -124,7 +124,7 @@
         📅 Simulando día
     </div>
 
-    <nav id="bottom-nav" class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-lg h-20 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 z-40 grid grid-cols-4 rounded-3xl shadow-2xl shadow-slate-300/30 dark:shadow-black/30">
+    <nav id="bottom-nav" class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-2xl h-20 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 z-40 grid grid-cols-5 rounded-3xl shadow-2xl shadow-slate-300/30 dark:shadow-black/30">
         <!-- Botón 1: HOY (Landing page principal) -->
         <button data-view="hoy" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full active">
             <span class="material-symbols-outlined">today</span>
@@ -147,6 +147,12 @@
         <button data-view="seguimiento" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full">
             <span class="material-symbols-outlined">analytics</span>
             <span class="text-xs font-medium">Seguimiento</span>
+        </button>
+        
+        <!-- Botón 5: Mapas Offline -->
+        <button data-view="mapas-offline" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 w-full h-full">
+            <span class="material-symbols-outlined">offline_pin</span>
+            <span class="text-xs font-medium">Mapas</span>
         </button>
     </nav>
 
@@ -343,11 +349,7 @@
     <!-- Indicadores de estado del Service Worker -->
     <div class="sw-status-indicator" style="display: none;">Cargando...</div>
     
-    <!-- Botón flotante para mapas offline -->
-    <button id="offline-maps-fab" class="fixed bottom-20 right-4 z-40 bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110" 
-            title="Mapas Offline" onclick="window.changeView && window.changeView('mapas-offline')">
-        <span class="material-symbols-outlined">offline_pin</span>
-    </button>
+
     
 </body>
 </html>
