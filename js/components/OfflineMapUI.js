@@ -271,8 +271,7 @@ export class OfflineMapUI {
 
             this.currentMap = this.mapManager.createOfflineMap('offline-map', {
                 center: [27.7172, 85.3240], // Katmandú
-                zoom: 8,
-                showLayerControl: true
+                zoom: 8
             });
 
             // Añadir control de ubicación

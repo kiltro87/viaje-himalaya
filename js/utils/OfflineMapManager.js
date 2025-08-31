@@ -434,11 +434,6 @@ export class OfflineMapManager {
         // Añadir marcadores de lugares del viaje
         this.addTravelMarkers(map);
 
-        // Añadir control de capas si se solicita
-        if (options.showLayerControl) {
-            this.addLayerControl(map);
-        }
-
         Logger.success(`Mapa offline creado en ${containerId}`);
         return map;
     }
