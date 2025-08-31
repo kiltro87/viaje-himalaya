@@ -303,27 +303,27 @@ export class GeolocationManager {
         });
 
         // Verificar lugares específicos por día
-        if (tripConfig.placesByDay) {
-            Object.entries(tripConfig.placesByDay).forEach(([dayId, places]) => {
-                places.forEach(place => {
-                    if (place.coordinates) {
+        tripConfig.itineraryData.forEach(day => {
+            if (day.places) {
+                day.places.forEach(place => {
+                    if (place.coords && place.coords.length === 2) {
                         const distance = this.calculateDistance(
                             currentLat, currentLng,
-                            place.coordinates.lat, place.coordinates.lng
+                            place.coords[0], place.coords[1]
                         );
 
                         if (distance <= this.arrivalThreshold) {
                             Logger.success(`Arrived at place: ${place.name}`, {
                                 distance: Math.round(distance),
-                                dayId
+                                dayId: day.id
                             });
 
-                            this.handlePlaceReached(place, dayId, distance);
+                            this.handlePlaceReached(place, day.id, distance);
                         }
                     }
                 });
-            });
-        }
+            }
+        });
     }
 
     /**
