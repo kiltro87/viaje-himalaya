@@ -28,6 +28,9 @@ export const tripConfig = {
         title: "Mi Aventura en el Himalaya",
         subtitle: "Un recorrido para descubrir Nepal y Bután",
         description: "Una aventura épica de 18 días explorando los tesoros culturales y naturales del Himalaya",
+        
+        // Configuración de APIs
+        weatherApiKey: "1b1dbbeb6444b4ea9961811467326ea6",
         destinations: ["Nepal", "Bután"],
         totalDays: 18,
         year: 2025
@@ -727,49 +730,49 @@ export const tripConfig = {
         }
     ],
 
-    // Lista de equipaje
+    // Lista de equipaje con pesos estimados (en gramos)
     packingListData: {
         'Ropa': [
-            'Camisetas de manga larga (5-7)',
-            'Pantalones de trekking (3-4)',
-            'Chaleco o chaqueta ligera',
-            'Ropa interior térmica',
-            'Calcetines de trekking (5-7 pares)',
-            'Gorros de lana (2)',
-            'Guantes de trekking',
-            'Bufanda o pañuelo'
+            { item: 'Camisetas de manga larga (5-7)', weight: 1000, key: 'camisetas_manga_larga' },
+            { item: 'Pantalones de trekking (3-4)', weight: 1200, key: 'pantalones_trekking' },
+            { item: 'Chaleco o chaqueta ligera', weight: 300, key: 'chaqueta_ligera' },
+            { item: 'Ropa interior térmica', weight: 360, key: 'ropa_interior_termica' },
+            { item: 'Calcetines de trekking (5-7 pares)', weight: 480, key: 'calcetines_trekking' },
+            { item: 'Gorros de lana (2)', weight: 120, key: 'gorros_lana' },
+            { item: 'Guantes de trekking', weight: 80, key: 'guantes_trekking' },
+            { item: 'Bufanda o pañuelo', weight: 30, key: 'bufanda' }
         ],
         'Calzado': [
-            'Botas de trekking',
-            'Zapatillas deportivas',
-            'Sandalias para el hotel',
-            'Calcetines de repuesto'
+            { item: 'Botas de trekking', weight: 1200, key: 'botas_trekking' },
+            { item: 'Zapatillas deportivas', weight: 800, key: 'zapatillas_deportivas' },
+            { item: 'Sandalias para el hotel', weight: 300, key: 'sandalias_hotel' },
+            { item: 'Calcetines de repuesto', weight: 160, key: 'calcetines_repuesto' }
         ],
         'Equipo': [
-            'Mochila de 30-40L',
-            'Mochila pequeña para excursiones',
-            'Botella de agua 1L',
-            'Linterna frontal',
-            'Bastones de trekking',
-            'Gafas de sol',
-            'Protector solar SPF 50+',
-            'Crema hidratante',
-            'Kit de primeros auxilios',
-            'Cámara fotográfica',
-            'Power bank',
-            'Adaptadores de corriente'
+            { item: 'Mochila de 30-40L', weight: 1500, key: 'mochila_principal' },
+            { item: 'Mochila pequeña para excursiones', weight: 400, key: 'mochila_pequena' },
+            { item: 'Botella de agua 1L', weight: 150, key: 'botella_agua' },
+            { item: 'Linterna frontal', weight: 80, key: 'linterna_frontal' },
+            { item: 'Bastones de trekking', weight: 500, key: 'bastones_trekking' },
+            { item: 'Gafas de sol', weight: 30, key: 'gafas_sol' },
+            { item: 'Protector solar SPF 50+', weight: 100, key: 'protector_solar' },
+            { item: 'Crema hidratante', weight: 50, key: 'crema_hidratante' },
+            { item: 'Kit de primeros auxilios', weight: 200, key: 'kit_primeros_auxilios' },
+            { item: 'Cámara fotográfica', weight: 400, key: 'camara_fotografica' },
+            { item: 'Power bank', weight: 300, key: 'power_bank' },
+            { item: 'Adaptadores de corriente', weight: 150, key: 'adaptadores_corriente' }
         ],
         'Documentos y Salud': [
-            'Pasaporte válido',
-            'Visas (Nepal y Bután)',
-            'Seguro de viaje',
-            'Tarjetas de crédito/débito',
-            'Efectivo en dólares/euros',
-            'Medicamentos personales',
-            'Pastillas para el mal de altura',
-            'Repelente de mosquitos',
-            'Toallitas húmedas',
-            'Papel higiénico'
+            { item: 'Pasaporte válido', weight: 50, key: 'pasaporte' },
+            { item: 'Visas (Nepal y Bután)', weight: 10, key: 'visas' },
+            { item: 'Seguro de viaje', weight: 5, key: 'seguro_viaje' },
+            { item: 'Tarjetas de crédito/débito', weight: 20, key: 'tarjetas_credito' },
+            { item: 'Efectivo en dólares/euros', weight: 50, key: 'efectivo' },
+            { item: 'Medicamentos personales', weight: 100, key: 'medicamentos_personales' },
+            { item: 'Pastillas para el mal de altura', weight: 30, key: 'pastillas_altura' },
+            { item: 'Repelente de mosquitos', weight: 80, key: 'repelente_mosquitos' },
+            { item: 'Toallitas húmedas', weight: 150, key: 'toallitas_humedas' },
+            { item: 'Papel higiénico', weight: 100, key: 'papel_higienico' }
         ]
     },
 

@@ -19,15 +19,16 @@
  */
 
 import Logger from './Logger.js';
+import { tripConfig } from '../config/tripConfig.js';
 
 export class WeatherManager {
     constructor() {
-        this.apiKey = null; // Se configurará dinámicamente
+        this.apiKey = tripConfig.tripInfo.weatherApiKey || window.WEATHER_API_KEY || localStorage.getItem('weatherApiKey'); // Configurada desde tripConfig
         this.baseUrl = 'https://api.openweathermap.org/data/2.5';
         this.forecastUrl = 'https://api.openweathermap.org/data/2.5/forecast';
         this.cache = new Map();
         this.cacheExpiry = 30 * 60 * 1000; // 30 minutos
-        this.isRealTimeEnabled = false;
+        this.isRealTimeEnabled = !!this.apiKey;
         this.updateInterval = null;
         
         // Coordenadas de ciudades del itinerario
@@ -565,16 +566,18 @@ export class WeatherManager {
             
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🌤️ Error rendering enhanced weather:', error);
-            this.renderEnhancedStaticWeather();
+            this.renderEnhancedStaticWeather(container);
         }
     }
 
     /**
      * 🎨 RENDER DEMO: Renderizar versión mejorada con datos estáticos
      */
-    renderEnhancedStaticWeather() {
-        const container = document.getElementById('weather');
-        if (!container) return;
+    renderEnhancedStaticWeather(container) {
+        if (!container) {
+            container = document.getElementById('weather');
+            if (!container) return;
+        }
 
         // Simular clima contextual para demo usando categorías reales
         const demoActivities = ['Visita al Templo de Swayambhunath', 'Explorar Thamel', 'Trekking por la ciudad'];

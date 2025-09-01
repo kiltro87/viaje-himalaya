@@ -19,6 +19,7 @@
 
 import Logger from './Logger.js';
 import { firestoreConfig } from '../config/firebaseConfig.js';
+import { weightEstimator } from './WeightEstimator.js';
 
 export class PackingListManager {
     constructor() {
@@ -94,10 +95,7 @@ export class PackingListManager {
             const { collection, doc, onSnapshot, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
             const db = this.firebaseManager.db;
-            console.log(`🔥 FIREBASE DEBUG: Collection=${this.firestoreCollection}, DocumentId=${this.documentId}`);
-            console.log('🔥 FIREBASE DEBUG: DB object:', db);
             const docRef = doc(db, this.firestoreCollection, this.documentId);
-            console.log('🔥 FIREBASE DEBUG: DocRef created:', docRef.path);
             
             // Cargar datos iniciales de Firebase
             await this.loadInitialData(docRef);
@@ -160,10 +158,14 @@ export class PackingListManager {
                     if (Logger && Logger.warning) Logger.warning('🎒 Firebase document exists but has no items');
                 }
             } else {
-                if (Logger && Logger.info) Logger.info('🎒 No Firebase document found, syncing local data');
-                // Si no hay datos en Firebase, sincronizar los datos locales
-                await this.syncToFirebase();
-                if (Logger && Logger.info) Logger.info('🎒 Local data synced to Firebase');
+                if (Logger && Logger.info) Logger.info('🎒 No Firebase document found');
+                // Si no hay datos en Firebase Y hay datos locales, sincronizar
+                if (Object.keys(this.localCache).length > 0) {
+                    await this.syncToFirebase();
+                    if (Logger && Logger.info) Logger.info('🎒 Local data synced to Firebase');
+                } else {
+                    if (Logger && Logger.info) Logger.info('🎒 No local or Firebase data - starting fresh');
+                }
             }
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🎒 Error loading initial data:', error);
@@ -178,6 +180,9 @@ export class PackingListManager {
             // 🚀 OPTIMISTIC UPDATE: Actualizar inmediatamente la UI
             this.localCache[itemKey] = isChecked;
             this.saveToLocalStorage();
+            
+            // Actualizar UI inmediatamente para mejor UX
+            this.updateUI();
             
             // 📡 FIREBASE UPDATE: Sincronizar en background
             if (this.firebaseManager && this.firebaseManager.isConnected) {
@@ -216,18 +221,29 @@ export class PackingListManager {
     }
 
     /**
-     * 📊 GET STATS: Obtener estadísticas de empacado
+     * 📊 GET STATS: Obtener estadísticas de empacado con peso
      */
     getPackingStats(totalItems) {
         const packedItems = Object.values(this.localCache).filter(Boolean).length;
         const percentage = totalItems > 0 ? Math.round((packedItems / totalItems) * 100) : 0;
+        const weightData = weightEstimator.calculateTotalWeight(this.localCache);
         
         return {
             packed: packedItems,
             total: totalItems,
             percentage,
-            remaining: totalItems - packedItems
+            remaining: totalItems - packedItems,
+            weight: weightData
         };
+    }
+
+    /**
+     * 🧹 CLEAN FIREBASE DATA: Remove invalid keys with [object Object] - DISABLED
+     */
+    async cleanFirebaseData() {
+        // DISABLED: This method was causing data loss on refresh
+        if (Logger && Logger.warning) Logger.warning('🧹 cleanFirebaseData() is disabled to prevent data loss');
+        return;
     }
 
     /**
@@ -237,32 +253,109 @@ export class PackingListManager {
         if (!this.firebaseManager || !this.firebaseManager.isConnected) return;
 
         try {
-            console.log(`🔥 SYNC DEBUG: Starting sync to Firebase...`);
-            console.log(`🔥 SYNC DEBUG: Collection=${this.firestoreCollection}, DocumentId=${this.documentId}`);
-            
             const { doc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             
             const db = this.firebaseManager.db;
-            console.log('🔥 SYNC DEBUG: DB object valid:', !!db);
             const docRef = doc(db, this.firestoreCollection, this.documentId);
-            console.log('🔥 SYNC DEBUG: DocRef path:', docRef.path);
+            
+            // Clean data before syncing
+            const cleanedCache = {};
+            Object.entries(this.localCache).forEach(([key, value]) => {
+                if (!key.includes('[object Object]')) {
+                    cleanedCache[key] = value;
+                } else {
+                    Logger.warning('🧹 SYNC: Skipping invalid key:', key);
+                }
+            });
             
             const dataToSync = {
-                items: this.localCache,
+                items: cleanedCache,
                 lastUpdated: serverTimestamp(),
-                lastDeviceId: this.deviceId, // Tracking de qué dispositivo hizo el último cambio
-                version: '3.0.0' // Versión global
+                lastDeviceId: this.deviceId,
+                version: '3.0.0'
             };
-            
-            console.log('🔥 SYNC DEBUG: Data to sync:', dataToSync);
-            console.log('🔥 SYNC DEBUG: About to call setDoc...');
             
             await setDoc(docRef, dataToSync, { merge: true });
             
-            console.log('🔥 SYNC DEBUG: setDoc completed successfully!');
+            // Update local cache with cleaned data
+            this.localCache = cleanedCache;
+            this.saveToLocalStorage();
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🎒 Error syncing to Firebase:', error);
             throw error;
+        }
+    }
+
+    /**
+     * 📥 SYNC FROM FIREBASE: Obtener datos desde Firebase
+     */
+    async syncFromFirebase() {
+        if (!this.firebaseManager || !this.firebaseManager.isConnected) return;
+        
+        try {
+            const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const db = this.firebaseManager.db;
+            const docRef = doc(db, this.firestoreCollection, this.documentId);
+            
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const firebaseItems = data.items || {};
+                
+                // Clean invalid keys before using
+                const cleanedItems = {};
+                Object.entries(firebaseItems).forEach(([key, value]) => {
+                    if (!key.includes('[object Object]')) {
+                        cleanedItems[key] = value;
+                    }
+                });
+                
+                // Update local cache
+                this.localCache = { ...this.localCache, ...cleanedItems };
+                this.saveToLocalStorage();
+                
+                // Force UI update after sync
+                this.updateUI();
+                
+                Logger.debug('🔄 SYNC FROM FIREBASE: Loaded items:', Object.keys(cleanedItems).length);
+            }
+        } catch (error) {
+            Logger.error('🔄 ERROR syncing from Firebase:', error);
+        }
+    }
+
+    /**
+     * 🔧 SETUP FIREBASE LISTENER: Configurar listener para cambios en tiempo real
+     */
+    setupFirebaseListener() {
+        if (!this.firebaseManager || !this.firebaseManager.isConnected) {
+            Logger.debug('🔧 Firebase not connected, skipping listener setup');
+            return;
+        }
+        
+        try {
+            // Import Firebase functions
+            import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js')
+                .then(({ doc, onSnapshot }) => {
+                    const db = this.firebaseManager.db;
+                    const docRef = doc(db, this.firestoreCollection, this.documentId);
+                    
+                    // Setup real-time listener
+                    this.unsubscribe = onSnapshot(docRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            const firebaseItems = data.items || {};
+                            this.handleFirebaseUpdate(firebaseItems);
+                        }
+                    });
+                    
+                    Logger.success('🔧 Firebase listener configured successfully');
+                })
+                .catch(error => {
+                    Logger.error('🔧 Error setting up Firebase listener:', error);
+                });
+        } catch (error) {
+            Logger.error('🔧 Error in setupFirebaseListener:', error);
         }
     }
 
@@ -271,16 +364,24 @@ export class PackingListManager {
      */
     handleFirebaseUpdate(firebaseItems) {
         try {
+            // Clean invalid keys before processing
+            const cleanedItems = {};
+            Object.entries(firebaseItems).forEach(([key, value]) => {
+                if (!key.includes('[object Object]')) {
+                    cleanedItems[key] = value;
+                }
+            });
+            
             // Comparar con cache local para detectar cambios
-            const hasChanges = Object.keys(firebaseItems).some(key => 
-                this.localCache[key] !== firebaseItems[key]
+            const hasChanges = Object.keys(cleanedItems).some(key => 
+                this.localCache[key] !== cleanedItems[key]
             );
 
             if (hasChanges) {
                 if (Logger && Logger.init) Logger.init('🎒 Received Firebase update');
                 
                 // Actualizar cache local
-                this.localCache = { ...this.localCache, ...firebaseItems };
+                this.localCache = { ...this.localCache, ...cleanedItems };
                 this.saveToLocalStorage();
                 
                 // Actualizar UI
@@ -315,11 +416,11 @@ export class PackingListManager {
                 }
             });
             
-            // Actualizar estadísticas si existe el componente (con delay para asegurar que el DOM esté listo)
+            // Actualizar estadísticas inmediatamente y con delay de respaldo
+            this.updatePackingStats();
             setTimeout(() => {
-                console.log('🔥 DELAYED PACKING STATS: About to call updatePackingStats()');
                 this.updatePackingStats();
-            }, 500);
+            }, 100);
             
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🎒 Error updating UI:', error);
@@ -327,36 +428,71 @@ export class PackingListManager {
     }
 
     /**
-     * 📊 UPDATE PACKING STATS: Actualizar estadísticas de empacado
+     * 📊 UPDATE PACKING STATS: Actualizar estadísticas de empacado con peso
      */
     updatePackingStats() {
-        const statsContainer = document.getElementById('packing-stats');
-        if (!statsContainer) {
-            console.log('🔥 PACKING STATS: No stats container found');
+        // Check if we're in the planning tab first
+        const planningTab = document.querySelector('[data-tab="planning"]');
+        if (!planningTab || !planningTab.classList.contains('active')) {
+            // Not in planning tab, skip stats update
             return;
         }
+        
+        // Force create stats container if it doesn't exist
+        let statsContainer = document.getElementById('packing-stats');
+        if (!statsContainer) {
+            const packingListContainer = document.getElementById('packing-list-content');
+            if (packingListContainer) {
+                const statsDiv = document.createElement('div');
+                statsDiv.id = 'packing-stats';
+                statsDiv.className = 'mb-6';
+                packingListContainer.insertBefore(statsDiv, packingListContainer.firstChild);
+                statsContainer = statsDiv;
+            } else {
+                // Container doesn't exist, probably not in planning tab
+                Logger.debug('🔥 packing-list-content not found - not in planning tab');
+                return;
+            }
+        }
+        
+        // Force render stats immediately
+        this.renderPackingStats(statsContainer);
+    }
 
+    renderPackingStats(statsContainer) {
         try {
-            // Contar directamente desde los checkboxes visibles en la UI
-            const checkboxes = document.querySelectorAll('.packing-list-container input[type="checkbox"]');
+            // Calcular desde checkboxes visibles primero
+            const checkboxes = document.querySelectorAll('#packing-list-content input[type="checkbox"]');
             const totalItems = checkboxes.length;
             const packedItems = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
             
-            console.log('🔥 PACKING STATS UPDATE:', { 
+            Logger.debug('🔥 PACKING STATS UPDATE:', { 
                 totalItems, 
                 packedItems,
-                checkboxesFound: checkboxes.length,
-                containerExists: !!document.querySelector('.packing-list-container'),
-                statsContainerExists: !!statsContainer,
-                timestamp: new Date().toISOString()
+                checkboxesFound: checkboxes.length
             });
             
-            // Si no hay checkboxes, intentar de nuevo después de un momento
+            // Si no hay checkboxes, calcular desde localCache
             if (checkboxes.length === 0) {
-                console.log('🔥 PACKING STATS: No checkboxes found, retrying in 200ms...');
-                setTimeout(() => {
-                    this.updatePackingStats();
-                }, 200);
+                const totalFromCache = Object.keys(this.localCache).length;
+                const packedFromCache = Object.values(this.localCache).filter(Boolean).length;
+                
+                if (totalFromCache === 0) {
+                    setTimeout(() => {
+                        this.updatePackingStats();
+                    }, 500);
+                    return;
+                }
+                
+                // Usar datos del cache
+                const stats = {
+                    packed: packedFromCache,
+                    total: totalFromCache,
+                    percentage: totalFromCache > 0 ? Math.round((packedFromCache / totalFromCache) * 100) : 0,
+                    remaining: totalFromCache - packedFromCache
+                };
+                
+                this.renderStatsFromCache(stats, statsContainer);
                 return;
             }
             
@@ -367,30 +503,84 @@ export class PackingListManager {
                 remaining: totalItems - packedItems
             };
             
+            try {
+            // Calcular peso estimado
+            const weightData = weightEstimator.calculateTotalWeight(this.localCache);
+            const analysis = weightData.analysis;
+            
+            // Colores según el estado del peso
+            const weightColors = {
+                excellent: 'text-green-600 dark:text-green-400',
+                ok: 'text-blue-600 dark:text-blue-400', 
+                caution: 'text-yellow-600 dark:text-yellow-400',
+                warning: 'text-orange-600 dark:text-orange-400',
+                critical: 'text-red-600 dark:text-red-400'
+            };
+            
             statsContainer.innerHTML = `
-                <div class="flex items-center justify-between p-4 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30 rounded-xl border border-teal-200 dark:border-teal-700">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-2xl text-teal-600 dark:text-teal-400">
-                            ${stats.percentage === 100 ? 'check_circle' : 'luggage'}
-                        </span>
-                        <div>
-                            <h3 class="font-semibold text-slate-900 dark:text-white">Progreso de Equipaje</h3>
-                            <p class="text-sm text-slate-600 dark:text-slate-400">
-                                ${stats.packed} de ${stats.total} artículos listos
-                            </p>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <!-- Progreso de Equipaje -->
+                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Progreso de Equipaje</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white">${stats.percentage}%</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${stats.packed}/${stats.total} completado</p>
                     </div>
-                    <div class="text-right">
-                        <div class="text-2xl font-bold text-teal-600 dark:text-teal-400">${stats.percentage}%</div>
-                        <div class="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-normal" 
-                                 style="width: ${stats.percentage}%"></div>
-                        </div>
+                    
+                    <!-- Peso Total -->
+                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Peso Estimado</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white">${analysis.weightKg}kg</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">mochila total</p>
                     </div>
                 </div>
             `;
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🎒 Error updating packing stats:', error);
+        }
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('🎒 Error in updatePackingStats:', error);
+        }
+    }
+    
+    /**
+     * 📊 RENDER STATS FROM CACHE: Renderizar estadísticas desde cache cuando no hay DOM
+     */
+    renderStatsFromCache(stats, statsContainer) {
+        try {
+            // Calcular peso estimado desde cache
+            const weightData = weightEstimator.calculateTotalWeight(this.localCache);
+            const analysis = weightData.analysis;
+            
+            // Colores según el estado del peso
+            const weightColors = {
+                excellent: 'text-green-600 dark:text-green-400',
+                ok: 'text-blue-600 dark:text-blue-400', 
+                caution: 'text-yellow-600 dark:text-yellow-400',
+                warning: 'text-orange-600 dark:text-orange-400',
+                critical: 'text-red-600 dark:text-red-400'
+            };
+            
+            statsContainer.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <!-- Progreso de Equipaje -->
+                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Progreso de Equipaje</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white">${stats.percentage}%</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${stats.packed}/${stats.total} completado</p>
+                    </div>
+                    
+                    <!-- Peso Total -->
+                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Peso Estimado</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white">${analysis.weightKg}kg</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">mochila total</p>
+                    </div>
+                </div>
+            `;
+            
+            Logger.debug('🔥 PACKING STATS: Rendered from cache successfully', stats);
+        } catch (error) {
+            Logger.error('🔥 PACKING STATS: Error rendering from cache:', error);
         }
     }
 
@@ -439,6 +629,31 @@ export class PackingListManager {
             this.unsubscribe = null;
         }
         Logger.info('🎒 PackingListManager cleaned up');
+    }
+
+    /**
+     * 🎯 INITIALIZE: Configurar el manager con Firebase
+     */
+    async initialize(firebaseManager) {
+        try {
+            this.firebaseManager = firebaseManager;
+            this.loadFromLocalStorage();
+            
+            if (firebaseManager && firebaseManager.isConnected) {
+                // Solo sincronizar desde Firebase, NO limpiar
+                await this.syncFromFirebase();
+            }
+            
+            // Force initial UI update regardless of Firebase status
+            this.updateUI();
+            
+            // Configurar listener para cambios en Firebase
+            this.setupFirebaseListener();
+            
+            if (Logger && Logger.info) Logger.info('🎒 PackingListManager initialized');
+        } catch (error) {
+            if (Logger && Logger.error) Logger.error('🎒 Error initializing PackingListManager:', error);
+        }
     }
 
     /**

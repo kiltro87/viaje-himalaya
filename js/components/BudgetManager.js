@@ -627,18 +627,17 @@ export class BudgetManager {
                     })().join('')}
                 </div>
                 </div>
-            </div>
-            
-            <!-- Contenido Dinámico -->
-            <div id="budget-content" class="mb-6" style="display: none;">
-                <div class="text-center text-slate-500 dark:text-slate-400 py-8 bg-slate-50 dark:bg-slate-800 radius-card border-2 border-dashed border-slate-300 dark:border-slate-600">
-                    <span class="material-symbols-outlined text-4xl mb-2 opacity-50">analytics</span>
-                    <p class="text-lg font-medium">Haz clic en las categorías para ver el análisis</p>
+                
+                <!-- Contenido Dinámico -->
+                <div id="budget-content" class="mt-6" style="display: none;">
+                    <div class="text-center text-slate-500 dark:text-slate-400 py-8 bg-slate-50 dark:bg-slate-800 radius-card border-2 border-dashed border-slate-300 dark:border-slate-600">
+                        <span class="material-symbols-outlined text-4xl mb-2 opacity-50">analytics</span>
+                        <p class="text-lg font-medium">Haz clic en las categorías para ver el análisis</p>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Formulario de Nuevo Gasto -->
-            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-6">
+                
+                <!-- Formulario de Nuevo Gasto -->
+                <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">add_circle</span>
@@ -710,6 +709,7 @@ export class BudgetManager {
                         </button>
                     </div>
                 </form>
+                </div>
             </div>
 
         `;

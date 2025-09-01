@@ -99,7 +99,7 @@ export class SmartDarkMode {
 
     async getLocation() {
         if (!navigator.geolocation) {
-            Logger.info('Geolocation not available for dark mode');
+            if (Logger && Logger.info) Logger.info('Geolocation not available for dark mode');
             return;
         }
 
@@ -119,7 +119,7 @@ export class SmartDarkMode {
             await this.calculateSunTimes();
             Logger.success('Location obtained for smart dark mode', this.location);
         } catch (error) {
-            Logger.info('Could not get location for dark mode, using default times', error);
+            if (Logger && Logger.info) Logger.info('Could not get location for dark mode, using default times', error);
         }
     }
 
@@ -145,7 +145,7 @@ export class SmartDarkMode {
                 sunset: Math.max(17, Math.min(20, sunset))   // Clamp between 5-8 PM
             };
 
-            Logger.info('Sun times calculated', this.sunTimes);
+            if (Logger && Logger.info) Logger.info('Sun times calculated', this.sunTimes);
         } catch (error) {
             Logger.warn('Failed to calculate sun times', error);
             this.sunTimes = {
@@ -193,7 +193,7 @@ export class SmartDarkMode {
             this.currentMode = newMode;
             this.applyMode();
             
-            Logger.info(`Dark mode switched to: ${newMode}`, {
+            if (Logger && Logger.info) Logger.info(`Dark mode switched to: ${newMode}`, {
                 reason: this.userOverride ? 'user-override' : 'automatic',
                 time: new Date().toLocaleTimeString()
             });
@@ -203,8 +203,8 @@ export class SmartDarkMode {
     applyMode() {
         const html = document.documentElement;
         
-        // Add transition class for smooth switching
-        html.classList.add(DARK_MODE.TRANSITION);
+        // Add transition classes for smooth switching
+        html.classList.add('transition-colors', 'duration-300', 'ease-out');
         
         if (this.currentMode === 'dark') {
             html.classList.add('dark');
@@ -264,7 +264,7 @@ export class SmartDarkMode {
         this.currentMode = mode;
         this.applyMode();
         
-        Logger.info(`Dark mode set to: ${mode}`, {
+        if (Logger && Logger.info) Logger.info(`Dark mode set to: ${mode}`, {
             userOverride: isUserOverride
         });
     }
@@ -276,14 +276,14 @@ export class SmartDarkMode {
         this.setupAutoSwitch();
         this.updateMode();
         
-        Logger.info('Auto dark mode switching enabled');
+        if (Logger && Logger.info) Logger.info('Auto dark mode switching enabled');
     }
 
     disableAutoSwitch() {
         this.options.autoSwitch = false;
         this.savePreferences();
         
-        Logger.info('Auto dark mode switching disabled');
+        if (Logger && Logger.info) Logger.info('Auto dark mode switching disabled');
     }
 
     getCurrentMode() {

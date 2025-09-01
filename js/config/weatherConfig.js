@@ -14,8 +14,8 @@
  */
 
 // 🔑 CONFIGURACIÓN DE API KEY
-// Descomenta y añade tu API key de OpenWeatherMap aquí:
-// window.WEATHER_API_KEY = 'TU_API_KEY_AQUI';
+// API key de OpenWeatherMap configurada:
+window.WEATHER_API_KEY = '1b1dbbeb6444b4ea9961811467326ea6';
 
 // 🌍 CONFIGURACIÓN ALTERNATIVA
 // También puedes configurar la API key dinámicamente:

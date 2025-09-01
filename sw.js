@@ -445,14 +445,17 @@ async function staleWhileRevalidate(request) {
   const cachedResponse = await caches.match(request);
   
   // Fetch en background para actualizar cache
-  const fetchPromise = fetch(request).then(networkResponse => {
+  const fetchPromise = fetch(request).then(async networkResponse => {
     if (networkResponse.status === 200) {
-      const cache = caches.open(CACHE_NAME);
-      cache.then(c => c.put(request, networkResponse.clone()));
+      const cache = await caches.open(CACHE_NAME);
+      // Clone the response before using it
+      const responseClone = networkResponse.clone();
+      await cache.put(request, responseClone);
     }
     return networkResponse;
   }).catch(error => {
     console.warn('Background fetch failed:', request.url);
+    return null;
   });
   
   // Devolver cache inmediatamente si existe, sino esperar network

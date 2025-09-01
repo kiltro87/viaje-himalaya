@@ -21,7 +21,7 @@ export class SpendingInsights {
     }
 
     init() {
-        Logger.info('SpendingInsights initialized');
+        if (Logger && Logger.info) Logger.info('SpendingInsights initialized', { budgetManager: !!this.budgetManager });
     }
 
     /**
@@ -306,6 +306,8 @@ export class SpendingInsights {
             .sort(([,a], [,b]) => b.spent - a.spent)
             .slice(0, 6); // Show top 6 categories
 
+        if (Logger && Logger.info) Logger.info('Generated spending insights', { totalSpent: sortedCategories.reduce((sum, [,cat]) => sum + cat.spent, 0), budgetUsed: sortedCategories.reduce((sum, [,cat]) => sum + cat.budget, 0), categories: sortedCategories.length });
+
         return `
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg">
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">
@@ -421,7 +423,7 @@ export class SpendingInsights {
     // Public methods
     refresh() {
         this.calculateInsights();
-        Logger.info('Spending insights refreshed');
+        if (Logger && Logger.info) Logger.info('SpendingInsights refreshed');
     }
 
     getInsights() {

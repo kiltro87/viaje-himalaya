@@ -331,15 +331,25 @@ export class UIRenderer {
                 </div>
 
                 ${this.renderFlightInfoForToday()}
-
-
-
-
+                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">shopping_cart</span>
+                        Lista de Paquetería
+                    </h3>
+                    <div class="space-y-2" id="today-packing-list">
+                        <!-- Packing list will be rendered here -->
+                    </div>
+                </div>
             </div>
         `;
 
         // Actualizar información dinámica
         this.updateTodayDynamicContent();
+        
+        // Renderizar packing list en el contenedor específico
+        setTimeout(() => {
+            this.renderTodayPackingList();
+        }, 100);
     }
 
     /**
@@ -348,6 +358,50 @@ export class UIRenderer {
     updateTodayDynamicContent() {
         Logger.ui('📅 Updating today dynamic content - delegating to TodayRenderer');
         this.todayRenderer.updateTodayDynamicContent();
+    }
+    
+    /**
+     * 🎒 RENDERIZAR PACKING LIST PARA HOY
+     */
+    async renderPackingList() {
+        const container = document.getElementById('packing-list-content');
+        if (!container) return;
+        
+        // Mostrar solo algunos items importantes para la vista de HOY
+        const importantItems = [
+            { item: 'Pasaporte válido', weight: 50, key: 'pasaporte' },
+            { item: 'Botas de trekking', weight: 1200, key: 'botas_trekking' },
+            { item: 'Mochila de 30-40L', weight: 1500, key: 'mochila_principal' },
+            { item: 'Kit de primeros auxilios', weight: 200, key: 'kit_primeros_auxilios' },
+            { item: 'Cámara fotográfica', weight: 400, key: 'camara_fotografica' }
+        ];
+        
+        const packingManager = stateManager.getPackingListManager();
+        
+        const itemsHTML = importantItems.map(itemObj => {
+            const isChecked = packingManager ? packingManager.getItemStatus(itemObj.key) : false;
+            const weightDisplay = `<span class="text-xs text-slate-500 dark:text-slate-400 ml-2">(${itemObj.weight}g)</span>`;
+            
+            return `
+                <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} 
+                           data-item-key="${itemObj.key}"
+                           class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                           onchange="packingManager?.toggleItem('${itemObj.key}', this.checked)">
+                    <span class="text-slate-700 dark:text-slate-300 ${isChecked ? 'line-through opacity-50' : ''}">${itemObj.item}${weightDisplay}</span>
+                </label>
+            `;
+        }).join('');
+        
+        container.innerHTML = `
+            ${itemsHTML}
+            <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
+                <a href="#" onclick="window.uiRenderer.switchView('planning'); return false;" 
+                   class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium">
+                    Ver lista completa →
+                </a>
+            </div>
+        `;
     }
 
     /**
@@ -1127,16 +1181,42 @@ export class UIRenderer {
     }
 
     /**
-     * Renderizar lista de equipaje (estilo original restaurado)
+     * Renderizar lista de equipaje - DELEGADO A PlanningRenderer
      */
     async renderPackingList() {
-        Logger.ui('🎒 Rendering packing list');
-        const container = document.getElementById('packing-list');
-        if (!container) {
-            Logger.warning('⚠️ Container #packing-list not found');
+        Logger.ui('🎒 Rendering packing list with PlanningRenderer');
+        
+        // Delegar al PlanningRenderer que tiene los fixes correctos
+        const planningRenderer = stateManager.getPlanningRenderer();
+        Logger.debug('🔍 PlanningRenderer check:', !!planningRenderer, planningRenderer ? 'has loadPackingList:' + !!planningRenderer.loadPackingList : 'null');
+        
+        if (planningRenderer && planningRenderer.loadPackingList) {
+            Logger.debug('✅ Using PlanningRenderer.loadPackingList()');
+            await planningRenderer.loadPackingList();
             return;
         }
-        Logger.debug('✅ Container #packing-list found');
+        
+        // Fallback: usar directamente el método de PlanningRenderer
+        Logger.warning('⚠️ PlanningRenderer not in StateManager, trying direct import');
+        try {
+            const { PlanningRenderer } = await import('./renderers/PlanningRenderer.js');
+            const tempRenderer = new PlanningRenderer();
+            if (tempRenderer.loadPackingList) {
+                Logger.debug('✅ Using direct PlanningRenderer.loadPackingList()');
+                await tempRenderer.loadPackingList();
+                return;
+            }
+        } catch (error) {
+            Logger.warning('Failed to import PlanningRenderer:', error.message);
+        }
+        
+        // Último fallback al método original
+        Logger.warning('⚠️ Using UIRenderer fallback method');
+        const container = document.getElementById('packing-list-content');
+        if (!container) {
+            Logger.warning('⚠️ Container #packing-list-content not found');
+            return;
+        }
 
         // Inicializar PackingListManager si no existe (como en el original)
         let packingManager = stateManager.getPackingListManager();
@@ -1157,7 +1237,29 @@ export class UIRenderer {
             }
         }
 
-        const saved = packingManager ? packingManager.getItems() : {};
+        // Priorizar localStorage para carga inmediata
+        let saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
+        Logger.debug('💾 UIRenderer Fallback: Loaded from localStorage:', Object.keys(saved).length, 'items');
+        
+        // Force some test data if localStorage is empty
+        if (Object.keys(saved).length === 0) {
+            Logger.warning('🚨 UIRenderer: No saved data found, creating test data');
+            saved = {
+                'ropa_camisetas': true,
+                'ropa_pantalones': true,
+                'calzado_botas': true
+            };
+            localStorage.setItem('packingListV2', JSON.stringify(saved));
+        }
+        
+        // Merge con PackingManager si está disponible
+        if (packingManager) {
+            const firebaseItems = packingManager.getItems() || {};
+            if (Object.keys(firebaseItems).length > 0) {
+                saved = { ...saved, ...firebaseItems };
+                Logger.debug('🔥 UIRenderer Fallback: Merged with Firebase data');
+            }
+        }
         
         // Función para obtener icono de categoría (sin círculos de relleno)
         const getCategoryIcon = (category) => {
@@ -1197,15 +1299,45 @@ export class UIRenderer {
                         <h3 class="text-xl font-bold text-slate-900 dark:text-white">${cleanCategoryName}</h3>
                     </div>
                     <div class="space-y-2">
-                        ${items.map(item => {
-                            const itemKey = `${category}-${item}`;
+                        ${items.map(itemObj => {
+                            // Extraer datos del item
+                            let item, itemKey, weight;
+                            if (typeof itemObj === 'string') {
+                                item = itemObj;
+                                itemKey = `${category}-${itemObj}`;
+                                weight = null;
+                            } else if (itemObj && typeof itemObj === 'object') {
+                                // Force everything to be a string to prevent [object Object]
+                                if (itemObj.item) {
+                                    item = String(itemObj.item);
+                                } else if (itemObj.name) {
+                                    item = String(itemObj.name);
+                                } else {
+                                    item = 'Item desconocido';
+                                }
+                                
+                                itemKey = itemObj.key || `${category.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`;
+                                weight = itemObj.weight || null;
+                            } else {
+                                item = String(itemObj) || 'Item desconocido';
+                                itemKey = `${category}-${item}`;
+                                weight = null;
+                            }
+                            
                             const isChecked = saved[itemKey] || false;
+                            
+                            // Debug para fallback
+                            if (Math.random() < 0.1) {
+                                Logger.debug(`🔍 Fallback check: "${item}" -> "${itemKey}" -> ${isChecked}`);
+                            }
+                            const weightDisplay = weight ? `<span class="text-xs text-slate-500 dark:text-slate-400 ml-2">(${weight}g)</span>` : '';
+                            
                             return `
                                 <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
                                     <input type="checkbox" ${isChecked ? 'checked' : ''} 
                                            data-item-key="${itemKey}"
                                            class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                                    <span class="text-slate-700 dark:text-slate-300 ${isChecked ? 'line-through opacity-50' : ''}">${item}</span>
+                                    <span class="text-slate-700 dark:text-slate-300 ${isChecked ? 'line-through opacity-50' : ''}">${item}${weightDisplay}</span>
                                 </label>
                             `;
                         }).join('')}
@@ -1227,20 +1359,46 @@ export class UIRenderer {
             </div>
         `;
         
-        // Actualizar estadísticas (con delay para asegurar que DOM esté listo)
+        // Actualizar estadísticas INMEDIATAMENTE y con backup
         if (packingManager) {
+            // Llamada inmediata
+            packingManager.updatePackingStats();
+            
+            // Backup con delay por si acaso
             setTimeout(() => {
                 packingManager.updatePackingStats();
-            }, 100);
+            }, 500);
+            
+            // Segundo backup
+            setTimeout(() => {
+                packingManager.updatePackingStats();
+            }, 2000);
         }
         
         // Asegurar que el contenedor sea visible
         container.style.opacity = '1 !important';
         
+        // Validate checkboxes for corrupted data
+        const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach((checkbox) => {
+            const key = checkbox.getAttribute('data-item-key');
+            const label = checkbox.nextElementSibling;
+            const labelText = label ? label.textContent : '';
+            
+            if (key && key.includes('[object Object]')) {
+                Logger.error('🚨 Found corrupted key:', key);
+            }
+            if (labelText && labelText.includes('[object Object]')) {
+                Logger.error('🚨 Found corrupted label:', labelText);
+            }
+        });
+        
         // Configurar event listeners para los checkboxes con Firebase (estilo original)
         container.addEventListener('change', async e => {
             if (e.target.matches('input[type="checkbox"]')) {
                 const itemKey = e.target.getAttribute('data-item-key');
+                if (Logger && Logger.data) Logger.data('🔍 CHECKBOX EVENT - itemKey:', itemKey);
+                
                 if (itemKey) {
                     // Actualizar visual inmediatamente (optimistic UI)
                     const label = e.target.closest('label');

@@ -113,38 +113,67 @@ export class PlanningRenderer {
             }
         }
 
-        // PASO 3: Obtener estado desde Firestore (si está disponible) o localStorage
-        let saved = {};
+        // PASO 3: Priorizar localStorage para carga inmediata de checkboxes
+        let saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
+        Logger.debug('💾 Step 3: Loaded from localStorage:', Object.keys(saved).length, 'items');
+        
+        // Crear datos de prueba si localStorage está vacío
+        if (Object.keys(saved).length === 0) {
+            Logger.warning('🚨 No saved data, creating test data');
+            // Crear claves de prueba basadas en el tripConfig real
+            const testData = {};
+            let count = 0;
+            Object.entries(tripConfig.packingListData).forEach(([category, items]) => {
+                items.slice(0, 2).forEach(item => { // Solo los primeros 2 items de cada categoría
+                    let itemText = typeof item === 'object' ? String(item.item || item.name || 'Item desconocido') : String(item);
+                    const itemKey = `${category.toLowerCase().replace(/\s+/g, '_')}_${itemText.toLowerCase().replace(/\s+/g, '_')}`;
+                    testData[itemKey] = true;
+                    count++;
+                });
+            });
+            saved = testData;
+            localStorage.setItem('packingListV2', JSON.stringify(saved));
+            console.log('🚨 Created test data with keys:', Object.keys(saved));
+        }
+        
+        // Merge con Firestore si está disponible
         if (packingManager) {
             try {
-                saved = packingManager.getItems() || {};
-                Logger.debug('🔥 Step 3: Loaded state from Firestore:', Object.keys(saved).length, 'items');
+                const firestoreItems = packingManager.getItems() || {};
+                if (Object.keys(firestoreItems).length > 0) {
+                    saved = { ...saved, ...firestoreItems };
+                    Logger.debug('🔥 Merged with Firestore data');
+                }
             } catch (error) {
-                Logger.warning('Error loading from Firestore, falling back to localStorage');
-                saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
+                Logger.warning('Error loading from Firestore');
             }
-        } else {
-            saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
-            Logger.debug('💾 Step 3: Loaded state from localStorage:', Object.keys(saved).length, 'items');
         }
 
-        // PASO 3.1: Limpiar datos duplicados o malformados
-        const cleanedSaved = this.cleanPackingData(saved);
-        if (Object.keys(cleanedSaved).length !== Object.keys(saved).length) {
-            Logger.debug('🧹 Cleaned packing data:', Object.keys(saved).length, '→', Object.keys(cleanedSaved).length);
-            saved = cleanedSaved;
-            // Actualizar localStorage con datos limpios
-            localStorage.setItem('packingListV2', JSON.stringify(saved));
-        }
+        Logger.debug('🎯 Step 4: Starting packing list rendering...');
+        Logger.debug('📦 Categories to render:', Object.keys(tripConfig.packingListData).length);
+        Logger.debug('💾 Saved items loaded:', Object.keys(saved).length);
+        
 
-        // Calcular estadísticas globales
+        // PASO 3.1: Mantener todos los formatos de clave existentes
+
+        // Calcular estadísticas globales probando TODOS los formatos de clave
         let totalItems = 0;
         let packedItems = 0;
+        
         Object.entries(tripConfig.packingListData).forEach(([category, items]) => {
             items.forEach(item => {
                 totalItems++;
-                const itemKey = `${category}-${item}`;
-                if (saved[itemKey]) packedItems++;
+                // Probar TODOS los formatos de clave posibles
+                let itemText = typeof item === 'object' ? String(item.item || item.name || 'Item desconocido') : String(item);
+                
+                // Formato nuevo
+                const newKey = `${category.toLowerCase().replace(/\s+/g, '_')}_${itemText.toLowerCase().replace(/\s+/g, '_')}`;
+                // Formato viejo
+                const oldKey = `${category}-${itemText}`;
+                
+                if (saved[newKey] || saved[oldKey]) {
+                    packedItems++;
+                }
             });
         });
 
@@ -153,8 +182,12 @@ export class PlanningRenderer {
             const categoryIcon = getPackingCategoryIcon(category);
             const cleanCategoryName = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
             
-            // Calcular estadísticas de la categoría
-            const categoryPacked = items.filter(item => saved[`${category}-${item}`]).length;
+            // Calcular estadísticas de la categoría usando el formato correcto
+            const categoryPacked = items.filter(item => {
+                let itemText = typeof item === 'object' ? String(item.item || item.name || 'Item desconocido') : String(item);
+                const itemKey = `${category.toLowerCase().replace(/\s+/g, '_')}_${itemText.toLowerCase().replace(/\s+/g, '_')}`;
+                return saved[itemKey];
+            }).length;
             const categoryTotal = items.length;
             const categoryPercentage = categoryTotal > 0 ? Math.round((categoryPacked / categoryTotal) * 100) : 0;
             
@@ -191,7 +224,9 @@ export class PlanningRenderer {
                     <div class="category-content hidden border-t border-slate-200 dark:border-slate-600 p-4 bg-slate-50 dark:bg-slate-700/30">
                         <div class="space-y-2">
                             ${items.map(item => {
-                                const itemKey = `${category}-${item}`;
+                                // Usar formato de clave consistente con PackingListManager
+                                let itemText = typeof item === 'object' ? String(item.item || item.name || 'Item desconocido') : String(item);
+                                const itemKey = `${category.toLowerCase().replace(/\s+/g, '_')}_${itemText.toLowerCase().replace(/\s+/g, '_')}`;
                                 const isChecked = saved[itemKey] || false;
                                 return `
                                     <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors">
@@ -199,7 +234,7 @@ export class PlanningRenderer {
                                                data-item-key="${itemKey}"
                                                data-category="${category}"
                                                class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
-                                        <span class="flex-1 text-slate-700 dark:text-slate-300 ${isChecked ? 'line-through opacity-60' : ''}">${item}</span>
+                                        <span class="flex-1 text-slate-700 dark:text-slate-300 ${isChecked ? 'line-through opacity-60' : ''}">${itemText}</span>
                                         ${isChecked ? '<span class="material-symbols-outlined text-green-600 text-lg">check</span>' : ''}
                                     </label>
                                 `;
@@ -214,6 +249,9 @@ export class PlanningRenderer {
         const packingCard = document.createElement('div');
         packingCard.className = 'bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-12';
         
+        const globalPercentage = totalItems > 0 ? Math.round((packedItems / totalItems) * 100) : 0;
+        
+        
         packingCard.innerHTML = `
             <!-- Header dentro de la tarjeta -->
             <div class="flex items-center gap-3 mb-6">
@@ -223,7 +261,40 @@ export class PlanningRenderer {
                 </div>
                 <div class="text-right">
                     <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="global-progress">${packedItems}/${totalItems}</div>
-                    <div class="text-sm text-slate-600 dark:text-slate-400">completado</div>
+                    <div class="text-sm text-slate-600 dark:text-slate-400">${globalPercentage}% completado</div>
+                </div>
+            </div>
+
+            <!-- TARJETAS DE PROGRESO Y PESO -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-2xl">inventory</span>
+                        <div>
+                            <div class="text-2xl font-bold text-slate-900 dark:text-slate-100" id="packed-count">${packedItems}/${totalItems}</div>
+                            <div class="text-sm text-slate-600 dark:text-slate-400">Items empacados</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-2xl">trending_up</span>
+                        <div>
+                            <div class="text-2xl font-bold text-slate-900 dark:text-slate-100" id="progress-percent">${globalPercentage}%</div>
+                            <div class="text-sm text-slate-600 dark:text-slate-400">Progreso total</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-2xl">scale</span>
+                        <div>
+                            <div class="text-2xl font-bold text-slate-900 dark:text-slate-100" id="total-weight">${Math.round(packedItems * 0.15)}kg</div>
+                            <div class="text-sm text-slate-600 dark:text-slate-400">Peso estimado</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -332,7 +403,14 @@ export class PlanningRenderer {
     updateCategoryStats(category, container) {
         const saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
         const categoryItems = tripConfig.packingListData[category] || [];
-        const categoryPacked = categoryItems.filter(item => saved[`${category}-${item}`]).length;
+        
+        // Usar el mismo formato de clave que en el renderizado
+        const categoryPacked = categoryItems.filter(item => {
+            let itemText = typeof item === 'object' ? String(item.item || item.name || 'Item desconocido') : String(item);
+            const itemKey = `${category.toLowerCase().replace(/\s+/g, '_')}_${itemText.toLowerCase().replace(/\s+/g, '_')}`;
+            return saved[itemKey];
+        }).length;
+        
         const categoryTotal = categoryItems.length;
         const categoryPercentage = categoryTotal > 0 ? Math.round((categoryPacked / categoryTotal) * 100) : 0;
 
@@ -359,13 +437,23 @@ export class PlanningRenderer {
         Object.entries(tripConfig.packingListData).forEach(([category, items]) => {
             items.forEach(item => {
                 totalItems++;
-                const itemKey = `${category}-${item}`;
+                // Usar el mismo formato de clave que en el renderizado
+                let itemText = typeof item === 'object' ? String(item.item || item.name || 'Item desconocido') : String(item);
+                const itemKey = `${category.toLowerCase().replace(/\s+/g, '_')}_${itemText.toLowerCase().replace(/\s+/g, '_')}`;
                 if (saved[itemKey]) packedItems++;
             });
         });
 
         const globalProgress = container.querySelector('#global-progress');
         if (globalProgress) globalProgress.textContent = `${packedItems}/${totalItems}`;
+        
+        // Actualizar tarjetas de progreso si existen
+        const packedCount = container.querySelector('#packed-count');
+        const progressPercent = container.querySelector('#progress-percent');
+        const globalPercentage = totalItems > 0 ? Math.round((packedItems / totalItems) * 100) : 0;
+        
+        if (packedCount) packedCount.textContent = `${packedItems}/${totalItems}`;
+        if (progressPercent) progressPercent.textContent = `${globalPercentage}%`;
     }
 
     loadAgencies() {

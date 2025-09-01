@@ -33,6 +33,10 @@ import PullToRefresh from './utils/PullToRefresh.js';
 import SmartDarkMode from './utils/SmartDarkMode.js';
 import SpendingInsights from './components/SpendingInsights.js';
 import SkeletonLoader from './utils/SkeletonLoader.js';
+import MobileUX from './utils/MobileUX.js';
+import AccessibilityManager from './utils/AccessibilityManager.js';
+import PerformanceOptimizer from './utils/PerformanceOptimizer.js';
+import AdvancedAnalytics from './components/AdvancedAnalytics.js';
 
 // Verificar que Logger está disponible y iniciar logging
 if (Logger && typeof Logger.init === 'function') {
@@ -56,6 +60,10 @@ if (Logger && Logger.success) Logger.success('UIRenderer created successfully');
 let pullToRefresh;
 let smartDarkMode;
 let spendingInsights;
+let mobileUX;
+let accessibilityManager;
+let performanceOptimizer;
+let advancedAnalytics;
 
 // Inicializar Smart Dark Mode
 if (Logger && Logger.init) Logger.init('Initializing Smart Dark Mode');
@@ -83,6 +91,25 @@ pullToRefresh = new PullToRefresh({
 // Inicializar Spending Insights
 if (Logger && Logger.init) Logger.init('Initializing Spending Insights');
 spendingInsights = new SpendingInsights(uiRenderer.budgetManager);
+
+// Inicializar Mobile UX
+if (Logger && Logger.init) Logger.init('Initializing Mobile UX');
+mobileUX = new MobileUX();
+
+// Inicializar Accessibility Manager
+if (Logger && Logger.init) Logger.init('Initializing Accessibility Manager');
+accessibilityManager = new AccessibilityManager();
+
+// Inicializar Performance Optimizer
+if (Logger && Logger.init) Logger.init('Initializing Performance Optimizer');
+performanceOptimizer = new PerformanceOptimizer();
+
+// Inicializar Advanced Analytics
+if (Logger && Logger.init) Logger.init('Initializing Advanced Analytics');
+advancedAnalytics = new AdvancedAnalytics(uiRenderer.budgetManager);
+advancedAnalytics.init().catch(error => {
+    Logger.warn('Advanced Analytics initialization failed', error);
+});
 
 /* ========================================
  * FUNCIONES PÚBLICAS DE LA APLICACIÓN
@@ -141,15 +168,49 @@ async function refreshCurrentView() {
 }
 
 /**
- * Toggle dark mode manually
+ * Toggle dark mode
  * 
  * @public
  */
 function toggleDarkMode() {
     if (smartDarkMode) {
         smartDarkMode.toggle();
-        if (Logger && Logger.ui) Logger.ui('Dark mode toggled manually');
+        Logger.info('Dark mode toggled manually');
+        
+        // Visual feedback
+        const isDark = document.documentElement.classList.contains('dark');
+        const message = isDark ? 'Modo oscuro activado' : 'Modo claro activado';
+        showToast(message);
     }
+}
+
+/**
+ * Show toast notification
+ * 
+ * @param {string} message - Message to show
+ * @private
+ */
+function showToast(message) {
+    // Remove existing toast
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification fixed top-20 right-4 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 px-4 py-2 rounded-lg shadow-lg z-50 text-sm';
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => toast.classList.add('opacity-100'), 10);
+    
+    // Remove after 2 seconds
+    setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 2000);
 }
 
 /**
@@ -165,17 +226,155 @@ function getSpendingInsights() {
  * Render spending insights in container
  * 
  * @param {HTMLElement} container - Container to render insights
+ * @param {boolean} advanced - Use advanced analytics with charts
  * @public
  */
-function renderSpendingInsights(container) {
-    if (!spendingInsights || !container) return;
+async function renderSpendingInsights(container, advanced = false) {
+    if ((!spendingInsights && !advancedAnalytics) || !container) return;
     
-    SkeletonLoader.showSkeleton(container, 'stats', { text: 'Calculando insights...' });
+    SkeletonLoader.showSkeleton(container, 'stats', { text: 'Obteniendo datos de gastos...' });
     
-    setTimeout(() => {
-        container.innerHTML = spendingInsights.renderInsights();
-        container.classList.remove('skeleton-loading');
-    }, 500);
+    try {
+        // Get real expense data from BudgetManager/Firestore
+        const budgetManager = uiRenderer?.budgetManager;
+        let expenses = [];
+        let budget = {};
+        
+        if (budgetManager) {
+            // Get expenses from Firestore through BudgetManager
+            expenses = await budgetManager.getAllExpenses() || [];
+            budget = budgetManager.tripConfig?.budgetData || {};
+        }
+        
+        if (advanced && advancedAnalytics) {
+            // Pass real data to advanced analytics
+            advancedAnalytics.expenses = expenses;
+            advancedAnalytics.budget = budget;
+            container.innerHTML = advancedAnalytics.renderAdvancedInsights();
+                
+                // Render charts after DOM is updated
+                setTimeout(async () => {
+                    const chartContainers = container.querySelectorAll('[data-chart]');
+                    for (const chartContainer of chartContainers) {
+                        const chartType = chartContainer.dataset.chart;
+                        switch (chartType) {
+                            case 'spending-overview':
+                                await advancedAnalytics.renderSpendingOverview(chartContainer);
+                                break;
+                            case 'category-breakdown':
+                                await advancedAnalytics.renderCategoryBreakdown(chartContainer);
+                                break;
+                            case 'spending-trends':
+                                await advancedAnalytics.renderSpendingTrends(chartContainer);
+                                break;
+                        }
+                    }
+                }, 100);
+            } else {
+                // Simple analytics with real data
+                spendingInsights.expenses = expenses;
+                spendingInsights.budget = budget;
+                const insights = spendingInsights.getInsights();
+                container.innerHTML = spendingInsights.renderInsights(insights);
+            }
+        
+    } catch (error) {
+        Logger.error('Failed to render spending insights', error);
+        container.innerHTML = '<div class="text-center text-red-500">Error al cargar insights de gastos</div>';
+    }
+    
+    container.classList.remove('skeleton-loading');
+}
+
+/**
+ * Toggle high contrast mode for accessibility
+ * 
+ * @public
+ */
+function toggleHighContrast() {
+    if (accessibilityManager) {
+        accessibilityManager.toggleHighContrast();
+        Logger.info('High contrast mode toggled');
+        
+        // Visual feedback
+        const isHighContrast = document.body.classList.contains('high-contrast');
+        const message = isHighContrast ? 'Alto contraste activado' : 'Alto contraste desactivado';
+        showToast(message);
+    }
+}
+
+/**
+ * Trigger haptic feedback
+ * 
+ * @param {string} intensity - Intensity level (light, medium, heavy)
+ * @public
+ */
+function triggerHaptic(intensity = 'light') {
+    if (mobileUX) {
+        mobileUX.triggerHaptic(intensity);
+    }
+}
+
+/**
+ * Get performance metrics
+ * 
+ * @public
+ */
+function getPerformanceMetrics() {
+    return performanceOptimizer ? performanceOptimizer.getPerformanceMetrics() : null;
+}
+
+/**
+ * Preload module for better performance
+ * 
+ * @param {string} moduleName - Name of module to preload
+ * @public
+ */
+function preloadModule(moduleName) {
+    if (performanceOptimizer) {
+        return performanceOptimizer.preloadModule(moduleName);
+    }
+}
+
+/**
+ * Show performance metrics in demo container
+ * 
+ * @public
+ */
+function showPerformanceMetrics() {
+    const container = document.getElementById('performance-demo');
+    if (!container || !performanceOptimizer) return;
+    
+    const metrics = performanceOptimizer.getPerformanceMetrics();
+    if (!metrics) {
+        container.innerHTML = '<div class="text-red-500">No disponible</div>';
+        return;
+    }
+    
+    // Simplified metrics with explanations
+    const loadTime = metrics.loadTime || performance.now();
+    const memoryMB = Math.round((performance.memory?.usedJSHeapSize || 0) / 1024 / 1024);
+    const status = loadTime < 1000 ? '🟢 Rápida' : loadTime < 3000 ? '🟡 Normal' : '🔴 Lenta';
+    
+    container.innerHTML = `
+        <div class="space-y-2">
+            <div class="flex justify-between">
+                <span>Velocidad:</span>
+                <span class="font-semibold">${status}</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Carga:</span>
+                <span>${Math.round(loadTime)}ms</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Memoria:</span>
+                <span>${memoryMB}MB</span>
+            </div>
+            <div class="text-xs text-gray-500 mt-2">
+                ${new Date().toLocaleTimeString()}
+            </div>
+        </div>
+    `;
 }
 
 /**
@@ -299,12 +498,21 @@ window.toggleDarkMode = toggleDarkMode;
 window.getSpendingInsights = getSpendingInsights;
 window.renderSpendingInsights = renderSpendingInsights;
 window.refreshCurrentView = refreshCurrentView;
+window.toggleHighContrast = toggleHighContrast;
+window.triggerHaptic = triggerHaptic;
+window.getPerformanceMetrics = getPerformanceMetrics;
+window.preloadModule = preloadModule;
+window.showPerformanceMetrics = showPerformanceMetrics;
 
 // Exponer utilidades para desarrollo
 window.SkeletonLoader = SkeletonLoader;
 window.smartDarkMode = smartDarkMode;
 window.pullToRefresh = pullToRefresh;
 window.spendingInsights = spendingInsights;
+window.mobileUX = mobileUX;
+window.accessibilityManager = accessibilityManager;
+window.performanceOptimizer = performanceOptimizer;
+window.advancedAnalytics = advancedAnalytics;
 
 // Función para limpiar cache (debugging)
 window.clearAppCache = async () => {

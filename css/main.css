@@ -565,3 +565,90 @@ a:hover {
 .radius-card {
     border-radius: var(--radius-2xl);
 }
+
+/* Skip links for accessibility */
+.skip-links {
+    position: fixed;
+    top: -100px;
+    left: 0;
+    z-index: 9999;
+}
+
+.skip-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 0 0 4px 0;
+    font-weight: bold;
+    transition: top 0.3s;
+}
+
+.skip-link:focus {
+    top: 100px;
+}
+
+/* High contrast mode styles */
+.high-contrast {
+    filter: contrast(150%) brightness(110%);
+}
+
+.high-contrast * {
+    text-shadow: none !important;
+    box-shadow: none !important;
+}
+
+.high-contrast a {
+    text-decoration: underline !important;
+}
+
+.high-contrast button {
+    border: 2px solid currentColor !important;
+}
+
+/* Enhanced focus indicators for accessibility */
+.high-contrast *:focus {
+    outline: 3px solid #000 !important;
+    outline-offset: 2px;
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Live region for screen readers */
+.live-region {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Pull indicator styles */
+.pull-indicator {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* Toast notification styles */
+.toast-notification {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
