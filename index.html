@@ -119,6 +119,12 @@
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors">
 
     <!-- Bottom Navigation -->
+    <!-- Dark Mode Toggle -->
+    <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="fixed top-4 left-4 z-50 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200 dark:border-slate-700">
+        <span class="material-symbols-outlined text-xl dark-mode-icon-light block dark:hidden">dark_mode</span>
+        <span class="material-symbols-outlined text-xl dark-mode-icon-dark hidden dark:block">light_mode</span>
+    </button>
+    
     <!-- Indicador de simulación de día -->
     <div id="day-simulation-indicator" class="fixed bottom-28 left-1/2 -translate-x-1/2 hidden bg-amber-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg z-50 animate-pulse">
         📅 Simulando día
@@ -159,13 +165,24 @@
     <!-- Main Container -->
     <div class="relative min-h-screen">
         <!-- Main Content -->
-        <main id="main-content" class="flex-1">
+        <main id="main-content" class="flex-1 transition-colors duration-300">
             <!-- El contenido se generará dinámicamente aquí -->
         </main>
         
         <!-- Secciones ocultas -->
         <section id="hoy" class="hidden space-y-6 md:space-y-8" data-nav="Hoy" data-icon="today">
             <!-- El contenido se renderizará dinámicamente -->
+        </section>
+        
+        <!-- Spending Insights Demo Section (hidden by default) -->
+        <section id="spending-insights-demo" class="hidden p-6 max-w-4xl mx-auto">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">📊 Insights de Gastos</h2>
+                <p class="text-slate-600 dark:text-slate-400">Análisis inteligente de tus gastos de viaje</p>
+            </div>
+            <div id="insights-container" class="space-y-6">
+                <!-- Insights will be rendered here -->
+            </div>
         </section>
     </div>
 

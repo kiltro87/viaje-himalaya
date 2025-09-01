@@ -17,9 +17,21 @@ import { COLORS as APP_COLORS } from './AppConstants.js';
 export const COLORS = APP_COLORS;
 
 /**
- * 📐 TOKENS DE ESPACIADO
+ * 📐 TOKENS DE ESPACIADO - SISTEMA MEJORADO
  */
 export const SPACING = {
+    // Sistema de espaciado base (4px, 8px, 12px, 16px, 24px, 32px, 48px, 64px)
+    BASE: {
+        XS: '1',    // 4px
+        SM: '2',    // 8px
+        MD: '3',    // 12px
+        LG: '4',    // 16px
+        XL: '6',    // 24px
+        '2XL': '8', // 32px
+        '3XL': '12', // 48px
+        '4XL': '16'  // 64px
+    },
+    
     // Padding interno de componentes
     COMPONENT: {
         SMALL: 'p-4',
@@ -42,6 +54,14 @@ export const SPACING = {
         MEDIUM: 'gap-4',
         LARGE: 'gap-6',
         XLARGE: 'gap-8'
+    },
+    
+    // Espaciado responsive mejorado
+    RESPONSIVE: {
+        XS: 'p-2 sm:p-3 md:p-4',
+        SM: 'p-3 sm:p-4 md:p-6',
+        MD: 'p-4 sm:p-6 md:p-8',
+        LG: 'p-6 sm:p-8 md:p-12'
     }
 };
 
@@ -243,18 +263,31 @@ export const RESPONSIVE = {
 };
 
 /**
- * ✨ TOKENS DE TRANSICIONES
+ * ✨ TOKENS DE TRANSICIONES - MEJORADO CON EASING
  */
 export const TRANSITION = {
-    // Transiciones estándar
-    FAST: 'transition-all duration-150 ease-in-out',
-    NORMAL: 'transition-all duration-300 ease-in-out',
-    SLOW: 'transition-all duration-500 ease-in-out',
+    // Transiciones estándar con easing mejorado
+    FAST: 'transition-all duration-150 ease-out',
+    NORMAL: 'transition-all duration-300 ease-out',
+    SLOW: 'transition-all duration-500 ease-out',
+    
+    // Easing personalizado
+    EASING: {
+        SMOOTH: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+        BOUNCE: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        EASE_OUT: 'cubic-bezier(0.0, 0.0, 0.2, 1)'
+    },
     
     // Efectos específicos
-    HOVER: 'hover:shadow-lg hover:scale-[1.02] transition-all duration-300',
+    HOVER: 'hover:shadow-lg hover:scale-[1.02] transition-all duration-300 ease-out',
     FOCUS: 'focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200',
-    BUTTON: 'hover:bg-opacity-90 active:scale-95 transition-all duration-150'
+    BUTTON: 'hover:bg-opacity-90 active:scale-95 transition-all duration-150 ease-out',
+    
+    // Nuevos efectos para pull-to-refresh y loading
+    PULL_TO_REFRESH: 'transition-transform duration-300 ease-out',
+    SKELETON: 'animate-pulse',
+    FADE_IN: 'animate-fade-in',
+    SLIDE_UP: 'animate-slide-up'
 };
 
 /**
@@ -312,6 +345,44 @@ export const COMPONENT = {
     }
 };
 
+/**
+ * 🌙 TOKENS DE MODO OSCURO INTELIGENTE
+ */
+export const DARK_MODE = {
+    // Clases para transiciones suaves
+    TRANSITION: 'transition-colors duration-300 ease-out',
+    
+    // Detectores de tiempo
+    TIME_BASED: {
+        SUNSET_HOUR: 19,
+        SUNRISE_HOUR: 7
+    },
+    
+    // Preferencias del sistema
+    SYSTEM: {
+        PREFER_DARK: '(prefers-color-scheme: dark)',
+        PREFER_LIGHT: '(prefers-color-scheme: light)'
+    }
+};
+
+/**
+ * 📊 TOKENS PARA ANALYTICS Y INSIGHTS
+ */
+export const ANALYTICS = {
+    COLORS: {
+        CHART_PRIMARY: '#3B82F6',
+        CHART_SECONDARY: '#10B981',
+        CHART_ACCENT: '#F59E0B',
+        CHART_DANGER: '#EF4444'
+    },
+    
+    GRADIENTS: {
+        SPENDING: 'from-red-500 to-orange-500',
+        BUDGET: 'from-green-500 to-emerald-500',
+        SAVINGS: 'from-blue-500 to-cyan-500'
+    }
+};
+
 export default {
     SPACING,
     RADIUS,
@@ -320,5 +391,7 @@ export default {
     RESPONSIVE,
     TRANSITION,
     TYPOGRAPHY,
-    COMPONENT
+    COMPONENT,
+    DARK_MODE,
+    ANALYTICS
 };

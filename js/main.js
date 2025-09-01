@@ -29,6 +29,10 @@ import { weatherConfig, checkWeatherConfig } from './config/weatherConfig.js';
 import { getDaySimulator } from './utils/DaySimulator.js';
 import stateManager from './utils/StateManager.js';
 import { initServiceWorkerCommunication } from './utils/ServiceWorkerUtils.js';
+import PullToRefresh from './utils/PullToRefresh.js';
+import SmartDarkMode from './utils/SmartDarkMode.js';
+import SpendingInsights from './components/SpendingInsights.js';
+import SkeletonLoader from './utils/SkeletonLoader.js';
 
 // Verificar que Logger está disponible y iniciar logging
 if (Logger && typeof Logger.init === 'function') {
@@ -47,6 +51,38 @@ if (Logger && typeof Logger.init === 'function') {
 if (Logger && Logger.init) Logger.init('Creating UIRenderer instance');
 const uiRenderer = new UIRenderer();
 if (Logger && Logger.success) Logger.success('UIRenderer created successfully');
+
+// Inicializar funciones de mejora rápida
+let pullToRefresh;
+let smartDarkMode;
+let spendingInsights;
+
+// Inicializar Smart Dark Mode
+if (Logger && Logger.init) Logger.init('Initializing Smart Dark Mode');
+smartDarkMode = new SmartDarkMode({
+    autoSwitch: true,
+    useLocation: true,
+    respectSystemPreference: true
+});
+
+// Inicializar Pull-to-Refresh
+if (Logger && Logger.init) Logger.init('Initializing Pull-to-Refresh');
+pullToRefresh = new PullToRefresh({
+    threshold: 80,
+    refreshCallback: async () => {
+        // Refresh current view
+        await refreshCurrentView();
+        
+        // Refresh spending insights if available
+        if (spendingInsights) {
+            spendingInsights.refresh();
+        }
+    }
+});
+
+// Inicializar Spending Insights
+if (Logger && Logger.init) Logger.init('Initializing Spending Insights');
+spendingInsights = new SpendingInsights(uiRenderer.budgetManager);
 
 /* ========================================
  * FUNCIONES PÚBLICAS DE LA APLICACIÓN
@@ -77,6 +113,69 @@ async function changeView(view) {
 function renderInitial() {
     if (Logger && Logger.ui) Logger.ui('Rendering initial content');
     uiRenderer.renderMainContent();
+}
+
+/**
+ * Refrescar vista actual con skeleton loading
+ * 
+ * @private
+ */
+async function refreshCurrentView() {
+    const mainContent = document.getElementById('main-content');
+    if (!mainContent) return;
+    
+    // Show skeleton while refreshing
+    SkeletonLoader.showSkeleton(mainContent, 'progress', { text: 'Actualizando...' });
+    
+    try {
+        // Simulate refresh delay for better UX
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Re-render current view
+        await uiRenderer.renderMainContent();
+        
+        if (Logger && Logger.success) Logger.success('View refreshed successfully');
+    } catch (error) {
+        if (Logger && Logger.error) Logger.error('Failed to refresh view', error);
+    }
+}
+
+/**
+ * Toggle dark mode manually
+ * 
+ * @public
+ */
+function toggleDarkMode() {
+    if (smartDarkMode) {
+        smartDarkMode.toggle();
+        if (Logger && Logger.ui) Logger.ui('Dark mode toggled manually');
+    }
+}
+
+/**
+ * Get spending insights
+ * 
+ * @public
+ */
+function getSpendingInsights() {
+    return spendingInsights ? spendingInsights.getInsights() : null;
+}
+
+/**
+ * Render spending insights in container
+ * 
+ * @param {HTMLElement} container - Container to render insights
+ * @public
+ */
+function renderSpendingInsights(container) {
+    if (!spendingInsights || !container) return;
+    
+    SkeletonLoader.showSkeleton(container, 'stats', { text: 'Calculando insights...' });
+    
+    setTimeout(() => {
+        container.innerHTML = spendingInsights.renderInsights();
+        container.classList.remove('skeleton-loading');
+    }, 500);
 }
 
 /**
@@ -192,10 +291,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Hacer funciones disponibles globalmente
+// Exponer funciones globalmente para acceso desde HTML y otros scripts
 window.changeView = changeView;
 window.renderInitial = renderInitial;
 window.uiRenderer = uiRenderer;
+window.toggleDarkMode = toggleDarkMode;
+window.getSpendingInsights = getSpendingInsights;
+window.renderSpendingInsights = renderSpendingInsights;
+window.refreshCurrentView = refreshCurrentView;
+
+// Exponer utilidades para desarrollo
+window.SkeletonLoader = SkeletonLoader;
+window.smartDarkMode = smartDarkMode;
+window.pullToRefresh = pullToRefresh;
+window.spendingInsights = spendingInsights;
 
 // Función para limpiar cache (debugging)
 window.clearAppCache = async () => {
