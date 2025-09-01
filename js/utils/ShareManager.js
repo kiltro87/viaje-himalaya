@@ -115,7 +115,7 @@ export class ShareManager {
      */
     async shareDay(dayId, options = {}) {
         try {
-            const day = tripConfig.itineraryData.find(d => d.id === dayId);
+            const day = tripConfig.itinerary.data.find(d => d.id === dayId);
             if (!day) {
                 throw new Error(`Day ${dayId} not found in itinerary`);
             }
@@ -264,8 +264,8 @@ export class ShareManager {
      * @returns {Object} Datos para compartir
      */
     generateItineraryText() {
-        const itinerary = tripConfig.itineraryData;
-        const totalDays = tripConfig.calendarData.getTotalDays();
+        const itinerary = tripConfig.itinerary.data;
+        const totalDays = tripConfig.itinerary.getTotalDays();
         
         let text = `🏔️ Mi Aventura en el Himalaya\n`;
         text += `📅 ${totalDays} días de viaje increíble\n\n`;
@@ -316,8 +316,8 @@ export class ShareManager {
     generateItineraryJson() {
         const itineraryData = {
             title: 'Mi Aventura en el Himalaya',
-            totalDays: tripConfig.calendarData.getTotalDays(),
-            itinerary: tripConfig.itineraryData.map(day => ({
+            totalDays: tripConfig.itinerary.getTotalDays(),
+            itinerary: tripConfig.itinerary.data.map(day => ({
                 day: day.day,
                 location: day.location,
                 activities: day.activities,
@@ -396,7 +396,7 @@ export class ShareManager {
         const totalSpent = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
         
         // Calcular presupuesto total
-        const budgetData = tripConfig.budgetData.budgetData;
+        const budgetData = tripConfig.budget.categories;
         const allExpenses = Object.values(budgetData).flat();
         const totalBudget = allExpenses.reduce((sum, item) => {
             if (item.cost) return sum + item.cost;

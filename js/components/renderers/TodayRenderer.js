@@ -71,7 +71,7 @@ export class TodayRenderer {
                             
                             <div class="grid grid-cols-2 gap-3 text-center">
                                 <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
-                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itineraryData.length}</div>
+                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itinerary.data.length}</div>
                                     <div class="text-xs text-slate-600 dark:text-slate-400">días totales</div>
                                 </div>
                                 <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
@@ -135,7 +135,7 @@ export class TodayRenderer {
             const today = stateManager.getCurrentDate();
             const tripStartDate = this.getTripStartDate();
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
-            const totalDays = tripConfig.itineraryData.length;
+            const totalDays = tripConfig.itinerary.data.length;
             
             // Debug adicional para DaySimulator
             const isSimulating = window.DaySimulator && window.DaySimulator.isSimulating;
@@ -215,14 +215,14 @@ export class TodayRenderer {
                 today, 
                 tripStartDate, 
                 dayDiff, 
-                totalDays: tripConfig.itineraryData.length,
+                totalDays: tripConfig.itinerary.data.length,
                 isSimulating,
                 simulatedDate,
                 realDate: new Date()
             });
             
-            if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
-                const currentDayData = tripConfig.itineraryData[dayDiff];
+            if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.data.length) {
+                const currentDayData = tripConfig.itinerary.data[dayDiff];
                 const location = currentDayData.location;
                 
                 // Debug para clima
@@ -230,10 +230,10 @@ export class TodayRenderer {
                     dayDiff, 
                     currentDayData, 
                     location,
-                    availableWeatherLocations: tripConfig.weatherLocations ? tripConfig.weatherLocations.map(w => w.location) : []
+                    availableWeatherLocations: tripConfig.weather.locations ? tripConfig.weather.locations.map(w => w.location) : []
                 });
                 
-                const weatherData = tripConfig.weatherLocations && tripConfig.weatherLocations.find(w => w.location === location);
+                const weatherData = tripConfig.weather.locations && tripConfig.weather.locations.find(w => w.location === location);
                 
                 if (weatherData) {
                     weatherContainer.innerHTML = `
@@ -293,8 +293,8 @@ export class TodayRenderer {
                 return;
             }
             
-            if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
-                const currentDayData = tripConfig.itineraryData[dayDiff];
+            if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.data.length) {
+                const currentDayData = tripConfig.itinerary.data[dayDiff];
                 
                 let activityIcon = 'hiking';
                 let activityType = 'Actividades del día';
@@ -399,7 +399,7 @@ export class TodayRenderer {
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                             <div class="bg-white dark:bg-slate-700 rounded-xl p-4">
-                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">${tripConfig.itineraryData.length}</div>
+                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">${tripConfig.itinerary.data.length}</div>
                                 <div class="text-sm text-slate-600 dark:text-slate-400">días totales</div>
                             </div>
                             <div class="bg-white dark:bg-slate-700 rounded-xl p-4">
@@ -424,21 +424,21 @@ export class TodayRenderer {
     getTripStartDate() {
         try {
             // Primero intentar obtener la fecha desde calendarData
-            if (tripConfig.calendarData && tripConfig.calendarData.tripStartDate) {
-                Logger.debug('📅 Using tripStartDate from calendarData:', tripConfig.calendarData.tripStartDate);
-                return new Date(tripConfig.calendarData.tripStartDate);
+            if (tripConfig.itinerary.tripStartDate) {
+                Logger.debug('📅 Using tripStartDate from itinerary:', tripConfig.itinerary.tripStartDate);
+                return new Date(tripConfig.itinerary.tripStartDate);
             }
             
             // Fallback: calcular desde getFormattedStartDate si está disponible
-            if (tripConfig.calendarData && typeof tripConfig.calendarData.getFormattedStartDate === 'function') {
-                const startDateString = tripConfig.calendarData.getFormattedStartDate();
+            if (tripConfig.itinerary.getFormattedStartDate && typeof tripConfig.itinerary.getFormattedStartDate === 'function') {
+                const startDateString = tripConfig.itinerary.getFormattedStartDate();
                 Logger.debug('📅 Using getFormattedStartDate:', startDateString);
                 return new Date(startDateString);
             }
             
             // Fallback: usar primera fecha del itinerario si está disponible
-            if (tripConfig.itineraryData && tripConfig.itineraryData.length > 0) {
-                const firstDay = tripConfig.itineraryData[0];
+            if (tripConfig.itinerary.data && tripConfig.itinerary.data.length > 0) {
+                const firstDay = tripConfig.itinerary.data[0];
                 if (firstDay.date) {
                     Logger.debug('📅 Using first day date from itinerary:', firstDay.date);
                     return new Date(firstDay.date);
@@ -446,12 +446,12 @@ export class TodayRenderer {
             }
             
             // Buscar la fecha del primer vuelo internacional (misma lógica que SummaryRenderer)
-            const firstInternationalFlight = tripConfig.flightsData.find(f => f.type === 'Internacional');
+            const firstInternationalFlight = tripConfig.flights.data.find(f => f.type === 'Internacional');
             if (firstInternationalFlight && firstInternationalFlight.segments && firstInternationalFlight.segments.length > 0) {
                 const firstSegment = firstInternationalFlight.segments[0];
                 // Extraer la fecha del string "9 de Octubre 22:45"
                 const departureDate = firstSegment.fromDateTime;
-                const year = tripConfig.tripInfo.year; // Usar el año del tripConfig
+                const year = tripConfig.itinerary.tripInfo.year; // Usar el año del tripConfig
                 
                 // Parsear la fecha (ej. "9 de Octubre 22:45" en 2025)
                 const months = {

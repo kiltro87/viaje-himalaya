@@ -131,7 +131,7 @@ export class WeatherRenderer {
      * Renderiza el grid de ciudades con información climática completa
      */
     static renderCitiesWeatherGrid() {
-        const enhancedWeatherData = this.enhanceWeatherData(tripConfig.weatherLocations);
+        const enhancedWeatherData = this.enhanceWeatherData(tripConfig.weather.locations);
         
         const weatherHTML = enhancedWeatherData.map(weather => `
             <div class="bg-white dark:bg-slate-800 p-6 radius-card shadow-card shadow-card-hover border border-slate-200 dark:border-slate-700 transition-standard">

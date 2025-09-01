@@ -929,7 +929,7 @@ export class BudgetManager {
             contentContainer.style.display = 'block';
             
             // Obtener datos de todas las categorías seleccionadas
-            const budgetData = this.tripConfig.budgetData.budgetData;
+            const budgetData = this.tripConfig.budget.categories;
             const allCategoryItems = Object.values(budgetData).flat().filter(item => selectedCategories.includes(item.category));
             const allCategoryExpenses = stateManager.getState('expenses').filter(exp => selectedCategories.includes(exp.category));
             
@@ -1849,7 +1849,7 @@ export class BudgetManager {
 
     // Actualizar las tarjetas de resumen dinámicamente
     updateSummaryCards() {
-        const budgetData = this.tripConfig.budgetData.budgetData;
+        const budgetData = this.tripConfig.budget.categories;
         const allExpenses = Object.values(budgetData).flat();
         
         // Actualizar Presupuesto Total

@@ -26,7 +26,7 @@ export class RouteOptimizer {
     }
     
     async precomputeRoutes() {
-        for (const day of tripConfig.itineraryData) {
+        for (const day of tripConfig.itinerary.data) {
             if (day.places && day.places.length > 1) {
                 const optimizedRoute = await this.optimizeDayRoute(day);
                 this.routes.set(day.id, optimizedRoute);
@@ -424,7 +424,7 @@ export class RouteOptimizer {
      * Recalcula la ruta para un día específico
      */
     async recalculateRoute(dayId) {
-        const day = tripConfig.itineraryData.find(d => d.id === dayId);
+        const day = tripConfig.itinerary.data.find(d => d.id === dayId);
         if (day) {
             const optimizedRoute = await this.optimizeDayRoute(day);
             this.routes.set(dayId, optimizedRoute);

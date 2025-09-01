@@ -32,7 +32,7 @@ export class WeightEstimator {
      */
     getItemWeight(itemKey) {
         // Buscar en todas las categorías del packingListData
-        for (const category of Object.values(tripConfig.packingListData)) {
+        for (const category of Object.values(tripConfig.packing.categories)) {
             const item = category.find(item => item.key === itemKey);
             if (item) {
                 return item.weight;
@@ -48,7 +48,7 @@ export class WeightEstimator {
      */
     getItemCategory(itemKey) {
         // Buscar en qué categoría está el item
-        for (const [categoryName, items] of Object.entries(tripConfig.packingListData)) {
+        for (const [categoryName, items] of Object.entries(tripConfig.packing.categories)) {
             const item = items.find(item => item.key === itemKey);
             if (item) {
                 return categoryName;
