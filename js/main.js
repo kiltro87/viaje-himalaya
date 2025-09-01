@@ -37,6 +37,7 @@ import MobileUX from './utils/MobileUX.js';
 import AccessibilityManager from './utils/AccessibilityManager.js';
 import PerformanceOptimizer from './utils/PerformanceOptimizer.js';
 import AdvancedAnalytics from './components/AdvancedAnalytics.js';
+import dependencyContainer from './core/DependencyContainer.js';
 
 // Verificar que Logger está disponible y iniciar logging
 if (Logger && typeof Logger.init === 'function') {
@@ -50,6 +51,11 @@ if (Logger && typeof Logger.init === 'function') {
 /* ========================================
  * INICIALIZACIÓN DE COMPONENTES PRINCIPALES
  * ======================================== */
+
+// DependencyContainer ya se inicializa automáticamente al importar
+if (Logger && Logger.init) Logger.init('DependencyContainer ready');
+dependencyContainer.registerDomainServices();
+if (Logger && Logger.success) Logger.success('DependencyContainer services registered');
 
 // Crear instancia del renderizador principal
 if (Logger && Logger.init) Logger.init('Creating UIRenderer instance');
@@ -444,12 +450,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const firebaseManager = stateManager.getFirebaseManager();
             const packingListManager = stateManager.getState('instances.packingListManager');
             
-            if (firebaseManager && !packingListManager) {
-                const { getPackingListManager } = await import('./utils/PackingListManager.js');
-                const packingManager = getPackingListManager();
+            // Inicializar PackingListManager
+            const packingManager = await dependencyContainer.resolve('packingListManager');
+            stateManager.setPackingListManager(packingManager);
+
+            // Inicializar HotelManager
+            const hotelManager = await dependencyContainer.resolve('hotelManager');
+            stateManager.setHotelManager(hotelManager);
+            
+            if (firebaseManager && packingManager) {
                 await packingManager.initialize(firebaseManager);
                 stateManager.updateState('instances.packingListManager', packingManager);
                 if (Logger && Logger.success) Logger.success('🎒 PackingListManager initialized with Firebase');
+                
+                // Inicializar HotelManager con Firebase y BudgetManager
+                const budgetManager = stateManager.getBudgetManager();
+                await hotelManager.initialize(firebaseManager, budgetManager);
+                if (Logger && Logger.success) Logger.success('🏨 HotelManager initialized with Firebase');
+                
+                // Auto-generar gastos de alojamiento
+                setTimeout(async () => {
+                    try {
+                        await hotelManager.syncExpensesWithBudget();
+                        if (Logger && Logger.success) Logger.success('💰 Hotel expenses synced with budget');
+                    } catch (error) {
+                        if (Logger && Logger.error) Logger.error('Failed to sync hotel expenses:', error);
+                    }
+                }, 1000); // Esperar a que BudgetManager esté completamente inicializado
             }
         }, 2000); // Esperar a que Firebase se inicialice
         

@@ -194,8 +194,20 @@ export class DependencyContainer {
 
         // Budget services  
         this.registerFactory('budgetManager', async () => {
+            // Importar managers
             const { BudgetManager } = await import('../components/BudgetManager.js');
+            const { FirebaseManager } = await import('../utils/FirebaseManager.js');
             return new BudgetManager();
+        });
+
+        this.registerFactory('packingListManager', async () => {
+            const { PackingListManager } = await import('../utils/PackingListManager.js');
+            return new PackingListManager();
+        });
+
+        this.registerFactory('hotelManager', async () => {
+            const { HotelManager } = await import('../utils/HotelManager.js');
+            return new HotelManager();
         });
 
         this.registerFactory('expenseOrchestrator', async () => {
@@ -215,7 +227,9 @@ export class DependencyContainer {
             return new UIRenderer();
         });
 
-        Logger.info('🏗️ Domain services registered');
+        if (Logger && Logger.info) {
+            Logger.info('🏗️ Domain services registered');
+        }
     }
 
     /**
@@ -331,3 +345,4 @@ export class DependencyContainer {
 
 // Export tanto la clase como una instancia singleton
 export const container = DependencyContainer.getInstance();
+export default container;

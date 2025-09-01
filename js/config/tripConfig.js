@@ -614,6 +614,47 @@ export const tripConfig = {
               "country": "Bután"
             }
           ],
+          "Alojamiento": [
+            {
+              "concept": "Hotel New Era (10-12 Oct) - Mi parte",
+              "cost": 33.0,
+              "category": "Alojamiento",
+              "subcategory": "Hotel",
+              "phase": "nepal",
+              "country": "Nepal",
+              "nights": 2,
+              "confirmationCode": "5740622864",
+              "shared": true,
+              "totalCost": 66.0,
+              "splitBetween": 2
+            },
+            {
+              "concept": "Hotel New Era (19-20 Oct) - Mi parte",
+              "cost": 16.5,
+              "category": "Alojamiento",
+              "subcategory": "Hotel",
+              "phase": "nepal",
+              "country": "Nepal",
+              "nights": 1,
+              "confirmationCode": "5740698796",
+              "shared": true,
+              "totalCost": 33.0,
+              "splitBetween": 2
+            },
+            {
+              "concept": "Hotel New Era (25-26 Oct) - Mi parte",
+              "cost": 16.5,
+              "category": "Alojamiento",
+              "subcategory": "Hotel",
+              "phase": "nepal",
+              "country": "Nepal",
+              "nights": 1,
+              "confirmationCode": "5379085400",
+              "shared": true,
+              "totalCost": 33.0,
+              "splitBetween": 2
+            }
+          ],
           "Varios": [
             {
               "concept": "Propinas",
@@ -770,21 +811,96 @@ export const tripConfig = {
             { item: 'Efectivo en dólares/euros', weight: 50, key: 'efectivo' },
             { item: 'Medicamentos personales', weight: 100, key: 'medicamentos_personales' },
             { item: 'Pastillas para el mal de altura', weight: 30, key: 'pastillas_altura' },
-            { item: 'Repelente de mosquitos', weight: 80, key: 'repelente_mosquitos' },
-            { item: 'Toallitas húmedas', weight: 150, key: 'toallitas_humedas' },
-            { item: 'Papel higiénico', weight: 100, key: 'papel_higienico' }
+            { item: 'Repelente de mosquitos', weight: 80, key: 'repelente_mosquitos' }
         ]
     },
 
-    // Datos del calendario
+    // Datos de hoteles y alojamientos
+    hotelsData: [
+        {
+            id: 'hotel-001',
+            name: 'Hotel New Era',
+            location: 'Kathmandu',
+            country: 'Nepal',
+            coordinates: [27.713687, 85.311688],
+            pricePerNight: 33,
+            currency: 'EUR',
+            contact: {
+                phone: '+977-1-5919371',
+                email: '5379085400-bkyb.xm6k.jgkb.dsjr@property.booking.com'
+            },
+            images: [
+                'https://cf.bstatic.com/xdata/images/hotel/max1024x768/435033630.jpg?k=51e0a2ea7e364c7275021e65eb1419e2ff7bfbe8d7cf0bf013903d63c7f2b561&o='
+            ],
+            description: 'Hotel cómodo en Kathmandu con habitaciones twin para viajeros',
+            URL: 'https://www.booking.com/hotel/np/new-era-kathmandu.en-gb.html?label=gen173nr-10CAEoggI46AdIM1gEaEaIAQGYATO4AQfIAQzYAQPoAQH4AQGIAgGoAgG4Aoqg2MUGwAIB0gIkNDUzYmI0YTUtZjYyZC00MjgxLTk1MjEtOWFmMTEwMmJhZDVk2AIB4AIB&sid=45e1ed6e515c3ff7c9daf6f79cd83831&aid=304142'
+        }
+    ],
+
+    // Datos de reservas de hoteles
+    reservationsData: [
+        {
+            id: 'res-001',
+            hotelId: 'hotel-001',
+            checkInDate: '2025-10-10',
+            checkOutDate: '2025-10-12',
+            nights: 2,
+            itineraryDays: [2, 3],
+            roomType: 'Twin Room',
+            totalCost: 66,
+            myCost: 33,
+            currency: 'EUR',
+            status: 'confirmed',
+            confirmationCode: '5740622864',
+            pinCode: '1293',
+            guestNames: ['2 Adults'],
+            specialRequests: 'Twin beds, one room',
+            shared: true,
+            splitBetween: 2
+        },
+        {
+            id: 'res-002',
+            hotelId: 'hotel-001',
+            checkInDate: '2025-10-19',
+            checkOutDate: '2025-10-20',
+            nights: 1,
+            itineraryDays: [11],
+            roomType: 'Twin Room',
+            totalCost: 33,
+            myCost: 16.5,
+            currency: 'EUR',
+            status: 'confirmed',
+            confirmationCode: '5740698796',
+            pinCode: '3845',
+            guestNames: ['2 Adults'],
+            specialRequests: 'Twin beds, one room',
+            shared: true,
+            splitBetween: 2
+        },
+        {
+            id: 'res-003',
+            hotelId: 'hotel-001',
+            checkInDate: '2025-10-25',
+            checkOutDate: '2025-10-26',
+            nights: 1,
+            itineraryDays: [17],
+            roomType: 'Twin Room',
+            totalCost: 33,
+            myCost: 16.5,
+            currency: 'EUR',
+            status: 'confirmed',
+            confirmationCode: '5379085400',
+            pinCode: '3232',
+            guestNames: ['2 Adults'],
+            specialRequests: 'Twin beds, one room',
+            shared: true,
+            splitBetween: 2
+        }
+    ],
+
+    // Datos de calendario y fechas
     calendarData: {
-        // La fecha de inicio se calcula dinámicamente basándose en los datos del itinerario
-        get startDate() {
-            // Buscar el primer día del viaje (day-1) y extraer la fecha
-            const firstDay = tripConfig.itineraryData.find(day => day.id === 'day-1');
-            if (firstDay && firstDay.date) {
-                return firstDay.date;
-            }
+        getStartDate() {
             // Si no hay fecha específica, usar una fecha por defecto (se puede ajustar)
             // Para desarrollo, usar una fecha futura para simular el viaje
             return '2025-10-09';
@@ -902,16 +1018,6 @@ export const tripConfig = {
 
     // Información de agencias y servicios
     agenciesData: {
-        weroad: {
-            name: 'WeRoad - Nepal',
-            icon: 'groups',
-            color: 'text-green-600 dark:text-green-400',
-            tour: 'Nepal 360',
-            website: 'www.weroad.es',
-            url: 'https://www.weroad.es/viajes/nepal-360',
-            price: '1,100€',
-            description: 'Grupo de viajeros jóvenes (18-35 años) con itinerario completo de 15 días'
-        },
         bhutan: {
             name: 'Best of Bhutan',
             icon: 'temple_buddhist', 

@@ -709,6 +709,8 @@ export class PackingListManager {
     }
 }
 
+// Class already exported above
+
 // Singleton instance
 let packingListManagerInstance = null;
 

@@ -74,8 +74,9 @@ class StateManager {
             // 📊 Estado de Instancias de Componentes
             instances: {
                 budgetManager: null,
-                uiRenderer: null,
-                firebaseManager: null
+                firebaseManager: null,
+                packingListManager: null,
+                hotelManager: null
             },
             
             // ⚙️ Estado de Configuración
@@ -580,6 +581,36 @@ class StateManager {
 
     getFirebaseManager() {
         return this.getState('instances.firebaseManager');
+    }
+
+    // 🏪 Métodos para gestión de PackingListManager
+    setPackingListManager(packingListManager) {
+        this.state.instances.packingListManager = packingListManager;
+        Logger.ui('PackingListManager instance set in StateManager');
+    }
+
+    getPackingListManager() {
+        return this.state.instances.packingListManager;
+    }
+
+    // 🏨 Métodos para gestión de HotelManager
+    setHotelManager(hotelManager) {
+        this.state.instances.hotelManager = hotelManager;
+        Logger.ui('HotelManager instance set in StateManager');
+    }
+
+    getHotelManager() {
+        return this.state.instances.hotelManager;
+    }
+
+    // 💰 Métodos para gestión de BudgetManager
+    setBudgetManager(budgetManager) {
+        this.state.instances.budgetManager = budgetManager;
+        Logger.ui('BudgetManager instance set in StateManager');
+    }
+
+    getBudgetManager() {
+        return this.state.instances.budgetManager;
     }
 }
 

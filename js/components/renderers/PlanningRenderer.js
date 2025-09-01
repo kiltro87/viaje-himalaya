@@ -41,12 +41,8 @@ export class PlanningRenderer {
                     <div id="agencies-content"></div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
-                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">hotel</span>
-                        Alojamientos del Viaje
-                    </h2>
-                    <div id="accommodations-content"></div>
+                <div id="hotels-content">
+                    <p class="text-slate-600 dark:text-slate-400">Cargando información de hoteles...</p>
                 </div>
             </div>
         `;
@@ -57,8 +53,9 @@ export class PlanningRenderer {
     async loadPlanningContent() {
         await this.loadBudgetManager();
         await this.loadPackingList();
+        await this.loadHotels();
         this.loadAgencies();
-        this.loadAccommodations();
+        await this.loadAccommodations();
     }
 
     async loadBudgetManager() {
@@ -361,6 +358,158 @@ export class PlanningRenderer {
         Logger.success('✅ Packing list rendered with Firebase integration');
     }
 
+    async loadHotels() {
+        const hotelsContent = document.getElementById('hotels-content');
+        if (!hotelsContent) {
+            Logger.error('hotels-content div not found');
+            return;
+        }
+
+        let hotelManager = stateManager.getHotelManager();
+        
+        // If HotelManager is not available, try to get it from dependency container
+        if (!hotelManager) {
+            try {
+                const dependencyContainer = await import('../../core/DependencyContainer.js');
+                hotelManager = await dependencyContainer.default.resolve('hotelManager');
+                stateManager.setHotelManager(hotelManager);
+                
+                // Initialize with available managers
+                const firebaseManager = stateManager.getFirebaseManager();
+                const budgetManager = stateManager.getBudgetManager();
+                if (firebaseManager || budgetManager) {
+                    await hotelManager.initialize(firebaseManager, budgetManager);
+                }
+            } catch (error) {
+                if (Logger && Logger.error) {
+                    Logger.error('Failed to resolve HotelManager:', error);
+                }
+            }
+        }
+        
+        if (!hotelManager) {
+            Logger.warning('HotelManager not available - showing fallback content');
+            hotelsContent.innerHTML = `
+                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-12">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-symbols-outlined text-3xl text-purple-600 dark:text-purple-400">hotel</span>
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Alojamientos</h2>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-400">HotelManager no está disponible. Inicializando...</p>
+                </div>
+            `;
+            return;
+        }
+
+        const reservations = hotelManager.getAllReservations();
+        const stats = hotelManager.getHotelStats();
+
+        const hotelsHTML = `
+            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-12">
+                <!-- Header -->
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-3xl text-purple-600 dark:text-purple-400">hotel</span>
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Alojamientos</h2>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">${stats.totalReservations}</div>
+                        <div class="text-sm text-slate-600 dark:text-slate-400">reservas</div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-2xl">hotel</span>
+                            <div>
+                                <div class="text-2xl font-bold text-slate-900 dark:text-slate-100">${stats.totalNights}</div>
+                                <div class="text-sm text-slate-600 dark:text-slate-400">Noches totales</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-2xl">payments</span>
+                            <div>
+                                <div class="text-2xl font-bold text-slate-900 dark:text-slate-100">$${stats.totalCost}</div>
+                                <div class="text-sm text-slate-600 dark:text-slate-400">Costo total</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-2xl">calculate</span>
+                            <div>
+                                <div class="text-2xl font-bold text-slate-900 dark:text-slate-100">$${stats.avgCostPerNight}</div>
+                                <div class="text-sm text-slate-600 dark:text-slate-400">Promedio/noche</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de reservas -->
+                <div class="space-y-4">
+                    ${reservations.map(reservation => {
+                        const hotel = hotelManager.getHotel(reservation.hotelId);
+                        if (!hotel) return '';
+                        
+                        return `
+                            <div class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-4 border border-slate-200 dark:border-slate-600">
+                                <div class="flex items-start gap-4">
+                                    <img src="${hotel.images[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'}" 
+                                         alt="${hotel.name}" 
+                                         class="w-16 h-16 rounded-lg object-cover">
+                                    <div class="flex-1">
+                                        <div class="flex items-start justify-between">
+                                            <div>
+                                                <h3 class="font-semibold text-slate-900 dark:text-white">${hotel.name}</h3>
+                                                <p class="text-sm text-slate-600 dark:text-slate-400">${hotel.location}, ${hotel.country}</p>
+                                                <p class="text-xs text-slate-500 dark:text-slate-500 mt-1">${hotel.description}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-lg font-bold text-slate-900 dark:text-white">$${reservation.totalCost}</div>
+                                                <div class="text-sm text-slate-600 dark:text-slate-400">${reservation.nights} noches</div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3 flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+                                            <span class="flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-sm">calendar_today</span>
+                                                ${new Date(reservation.checkInDate).toLocaleDateString('es-ES')} - ${new Date(reservation.checkOutDate).toLocaleDateString('es-ES')}
+                                            </span>
+                                            <span class="flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-sm">confirmation_number</span>
+                                                ${reservation.confirmationCode}
+                                            </span>
+                                            <span class="flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-sm">bed</span>
+                                                ${reservation.roomType}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+
+        hotelsContent.innerHTML = hotelsHTML;
+        Logger.success('✅ Hotels information rendered');
+        
+        // Debug logging
+        if (Logger && Logger.info) {
+            Logger.info(`Hotels loaded: ${reservations.length} reservations found`);
+            Logger.info('Hotel stats:', stats);
+        }
+    }
+
     cleanPackingData(saved) {
         const validItems = {};
         const validKeys = new Set();
@@ -462,98 +611,362 @@ export class PlanningRenderer {
 
         const agencies = tripConfig.agenciesData;
         
+        // Generate cards dynamically based on available agencies
+        const agencyCards = [];
+        
+        // Process each agency type
+        Object.entries(agencies).forEach(([key, agency]) => {
+            if (!agency) return;
+            
+            let cardHTML = '';
+            
+            if (key === 'emergency') {
+                // Special layout for emergency information
+                cardHTML = `
+                    <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600 md:col-span-2">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="material-symbols-outlined text-2xl ${agency.color}">${agency.icon}</span>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-900 dark:text-white">${agency.name}</h3>
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4 text-sm text-slate-700 dark:text-slate-300">
+                            ${agency.embassy ? `<div><strong>Embajada:</strong><br>${agency.embassy}</div>` : ''}
+                            ${agency.hospital ? `<div><strong>Hospital:</strong><br>${agency.hospital}</div>` : ''}
+                            ${agency.timezone ? `<div><strong>Zona Horaria:</strong><br>${agency.timezone}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Standard agency card layout
+                cardHTML = `
+                    <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="material-symbols-outlined text-2xl ${agency.color}">${agency.icon}</span>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-900 dark:text-white">${agency.name}</h3>
+                                ${agency.tour ? `<p class="text-sm text-slate-600 dark:text-slate-400">${agency.tour}</p>` : ''}
+                                ${agency.status ? `<p class="text-sm text-slate-600 dark:text-slate-400">${agency.status}</p>` : ''}
+                            </div>
+                        </div>
+                        <p class="text-slate-700 dark:text-slate-300 mb-4">${agency.description}</p>
+                        ${agency.url || agency.price ? `
+                            <div class="flex gap-3">
+                                ${agency.url ? `
+                                    <a href="${agency.url}" target="_blank" 
+                                       class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard text-sm">
+                                        Ver Información
+                                    </a>
+                                ` : ''}
+                                ${agency.price ? `
+                                    <span class="px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 radius-standard text-sm font-medium">
+                                        ${agency.price}
+                                    </span>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            agencyCards.push(cardHTML);
+        });
+        
+        // Determine grid layout based on number of cards
+        const cardCount = agencyCards.length;
+        let gridClass = 'grid gap-6';
+        
+        if (cardCount === 1) {
+            gridClass = 'grid gap-6';
+        } else if (cardCount === 2) {
+            gridClass = 'grid md:grid-cols-2 gap-6';
+        } else if (cardCount >= 3) {
+            gridClass = 'grid md:grid-cols-2 lg:grid-cols-3 gap-6';
+        }
+        
         agenciesContent.innerHTML = `
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="material-symbols-outlined text-2xl ${agencies.weroad.color}">${agencies.weroad.icon}</span>
-                        <div>
-                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">${agencies.weroad.name}</h3>
-                            <p class="text-sm text-slate-600 dark:text-slate-400">${agencies.weroad.tour}</p>
-                        </div>
-                    </div>
-                    <p class="text-slate-700 dark:text-slate-300 mb-4">${agencies.weroad.description}</p>
-                    <div class="flex gap-3">
-                        <a href="${agencies.weroad.url}" target="_blank" 
-                           class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white radius-standard transition-standard text-sm">
-                            Ver Paquete
-                        </a>
-                        <span class="px-3 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 radius-standard text-sm font-medium">
-                            ${agencies.weroad.price}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 dark:bg-slate-700 radius-card p-6 border border-slate-200 dark:border-slate-600">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="material-symbols-outlined text-2xl ${agencies.bhutan.color}">${agencies.bhutan.icon}</span>
-                        <div>
-                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">${agencies.bhutan.name}</h3>
-                            <p class="text-sm text-slate-600 dark:text-slate-400">${agencies.bhutan.tour}</p>
-                        </div>
-                    </div>
-                    <p class="text-slate-700 dark:text-slate-300 mb-4">${agencies.bhutan.description}</p>
-                    <div class="flex gap-3">
-                        <a href="${agencies.bhutan.url}" target="_blank" 
-                           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white radius-standard transition-standard text-sm">
-                            Ver Información
-                        </a>
-                        <span class="px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 radius-standard text-sm font-medium">
-                            ${agencies.bhutan.price}
-                        </span>
-                    </div>
-                </div>
+            <div class="${gridClass}">
+                ${agencyCards.join('')}
             </div>
         `;
 
-        Logger.success('✅ Agencies information rendered');
+        Logger.success(`✅ ${cardCount} agency cards rendered dynamically`);
     }
 
     loadAccommodations() {
         const accommodationsContent = document.getElementById('accommodations-content');
         if (!accommodationsContent) return;
 
-        // Extraer información de alojamientos del tripConfig
-        const accommodationsByLocation = {};
+        // Use reservations data for detailed hotel information
+        const reservations = tripConfig.reservationsData || [];
+        const hotels = tripConfig.hotelsData || [];
         
-        tripConfig.itineraryData.forEach(day => {
-            if (day.accommodation && day.accommodation !== 'Vuelo nocturno') {
-                const location = this.extractLocationFromDay(day);
-                if (!accommodationsByLocation[location]) {
-                    accommodationsByLocation[location] = [];
-                }
-                if (!accommodationsByLocation[location].includes(day.accommodation)) {
-                    accommodationsByLocation[location].push(day.accommodation);
-                }
-            }
-        });
-
-        // Crear tarjetas individuales para cada hotel
-        let accommodationsHTML = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+        let accommodationsHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">';
         
-        Object.entries(accommodationsByLocation).forEach(([location, hotels]) => {
-            hotels.forEach(hotel => {
-                accommodationsHTML += `
-                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-start gap-3">
-                            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-xl mt-1">hotel</span>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-slate-900 dark:text-white text-sm mb-1">${hotel}</h4>
-                                <div class="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                                    <span class="material-symbols-outlined text-xs">location_on</span>
-                                    <span>${location}</span>
+        reservations.forEach(reservation => {
+            // Find hotel details
+            const hotel = hotels.find(h => h.id === reservation.hotelId);
+            const hotelName = hotel ? hotel.name : 'Hotel desconocido';
+            const location = hotel ? hotel.location : 'Ubicación desconocida';
+            
+            // Format dates
+            const checkIn = new Date(reservation.checkInDate).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit'
+            });
+            const checkOut = new Date(reservation.checkOutDate).toLocaleDateString('es-ES', {
+                day: '2-digit', 
+                month: '2-digit'
+            });
+            
+            accommodationsHTML += `
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer hotel-card" 
+                     style="cursor: pointer !important;"
+                     onclick="window.openHotelModal('${reservation.id}')"
+                     data-reservation='${JSON.stringify(reservation)}' data-hotel='${JSON.stringify(hotel)}'>
+                    <div class="flex items-start gap-4">
+                        <img src="${hotel?.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'}" 
+                             alt="${hotelName}" 
+                             class="w-16 h-16 rounded-lg object-cover">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-slate-900 dark:text-white text-lg mb-1">${hotelName}</h4>
+                            <div class="flex items-center gap-1 text-sm text-slate-600 dark:text-slate-400 mb-2">
+                                <span class="material-symbols-outlined text-sm">location_on</span>
+                                <span>${location}</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div class="text-slate-500 dark:text-slate-400">Fechas</div>
+                                    <div class="font-medium text-slate-900 dark:text-white">${checkIn} - ${checkOut}</div>
+                                    <div class="text-xs text-slate-500">${reservation.nights} noche${reservation.nights > 1 ? 's' : ''}</div>
+                                </div>
+                                <div>
+                                    <div class="text-slate-500 dark:text-slate-400">Costo</div>
+                                    <div class="font-bold text-lg text-slate-900 dark:text-white">
+                                        ${reservation.myCost || reservation.totalCost}€
+                                    </div>
+                                    ${reservation.shared ? `<div class="text-xs text-slate-500">Total: ${reservation.totalCost}€</div>` : ''}
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-600">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm text-slate-500 dark:text-slate-400">
+                                        Click para ver detalles completos
+                                    </div>
+                                    <span class="material-symbols-outlined text-slate-400">chevron_right</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                `;
-            });
+                </div>
+            `;
         });
         
         accommodationsHTML += '</div>';
         accommodationsContent.innerHTML = accommodationsHTML;
 
-        Logger.success('✅ Accommodations information rendered');
+        // Create global function for onclick handlers
+        window.openHotelModal = (reservationId) => {
+            const reservation = reservations.find(r => r.id === reservationId);
+            const hotel = hotels.find(h => h.id === reservation?.hotelId);
+            if (reservation && hotel) {
+                this.showHotelModal(reservation, hotel);
+            }
+        };
+
+        // Also add event listeners as backup
+        this.addHotelCardListeners();
+
+        Logger.success(`✅ ${reservations.length} hotel reservations rendered with onclick handlers`);
+    }
+
+    addHotelCardListeners() {
+        // Use setTimeout to ensure DOM is fully rendered
+        setTimeout(() => {
+            const hotelCards = document.querySelectorAll('.hotel-card');
+            Logger.info(`Found ${hotelCards.length} hotel cards to add listeners to`);
+            
+            hotelCards.forEach((card, index) => {
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    try {
+                        const reservation = JSON.parse(card.dataset.reservation);
+                        const hotel = JSON.parse(card.dataset.hotel);
+                        Logger.info(`Opening modal for hotel card ${index + 1}`);
+                        this.showHotelModal(reservation, hotel);
+                    } catch (error) {
+                        Logger.error('Error opening hotel modal:', error);
+                    }
+                });
+                
+                // Add visual feedback
+                card.style.cursor = 'pointer';
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-2px)';
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                });
+            });
+        }, 100);
+    }
+
+    showHotelModal(reservation, hotel) {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('hotel-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'hotel-modal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden';
+            document.body.appendChild(modal);
+        }
+
+        // Format dates with full info
+        const checkInDate = new Date(reservation.checkInDate);
+        const checkOutDate = new Date(reservation.checkOutDate);
+        const checkInFull = checkInDate.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+        const checkOutFull = checkOutDate.toLocaleDateString('es-ES', {
+            weekday: 'long', 
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="relative">
+                    <img src="${hotel?.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}" 
+                         alt="${hotel?.name || 'Hotel'}" 
+                         class="w-full h-48 object-cover rounded-t-2xl">
+                    <button class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition-all" 
+                            onclick="document.getElementById('hotel-modal').classList.add('hidden')">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">${hotel?.name || 'Hotel'}</h2>
+                    <div class="flex items-center gap-2 text-slate-600 dark:text-slate-400 mb-6">
+                        <span class="material-symbols-outlined">location_on</span>
+                        <span>${hotel?.location || 'Ubicación'}, ${hotel?.country || ''}</span>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="font-semibold text-slate-900 dark:text-white mb-2">Fechas de Estadía</h3>
+                                <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                                    <div class="text-sm text-slate-600 dark:text-slate-400">Check-in</div>
+                                    <div class="font-medium text-slate-900 dark:text-white">${checkInFull}</div>
+                                    <div class="text-sm text-slate-600 dark:text-slate-400 mt-2">Check-out</div>
+                                    <div class="font-medium text-slate-900 dark:text-white">${checkOutFull}</div>
+                                    <div class="text-xs text-slate-500 mt-2">${reservation.nights} noche${reservation.nights > 1 ? 's' : ''}</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="font-semibold text-slate-900 dark:text-white mb-2">Habitación</h3>
+                                <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                                    <div class="font-medium text-slate-900 dark:text-white">${reservation.roomType}</div>
+                                    <div class="text-sm text-slate-600 dark:text-slate-400">${reservation.guestNames?.[0] || '2 Adults'}</div>
+                                    ${reservation.specialRequests ? `<div class="text-xs text-slate-500 mt-1">${reservation.specialRequests}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="font-semibold text-slate-900 dark:text-white mb-2">Información de Reserva</h3>
+                                <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-4 space-y-3">
+                                    <div>
+                                        <div class="text-sm text-slate-600 dark:text-slate-400">Código de Confirmación</div>
+                                        <div class="font-mono text-sm font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-600 px-2 py-1 rounded border">
+                                            ${reservation.confirmationCode}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-slate-600 dark:text-slate-400">PIN</div>
+                                        <div class="font-mono text-sm font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-600 px-2 py-1 rounded border">
+                                            ${reservation.pinCode || 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-slate-600 dark:text-slate-400">Estado</div>
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200">
+                                            ${reservation.status === 'confirmed' ? 'Confirmada' : reservation.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="font-semibold text-slate-900 dark:text-white mb-2">Costo</h3>
+                                <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                                    ${reservation.shared ? `
+                                        <div class="text-sm text-slate-600 dark:text-slate-400">Costo Total</div>
+                                        <div class="font-medium text-slate-900 dark:text-white">${reservation.totalCost}€</div>
+                                        <div class="text-sm text-slate-600 dark:text-slate-400 mt-2">Mi Parte</div>
+                                        <div class="font-bold text-xl text-slate-900 dark:text-white">${reservation.myCost}€</div>
+                                        <div class="text-xs text-slate-500 mt-1">Dividido entre ${reservation.splitBetween} personas</div>
+                                    ` : `
+                                        <div class="text-sm text-slate-600 dark:text-slate-400">Costo Total</div>
+                                        <div class="font-bold text-xl text-slate-900 dark:text-white">${reservation.totalCost}€</div>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${hotel?.contact ? `
+                        <div class="border-t border-slate-200 dark:border-slate-600 pt-4">
+                            <h3 class="font-semibold text-slate-900 dark:text-white mb-2">Contacto del Hotel</h3>
+                            <div class="grid md:grid-cols-2 gap-4 text-sm">
+                                ${hotel.contact.phone ? `
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-slate-500">phone</span>
+                                        <span class="text-slate-700 dark:text-slate-300">${hotel.contact.phone}</span>
+                                    </div>
+                                ` : ''}
+                                ${hotel.contact.email ? `
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-slate-500">email</span>
+                                        <span class="text-slate-700 dark:text-slate-300 text-xs">${hotel.contact.email}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            ${hotel.URL ? `
+                                <div class="mt-4">
+                                    <a href="${hotel.URL}" target="_blank" 
+                                       class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm">
+                                        <span class="material-symbols-outlined text-sm">open_in_new</span>
+                                        Ver en Booking.com
+                                    </a>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+
+        // Show modal
+        modal.classList.remove('hidden');
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
     }
 
     extractLocationFromDay(dayData) {
