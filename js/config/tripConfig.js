@@ -23,6 +23,18 @@
  */
 
 export const tripConfig = {
+    // === INFORMACIÓN BÁSICA ===
+    trip: {
+        name: "Viaje Himalaya",
+        startDate: "2025-10-09",
+        endDate: "2025-10-26", 
+        duration: 18,
+        travelers: 2,
+        currency: "EUR"
+    },
+
+    // === ITINERARIO COMPLETO (preservado) ===
+    itinerary: {
     // Metadatos del viaje
     tripInfo: {
         title: "Mi Aventura en el Himalaya",
@@ -36,8 +48,7 @@ export const tripConfig = {
         year: 2025
     },
 
-    // Datos del itinerario
-    itineraryData: [
+        data: [
         {
             "id": "day-1",
             "phase": "nepal",
@@ -815,8 +826,9 @@ export const tripConfig = {
         ]
     },
 
-    // Datos de hoteles y alojamientos
-    hotelsData: [
+    // === ALOJAMIENTOS UNIFICADOS ===
+    accommodations: {
+        hotels: [
         {
             id: 'hotel-001',
             name: 'Hotel New Era',
@@ -835,10 +847,9 @@ export const tripConfig = {
             description: 'Hotel cómodo en Kathmandu con habitaciones twin para viajeros',
             URL: 'https://www.booking.com/hotel/np/new-era-kathmandu.en-gb.html?label=gen173nr-10CAEoggI46AdIM1gEaEaIAQGYATO4AQfIAQzYAQPoAQH4AQGIAgGoAgG4Aoqg2MUGwAIB0gIkNDUzYmI0YTUtZjYyZC00MjgxLTk1MjEtOWFmMTEwMmJhZDVk2AIB4AIB&sid=45e1ed6e515c3ff7c9daf6f79cd83831&aid=304142'
         }
-    ],
-
-    // Datos de reservas de hoteles
-    reservationsData: [
+        ],
+        
+        reservations: [
         {
             id: 'res-001',
             hotelId: 'hotel-001',
@@ -896,14 +907,34 @@ export const tripConfig = {
             shared: true,
             splitBetween: 2
         }
-    ],
+        ],
+        
+        // Métodos de utilidad
+        getHotelById(hotelId) {
+            return this.hotels.find(h => h.id === hotelId);
+        },
+        
+        getReservationById(reservationId) {
+            return this.reservations.find(r => r.id === reservationId);
+        },
+        
+        getReservationsByHotel(hotelId) {
+            return this.reservations.filter(r => r.hotelId === hotelId);
+        },
+        
+        getTotalAccommodationCost() {
+            return this.reservations.reduce((total, res) => total + (res.myCost || res.totalCost || 0), 0);
+        }
+    },
 
-    // Datos de calendario y fechas
-    calendarData: {
+    // === CALENDARIO Y FECHAS ===
+    calendar: {
         getStartDate() {
-            // Si no hay fecha específica, usar una fecha por defecto (se puede ajustar)
-            // Para desarrollo, usar una fecha futura para simular el viaje
-            return '2025-10-09';
+            return tripConfig.trip.startDate;
+        },
+        
+        getEndDate() {
+            return tripConfig.trip.endDate;
         },
         getTotalDays() {
             return tripConfig.itineraryData.length;
@@ -1004,20 +1035,38 @@ export const tripConfig = {
             icon: 'partly_cloudy_day',
             description: 'Clima fresco de montaña, perfecto para explorar'
         }
-    },
-
-    // Información climática detallada por ubicaciones
-    weatherLocations: [
+        },
+        
+        locations: [
         { location: 'Katmandú', dayTemp: '22-25°C', nightTemp: '5-10°C', icon: 'location_city', color: 'text-blue-600' }, 
         { location: 'Pokhara', dayTemp: '22-25°C', nightTemp: '5-10°C', icon: 'landscape', color: 'text-green-600' },
         { location: 'Chitwan', dayTemp: '25-30°C', nightTemp: '15-20°C', icon: 'wb_sunny', color: 'text-orange-600' }, 
         { location: 'Thimphu', dayTemp: '15-22°C', nightTemp: '0-7°C', icon: 'terrain', color: 'text-slate-600' },
         { location: 'Paro', dayTemp: '15-22°C', nightTemp: '0-7°C', icon: 'terrain', color: 'text-slate-600' }, 
         { location: 'Punakha', dayTemp: '18-25°C', nightTemp: '10-15°C', icon: 'landscape', color: 'text-green-600' }
-    ],
+        ]
+    },
 
-    // Información de agencias y servicios
-    agenciesData: {
+    // === VUELOS COMPLETOS (preservados) ===
+    flights: {
+        data: tripConfig_flights || [],
+        
+        getFlightByType(type) {
+            return this.data.find(f => f.type === type);
+        },
+        
+        getInternationalFlights() {
+            return this.data.filter(f => f.type === 'Internacional');
+        },
+        
+        getRegionalFlights() {
+            return this.data.filter(f => f.type === 'Regional');
+        }
+    },
+
+    // === SERVICIOS Y AGENCIAS ===
+    services: {
+        agencies: {
         bhutan: {
             name: 'Best of Bhutan',
             icon: 'temple_buddhist', 
@@ -1042,6 +1091,60 @@ export const tripConfig = {
             embassy: 'Embajada España Nepal: +977 1 4123789',
             hospital: 'CIWEC Clinic, Katmandú',
             timezone: 'Nepal: UTC+5:45 | Bután: UTC+6:00'
+        },
+        
+        // Métodos de utilidad
+        getAgencyById(agencyId) {
+            return this[agencyId] || null;
+        },
+        
+        getAllAgencies() {
+            return Object.values(this).filter(item => typeof item === 'object' && item.name);
         }
+    },
+    
+    // === COMPATIBILIDAD HACIA ATRÁS ===
+    // Getters para mantener compatibilidad con código existente
+    get itineraryData() {
+        return this.itinerary.data;
+    },
+    
+    get budgetData() {
+        return this.budget;
+    },
+    
+    get packingData() {
+        return this.packing;
+    },
+    
+    get hotelsData() {
+        return this.accommodations.hotels;
+    },
+    
+    get reservationsData() {
+        return this.accommodations.reservations;
+    },
+    
+    get weatherData() {
+        return this.weather.current;
+    },
+    
+    get weatherLocations() {
+        return this.weather.locations;
+    },
+    
+    get agenciesData() {
+        return this.services.agencies;
+    },
+    
+    get flightsData() {
+        return this.flights.data;
+    },
+    
+    get calendarData() {
+        return this.calendar;
     }
 };
+
+// Datos de vuelos (se mantendrán separados temporalmente)
+const tripConfig_flights = [

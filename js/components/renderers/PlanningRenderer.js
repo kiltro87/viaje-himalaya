@@ -768,18 +768,21 @@ export class PlanningRenderer {
         accommodationsContent.innerHTML = accommodationsHTML;
 
         // Create global function for onclick handlers
-        window.openHotelModal = (reservationId) => {
+        const self = this;
+        window.openHotelModal = function(reservationId) {
+            console.log('Opening modal for reservation:', reservationId);
             const reservation = reservations.find(r => r.id === reservationId);
             const hotel = hotels.find(h => h.id === reservation?.hotelId);
+            console.log('Found reservation:', reservation);
+            console.log('Found hotel:', hotel);
             if (reservation && hotel) {
-                this.showHotelModal(reservation, hotel);
+                self.showHotelModal(reservation, hotel);
+            } else {
+                console.error('Could not find reservation or hotel data');
             }
         };
 
-        // Also add event listeners as backup
-        this.addHotelCardListeners();
-
-        Logger.success(`✅ ${reservations.length} hotel reservations rendered with onclick handlers`);
+        Logger.success(`✅ ${reservations.length} hotel reservations rendered with global onclick handlers`);
     }
 
     addHotelCardListeners() {
