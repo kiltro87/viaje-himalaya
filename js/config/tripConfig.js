@@ -1076,7 +1076,7 @@ export const tripConfig = {
                 email: "5379085400-bkyb.xm6k.jgkb.dsjr@property.booking.com",
                 bookingUrl: "https://www.booking.com/hotel/np/new-era-kathmandu.en-gb.html"
             },
-            images: ["https://cf.bstatic.com/xdata/images/hotel/max1024x768/435033630.jpg"],
+            images: [],
             description: "Hotel cómodo en Kathmandu con habitaciones twin",
             
             reservations: [

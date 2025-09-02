@@ -35,7 +35,7 @@ import { ExpenseOrchestrator } from '../utils/ExpenseOrchestrator.js';
 import { container } from '../core/DependencyContainer.js';
 import { tripConfig } from '../config/tripConfig.js';
 import { getBudgetCategoryColors, getBudgetCategoryIcon } from '../utils/CategoryUtils.js';
-import { COLORS, RADIUS, SHADOW } from '../config/DesignTokens.js';
+import { COLORS, RADIUS, SHADOW, CARD_STYLES } from '../config/DesignTokens.js';
 
 export class BudgetManager {
     /**
@@ -442,14 +442,27 @@ export class BudgetManager {
         }
     }
 
-    /**
-     * Actualizar indicador de estado de sincronización
-     * 
-     * @private
-     * @param {string} status - Estado: 'connected', 'offline', 'syncing'
-     */
+    setupToggleExpenseForm() {
+        const header = document.querySelector('.cursor-pointer[onclick="this.toggleExpenseForm()"]');
+        const container = document.getElementById('expense-form-container');
+        const chevron = document.getElementById('expense-form-chevron');
+        
+        if (header && container && chevron) {
+            header.onclick = () => {
+                const isHidden = container.classList.contains('hidden');
+                
+                if (isHidden) {
+                    container.classList.remove('hidden');
+                    chevron.style.transform = 'rotate(180deg)';
+                } else {
+                    container.classList.add('hidden');
+                    chevron.style.transform = 'rotate(0deg)';
+                }
+            };
+        }
+    }
+
     updateSyncStatus(status) {
-        // Crear o actualizar indicador de estado
         let statusIndicator = document.getElementById('sync-status-indicator');
         
         if (!statusIndicator) {
@@ -578,7 +591,7 @@ export class BudgetManager {
 
         container.innerHTML = `
             <!-- Resumen de presupuesto -->
-            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-6">
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-6">
                 
                 <!-- Header de Presupuesto -->
                 <div class="mb-6">
@@ -590,7 +603,7 @@ export class BudgetManager {
                 
                 <!-- Resumen General Simplificado -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                    <div class="${CARD_STYLES.SUMMARY}">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">account_balance_wallet</span>
                             <div>
@@ -599,7 +612,7 @@ export class BudgetManager {
                             </div>
                         </div>
                     </div>
-                    <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                    <div class="${CARD_STYLES.SUMMARY}">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-red-600 dark:text-red-400 text-3xl">trending_down</span>
                             <div>
@@ -608,7 +621,7 @@ export class BudgetManager {
                             </div>
                         </div>
                     </div>
-                    <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                    <div class="${CARD_STYLES.SUMMARY}">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">receipt_long</span>
                             <div>
@@ -653,17 +666,21 @@ export class BudgetManager {
                 
                 <!-- Formulario de Nuevo Gasto -->
                 <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-6 cursor-pointer" onclick="this.toggleExpenseForm()">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-400">add_circle</span>
                         <h3 class="font-bold text-lg text-slate-900 dark:text-white">Nuevo Gasto</h3>
                     </div>
+                    <span id="expense-form-chevron" class="material-symbols-outlined text-slate-400 transform transition-transform">
+                        expand_more
+                    </span>
                     <!-- Indicador de sincronización -->
                     <div id="sync-status" class="flex items-center gap-2 text-sm">
                         <div id="sync-indicator" class="w-2 h-2 rounded-full bg-green-500"></div>
                         <span id="sync-text" class="text-slate-600 dark:text-slate-400">Sincronizado</span>
                     </div>
                 </div>
+                <div id="expense-form-container" class="hidden">
                 <form id="expense-form" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -720,7 +737,7 @@ export class BudgetManager {
                         <button type="submit" id="add-expense-btn"
                                 class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold radius-standard shadow-card shadow-card-hover transition-standard flex items-center gap-2 whitespace-nowrap">
                             <span class="material-symbols-outlined" id="add-btn-icon">add</span>
-                            <span id="add-btn-text">Añadir</span>
+                            <span id="add-btn-text">Agregar</span>
                         </button>
                     </div>
                 </form>
@@ -731,10 +748,13 @@ export class BudgetManager {
 
         container.style.opacity = '1 !important';
         this.tripConfig = tripConfig;
-                                    this.setupEventListeners();
+        this.setupEventListeners();
     }
 
     setupEventListeners() {
+        // Toggle para formulario de nuevo gasto
+        this.setupToggleExpenseForm();
+        
         // Desplegable personalizado de categorías
         const dropdownBtn = document.getElementById('category-dropdown-btn');
         const dropdownList = document.getElementById('category-dropdown-list');
@@ -1696,6 +1716,15 @@ export class BudgetManager {
         if (categoryBtn) {
             categoryBtn.classList.remove('text-slate-500');
             categoryBtn.classList.add('text-slate-900', 'dark:text-white');
+        }
+
+        // Configurar eventos del formulario de gastos
+        const expenseForm = document.getElementById('expense-form');
+        if (expenseForm) {
+            expenseForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                // ... rest of the code ...
+            });
         }
 
         // Hacer scroll suave al formulario

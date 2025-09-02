@@ -103,6 +103,26 @@ export const SHADOW = {
 };
 
 /**
+ * 📊 TOKENS DE TARJETAS ESTANDARIZADAS
+ */
+export const CARD_STYLES = {
+    // Tarjeta principal estándar
+    PRIMARY: 'bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300',
+    
+    // Tarjeta de resumen/estadística
+    SUMMARY: 'bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50 p-4',
+    
+    // Tarjeta de presupuesto (contenedor principal)
+    BUDGET_CONTAINER: 'bg-white dark:bg-slate-800 rounded-xl shadow-card border border-slate-200 dark:border-slate-700 p-6 mb-6',
+    
+    // Tarjeta interactiva (clickeable)
+    INTERACTIVE: 'bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer',
+    
+    // Tarjeta de hotel con profundidad extra
+    HOTEL: 'bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer'
+};
+
+/**
  * 🎨 TOKENS DE COLORES CONTEXTUALES
  */
 export const COLOR_CONTEXTS = {
