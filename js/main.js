@@ -38,6 +38,7 @@ import AccessibilityManager from './utils/AccessibilityManager.js';
 import PerformanceOptimizer from './utils/PerformanceOptimizer.js';
 import AdvancedAnalytics from './components/AdvancedAnalytics.js';
 import dependencyContainer from './core/DependencyContainer.js';
+import { weightEstimator } from './utils/WeightEstimator.js';
 
 // Verificar que Logger está disponible y iniciar logging
 if (Logger && typeof Logger.init === 'function') {
@@ -445,10 +446,29 @@ document.addEventListener('DOMContentLoaded', () => {
         stateManager.updateState('instances.daySimulator', daySimulator);
         if (Logger && Logger.info) Logger.info('🎯 Day Simulator initialized - Use showDaySimulator() to open panel');
         
+        // Exponer funciones globales para debugging y utilidades
+        try {
+            if (daySimulator && typeof daySimulator.simulateDay === 'function') {
+                window.simulateDay = daySimulator.simulateDay.bind(daySimulator);
+            }
+            if (daySimulator && typeof daySimulator.resetSimulation === 'function') {
+                window.resetSimulation = daySimulator.resetSimulation.bind(daySimulator);
+            }
+            if (daySimulator && typeof daySimulator.showDaySimulator === 'function') {
+                window.showDaySimulator = daySimulator.showDaySimulator.bind(daySimulator);
+            }
+            if (daySimulator && typeof daySimulator.getSimulationStatus === 'function') {
+                window.getSimulationStatus = daySimulator.getSimulationStatus.bind(daySimulator);
+            }
+        } catch (error) {
+            console.warn('Error binding daySimulator functions:', error);
+        }
+        window.stateManager = stateManager;
+        window.weightEstimator = weightEstimator;
+
         // Inicializar PackingListManager cuando Firebase esté disponible
         setTimeout(async () => {
             const firebaseManager = stateManager.getFirebaseManager();
-            const packingListManager = stateManager.getState('instances.packingListManager');
             
             // Inicializar PackingListManager
             const packingManager = await dependencyContainer.resolve('packingListManager');
@@ -476,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } catch (error) {
                         if (Logger && Logger.error) Logger.error('Failed to sync hotel expenses:', error);
                     }
-                }, 1000); // Esperar a que BudgetManager esté completamente inicializado
+                }, 3000); // Esperar a que BudgetManager esté completamente inicializado
             }
         }, 2000); // Esperar a que Firebase se inicialice
         
@@ -540,6 +560,7 @@ window.mobileUX = mobileUX;
 window.accessibilityManager = accessibilityManager;
 window.performanceOptimizer = performanceOptimizer;
 window.advancedAnalytics = advancedAnalytics;
+window.weightEstimator = weightEstimator;
 
 // Función para limpiar cache (debugging)
 window.clearAppCache = async () => {

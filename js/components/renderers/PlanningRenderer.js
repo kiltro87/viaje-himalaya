@@ -33,8 +33,12 @@ export class PlanningRenderer {
                 <div id="packing-list-content">
                     <p class="text-slate-600 dark:text-slate-400">Cargando lista de equipaje...</p>
                 </div>
+                
+                <div id="planning-content" style="display: none;">
+                    <!-- Container for packing list metrics updates -->
+                </div>
 
-                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 p-6 mb-6">
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
                         <span class="material-symbols-outlined text-orange-600 dark:text-orange-400">business</span>
                         Agencias de Viaje
@@ -42,7 +46,7 @@ export class PlanningRenderer {
                     <div id="agencies-content"></div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 p-6">
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3">
                         <span class="material-symbols-outlined text-2xl text-amber-600 dark:text-amber-400">hotel</span>
                         Alojamientos
@@ -72,13 +76,13 @@ export class PlanningRenderer {
                 return;
             }
 
-            let budgetManager = stateManager.getState('instances.budgetManager');
-            if (!budgetManager) {
-                const { BudgetManager } = await import('../BudgetManager.js');
-                budgetManager = new BudgetManager();
-                stateManager.updateState('instances.budgetManager', budgetManager);
-            }
-
+            // Get or create BudgetManager instance and force render
+            const { BudgetManager } = await import('../BudgetManager.js');
+            const budgetManager = new BudgetManager(budgetContainer);
+            
+            Logger.debug('💰 BudgetManager instance obtained for rendering');
+            Logger.debug('💰 About to call budgetManager.render()');
+            
             await budgetManager.render(budgetContainer);
             Logger.success('✅ Budget manager loaded in planning view');
         } catch (error) {
@@ -111,91 +115,36 @@ export class PlanningRenderer {
                     Logger.debug('🔥 Step 2: Firebase initialized for PackingList');
                 }
             } catch (error) {
-                Logger.warning('PackingListManager not available, using localStorage only');
-                packingManager = null;
+                Logger.error('PackingListManager not available');
+                return;
             }
         }
 
-        // PASO 3: Priorizar localStorage para carga inmediata de checkboxes
-        let saved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
-        Logger.debug('💾 Step 3: Loaded from localStorage:', Object.keys(saved).length, 'items');
+        // Cargar datos usando solo PackingListManager
+        await packingManager.initialize(stateManager.getFirebaseManager());
+        const saved = packingManager.getItems();
         
-        // Crear datos de prueba si localStorage está vacío
-        if (Object.keys(saved).length === 0) {
-            Logger.warning('🚨 No saved data, creating test data');
-            // Crear claves de prueba basadas en el tripConfig real
-            const testData = {};
-            let count = 0;
-            Object.entries(tripConfig.packingListData).forEach(([category, items]) => {
-                items.slice(0, 2).forEach(item => { // Solo los primeros 2 items de cada categoría
-                    let itemText = typeof item === 'object' ? String(item.item || item.name || 'Item desconocido') : String(item);
-                    const itemKey = `${category.toLowerCase().replace(/\s+/g, '_')}_${itemText.toLowerCase().replace(/\s+/g, '_')}`;
-                    testData[itemKey] = true;
-                    count++;
-                });
-            });
-            saved = testData;
-            localStorage.setItem('packingListV2', JSON.stringify(saved));
-            console.log('🚨 Created test data with keys:', Object.keys(saved));
-        }
-        
-        // Merge con Firestore si está disponible
-        if (packingManager) {
-            try {
-                const firestoreItems = packingManager.getItems() || {};
-                if (Object.keys(firestoreItems).length > 0) {
-                    saved = { ...saved, ...firestoreItems };
-                    Logger.debug('🔥 Merged with Firestore data');
-                }
-            } catch (error) {
-                Logger.warning('Error loading from Firestore');
-            }
-        }
-
-        Logger.debug('🎯 Step 4: Starting packing list rendering...');
+        Logger.debug('🎯 Starting packing list rendering...');
         Logger.debug('📦 Categories to render:', Object.keys(tripConfig.packingListData).length);
         Logger.debug('💾 Saved items loaded:', Object.keys(saved).length);
-        
 
-        // PASO 3.1: Mantener todos los formatos de clave existentes
-
-        // Calcular estadísticas globales probando TODOS los formatos de clave
-        let totalItems = 0;
-        let packedItems = 0;
-        
-        Object.entries(tripConfig.packingListData).forEach(([category, items]) => {
-            items.forEach(item => {
-                totalItems++;
-                // Probar TODOS los formatos de clave posibles
-                let itemText = typeof item === 'object' ? String(item.item || item.name || 'Item desconocido') : String(item);
-                
-                // Formato nuevo
-                const newKey = `${category.toLowerCase().replace(/\s+/g, '_')}_${itemText.toLowerCase().replace(/\s+/g, '_')}`;
-                // Formato viejo
-                const oldKey = `${category}-${itemText}`;
-                
-                if (saved[newKey] || saved[oldKey]) {
-                    packedItems++;
-                }
-            });
-        });
+        // Calcular estadísticas usando PackingListManager
+        const totalItems = Object.values(tripConfig.packingListData).reduce((sum, items) => sum + items.length, 0);
+        const stats = packingManager.getPackingStats(totalItems);
 
         // UI consistente con el estilo de la app (sin gradientes)
         const categoriesHTML = Object.entries(tripConfig.packingListData).map(([category, items]) => {
             const categoryIcon = getPackingCategoryIcon(category);
             const cleanCategoryName = category.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
             
-            // Calcular estadísticas de la categoría usando el formato correcto
+            // Calcular estadísticas de la categoría usando solo tripConfig.key
             const categoryPacked = items.filter(item => {
-                let itemText = typeof item === 'object' ? String(item.item || item.name || 'Item desconocido') : String(item);
-                const itemKey = `${category.toLowerCase().replace(/\s+/g, '_')}_${itemText.toLowerCase().replace(/\s+/g, '_')}`;
-                return saved[itemKey];
+                const itemKey = item.key;
+                return saved[itemKey] || false;
             }).length;
             const categoryTotal = items.length;
             const categoryPercentage = categoryTotal > 0 ? Math.round((categoryPacked / categoryTotal) * 100) : 0;
             
-            // Debug: verificar duplicados
-            Logger.debug(`🔍 Category: ${category}, Items: ${items.length}`, items.map(item => `${category}-${item}`));
             
             return `
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
@@ -221,10 +170,10 @@ export class PlanningRenderer {
                     <div class="category-content hidden border-t border-slate-200 dark:border-slate-600 p-4 bg-slate-50 dark:bg-slate-700/30">
                         <div class="space-y-2">
                             ${items.map(item => {
-                                // Usar formato de clave consistente con PackingListManager
-                                let itemText = typeof item === 'object' ? String(item.item || item.name || 'Item desconocido') : String(item);
-                                const itemKey = `${category.toLowerCase().replace(/\s+/g, '_')}_${itemText.toLowerCase().replace(/\s+/g, '_')}`;
+                                const itemText = item.item || item.name || 'Item desconocido';
+                                const itemKey = item.key;
                                 const isChecked = saved[itemKey] || false;
+                                
                                 return `
                                     <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors">
                                         <input type="checkbox" ${isChecked ? 'checked' : ''} 
@@ -232,7 +181,6 @@ export class PlanningRenderer {
                                                data-category="${category}"
                                                class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
                                         <span class="flex-1 text-slate-700 dark:text-slate-300 ${isChecked ? 'line-through opacity-60' : ''}">${itemText}</span>
-                                        ${isChecked ? '<span class="material-symbols-outlined text-green-600 text-lg">check</span>' : ''}
                                     </label>
                                 `;
                             }).join('')}
@@ -244,59 +192,49 @@ export class PlanningRenderer {
 
         // Envolver todo en una tarjeta como las demás secciones
         const packingCard = document.createElement('div');
-        packingCard.className = 'bg-white dark:bg-slate-800 radius-card shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-12';
-        
-        const globalPercentage = totalItems > 0 ? Math.round((packedItems / totalItems) * 100) : 0;
-        
+        packingCard.className = 'bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 mb-6';
         
         packingCard.innerHTML = `
-            <!-- Header dentro de la tarjeta -->
-            <div class="flex items-center gap-3 mb-6">
-                <span class="material-symbols-outlined text-3xl text-teal-600 dark:text-teal-400">luggage</span>
-                <div class="flex-1">
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Lista de Equipaje</h2>
-                </div>
-                <div class="text-right">
-                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="global-progress">${packedItems}/${totalItems}</div>
-                    <div class="text-sm text-slate-600 dark:text-slate-400">${globalPercentage}% completado</div>
-                </div>
-            </div>
-
-            <!-- TARJETAS DE PROGRESO Y PESO -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="${CARD_STYLES.SUMMARY}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-2xl">inventory</span>
-                        <div>
-                            <div class="text-2xl font-bold text-slate-900 dark:text-slate-100" id="packed-count">${packedItems}/${totalItems}</div>
-                            <div class="text-sm text-slate-600 dark:text-slate-400">Items empacados</div>
-                        </div>
+            <div class="p-6">
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">luggage</span>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Lista de Equipaje</h3>
+                        <p class="text-slate-600 dark:text-slate-400">Organiza tu equipaje por categorías</p>
                     </div>
                 </div>
                 
-                <div class="${CARD_STYLES.SUMMARY}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-2xl">trending_up</span>
-                        <div>
-                            <div class="text-2xl font-bold text-slate-900 dark:text-slate-100" id="progress-percent">${globalPercentage}%</div>
-                            <div class="text-sm text-slate-600 dark:text-slate-400">Progreso total</div>
+                <!-- Progress Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="${CARD_STYLES.SUMMARY}">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">inventory</span>
+                            <div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Items empacados</p>
+                                <p class="text-2xl font-bold text-slate-900 dark:text-white" id="packed-count">${stats.packed}/${stats.total}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                    <div class="${CARD_STYLES.SUMMARY}">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">trending_up</span>
+                            <div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Progreso</p>
+                                <p class="text-2xl font-bold text-slate-900 dark:text-white" id="progress-percent">${stats.percentage}%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="${CARD_STYLES.SUMMARY}">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-3xl">scale</span>
+                            <div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Peso Total</p>
+                                <p class="text-2xl font-bold text-slate-900 dark:text-white" id="total-weight">${stats.weight && stats.weight.totalGrams && !isNaN(stats.weight.totalGrams) ? (stats.weight.totalGrams / 1000).toFixed(1) : '0.0'}kg</p>
+                            </div>
+                        </div>
+                    </div>
                 
-                <div class="${CARD_STYLES.SUMMARY}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-2xl">scale</span>
-                        <div>
-                            <div class="text-2xl font-bold text-slate-900 dark:text-slate-100" id="total-weight">${Math.round(packedItems * 0.15)}kg</div>
-                            <div class="text-sm text-slate-600 dark:text-slate-400">Peso estimado</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Categorías con desplegables en grid 2x2 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="packing-categories">
+                <!-- Categories -->
                 ${categoriesHTML}
             </div>
         `;
@@ -320,40 +258,42 @@ export class PlanningRenderer {
             });
         });
 
-        // Event listener para checkboxes con sincronización Firebase + localStorage
+        // Event listener para checkboxes - solo usar PackingListManager
         container.addEventListener('change', async (e) => {
             if (e.target.type === 'checkbox' && e.target.hasAttribute('data-item-key')) {
                 const itemKey = e.target.getAttribute('data-item-key');
-                const category = e.target.getAttribute('data-category');
                 const isChecked = e.target.checked;
                 
                 Logger.debug(`🎒 Toggling item: ${itemKey} = ${isChecked}`);
                 
-                // PASO 4: Actualización bidireccional
                 try {
-                    // Actualizar localStorage inmediatamente (optimistic UI)
-                    const localSaved = JSON.parse(localStorage.getItem('packingListV2') || '{}');
-                    localSaved[itemKey] = isChecked;
-                    localStorage.setItem('packingListV2', JSON.stringify(localSaved));
+                    // Solo usar PackingListManager para toda la lógica
+                    const success = await packingManager.toggleItem(itemKey, isChecked);
                     
-                    // Actualizar Firestore si está disponible
-                    if (packingManager) {
-                        await packingManager.toggleItem(itemKey, isChecked);
-                        Logger.debug('🔥 Item synced to Firestore');
+                    if (!success) {
+                        // Revertir checkbox si falló
+                        e.target.checked = !isChecked;
+                    } else {
+                        // NO llamar updateGlobalStats - PackingListManager ya actualiza las métricas
+                        // Solo actualizar estado visual del checkbox
+                        this.updateItemVisual(e.target, isChecked);
                     }
-                    
-                    // Actualizar UI inmediatamente
-                    this.updateItemVisual(e.target, isChecked);
-                    this.updateCategoryStats(category, container);
-                    this.updateGlobalStats(container);
                     
                 } catch (error) {
                     Logger.error('Error syncing item:', error);
-                    // Revertir checkbox en caso de error
                     e.target.checked = !isChecked;
                 }
             }
         });
+
+        // Función para actualizar UI después de cambios - delegada a PackingListManager
+        window.updatePackingUI = async () => {
+            // Re-renderizar la sección completa para mantener consistencia
+            const planningContainer = document.querySelector('#planning-content');
+            if (planningContainer) {
+                await PlanningRenderer.renderPackingList(planningContainer);
+            }
+        };
 
         Logger.success('✅ Packing list rendered with Firebase integration');
     }
@@ -959,7 +899,16 @@ export class PlanningRenderer {
         if (globalProgress) globalProgress.textContent = `${allChecked.length}/${allCheckboxes.length}`;
         if (packedCount) packedCount.textContent = `${allChecked.length}/${allCheckboxes.length}`;
         if (progressPercent) progressPercent.textContent = `${percentage}%`;
-        if (totalWeight) totalWeight.textContent = `${Math.round(allChecked.length * 0.15)}kg`;
+        if (totalWeight) {
+            // Usar la lógica del WeightEstimator para cálculo preciso
+            const packingManager = window.packingManager;
+            if (packingManager && packingManager.localCache && window.weightEstimator) {
+                const weightData = window.weightEstimator.calculateTotalWeight(packingManager.localCache);
+                totalWeight.textContent = weightData.totalFormatted || "0kg";
+            } else {
+                totalWeight.textContent = "0.0kg";
+            }
+        }
     }
 }
 

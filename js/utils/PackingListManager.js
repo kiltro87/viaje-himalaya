@@ -21,13 +21,13 @@ import Logger from './Logger.js';
 import { firestoreConfig } from '../config/firebaseConfig.js';
 import { weightEstimator } from './WeightEstimator.js';
 
-export class PackingListManager {
+class PackingListManager {
     constructor() {
         this.firebaseManager = null;
         this.localStorageKey = 'packingListV2';
         this.firestoreCollection = firestoreConfig.collections.packingList;
-        this.documentId = 'global'; // Documento global único para todos los dispositivos
-        this.deviceId = this.generateDeviceId(); // Mantenido para tracking
+        this.documentId = 'global';
+        this.deviceId = this.generateDeviceId();
         this.isInitialized = false;
         this.syncInProgress = false;
         this.firebaseSetupComplete = false;
@@ -119,6 +119,34 @@ export class PackingListManager {
     }
 
     /**
+     * 📥 CARGAR DATOS: Cargar datos de Firebase para sincronización
+     */
+    async loadData() {
+        try {
+            if (!this.firebaseManager || !this.firebaseSetupComplete) {
+                Logger.debug('🔥 Firebase not ready, returning empty data');
+                return {};
+            }
+
+            const { getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const docRef = this.firebaseManager.getDocumentReference(this.firestoreCollection, this.documentId);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                Logger.debug('🔥 Firestore data loaded:', data);
+                return data || {};
+            } else {
+                Logger.debug('🔥 No Firestore document found');
+                return {};
+            }
+        } catch (error) {
+            Logger.error('Error loading Firestore data:', error);
+            return {};
+        }
+    }
+
+    /**
      * 📥 CARGAR DATOS INICIALES: Cargar datos de Firebase al inicializar
      */
     async loadInitialData(docRef) {
@@ -132,40 +160,26 @@ export class PackingListManager {
                 const firebaseData = docSnapshot.data();
                 if (Logger && Logger.info) Logger.info('🎒 Firebase document exists:', firebaseData);
                 
-                if (firebaseData.items) {
-                    const itemCount = Object.keys(firebaseData.items).length;
-                    const localCount = Object.keys(this.localCache).length;
-                    if (Logger && Logger.info) Logger.info(`🎒 Found ${itemCount} items in Firebase, ${localCount} items locally`);
-                    
-                    // MERGE INTELIGENTE: Combinar datos locales y remotos
-                    const mergedItems = { ...firebaseData.items, ...this.localCache };
-                    
-                    // Si hay cambios locales, enviarlos a Firebase
-                    if (localCount > 0) {
-                        this.localCache = mergedItems;
-                        this.saveToLocalStorage();
-                        await this.syncToFirebase(); // Enviar merge a Firebase
-                        if (Logger && Logger.info) Logger.info('🎒 Merged local and Firebase data, synced back');
-                    } else {
-                        // Solo datos remotos, cargar directamente
-                        this.localCache = firebaseData.items;
-                        this.saveToLocalStorage();
-                        if (Logger && Logger.info) Logger.info('🎒 Loaded Firebase data');
-                    }
-                    
+                if (firebaseData.items && Object.keys(firebaseData.items).length > 0) {
+                    // FIRESTORE TIENE PRIORIDAD: Usar datos de Firebase
+                    this.localCache = firebaseData.items;
+                    this.saveToLocalStorage();
+                    if (Logger && Logger.info) Logger.info('🎒 Loaded Firebase data (Firestore priority)');
                     this.updateUI();
                 } else {
-                    if (Logger && Logger.warning) Logger.warning('🎒 Firebase document exists but has no items');
+                    // Firebase vacío: Limpiar localStorage también
+                    if (Logger && Logger.info) Logger.info('🎒 Firebase is empty, clearing localStorage');
+                    this.localCache = {};
+                    this.saveToLocalStorage();
+                    this.updateUI();
                 }
             } else {
-                if (Logger && Logger.info) Logger.info('🎒 No Firebase document found');
-                // Si no hay datos en Firebase Y hay datos locales, sincronizar
-                if (Object.keys(this.localCache).length > 0) {
-                    await this.syncToFirebase();
-                    if (Logger && Logger.info) Logger.info('🎒 Local data synced to Firebase');
-                } else {
-                    if (Logger && Logger.info) Logger.info('🎒 No local or Firebase data - starting fresh');
-                }
+                // No existe documento: Limpiar localStorage
+                if (Logger && Logger.info) Logger.info('🎒 No Firebase document found, clearing localStorage');
+                this.localCache = {};
+                this.saveToLocalStorage();
+                this.updateUI();
+                if (Logger && Logger.info) Logger.info('🎒 No local or Firebase data - starting fresh');
             }
         } catch (error) {
             if (Logger && Logger.error) Logger.error('🎒 Error loading initial data:', error);
@@ -177,12 +191,9 @@ export class PackingListManager {
      */
     async toggleItem(itemKey, isChecked) {
         try {
-            // 🚀 OPTIMISTIC UPDATE: Actualizar inmediatamente la UI
+            // 🚀 OPTIMISTIC UPDATE: Actualizar inmediatamente
             this.localCache[itemKey] = isChecked;
             this.saveToLocalStorage();
-            
-            // Actualizar UI inmediatamente para mejor UX
-            this.updateUI();
             
             // 📡 FIREBASE UPDATE: Sincronizar en background
             if (this.firebaseManager && this.firebaseManager.isConnected) {
@@ -190,6 +201,9 @@ export class PackingListManager {
                 await this.syncToFirebase();
                 this.syncInProgress = false;
             }
+            
+            // Actualizar UI después de cambios
+            this.updateUI();
             
             if (Logger && Logger.data) Logger.data(`🎒 Item ${itemKey} ${isChecked ? 'packed' : 'unpacked'}`);
             return true;
@@ -224,17 +238,42 @@ export class PackingListManager {
      * 📊 GET STATS: Obtener estadísticas de empacado con peso
      */
     getPackingStats(totalItems) {
+        console.log(`📊 PackingListManager.getPackingStats called with totalItems: ${totalItems}`);
+        console.log(`📊 Current localCache:`, this.localCache);
+        
         const packedItems = Object.values(this.localCache).filter(Boolean).length;
         const percentage = totalItems > 0 ? Math.round((packedItems / totalItems) * 100) : 0;
-        const weightData = weightEstimator.calculateTotalWeight(this.localCache);
         
-        return {
+        console.log(`📊 Packed items: ${packedItems}, Total: ${totalItems}, Percentage: ${percentage}%`);
+        console.log(`📊 About to call weightEstimator.calculateTotalWeight with:`, this.localCache);
+        
+        // Asegurar que weightEstimator está disponible
+        const estimator = window.weightEstimator || weightEstimator;
+        if (!estimator) {
+            console.error('❌ WeightEstimator not available');
+            return {
+                packed: packedItems,
+                total: totalItems,
+                percentage,
+                remaining: totalItems - packedItems,
+                weight: { totalGrams: 0, totalKg: "0.0", totalFormatted: "0kg" }
+            };
+        }
+        
+        const weightData = estimator.calculateTotalWeight(this.localCache);
+        
+        console.log(`📊 Weight calculation result:`, weightData);
+        
+        const result = {
             packed: packedItems,
             total: totalItems,
             percentage,
             remaining: totalItems - packedItems,
             weight: weightData
         };
+        
+        console.log(`📊 Final getPackingStats result:`, result);
+        return result;
     }
 
     /**
@@ -393,323 +432,138 @@ export class PackingListManager {
     }
 
     /**
-     * 🔄 UPDATE UI: Actualizar checkboxes en la interfaz
+     * 🔄 UPDATE UI: Actualizar interfaz de usuario
      */
     updateUI() {
-        try {
-            const cacheKeys = Object.keys(this.localCache);
-            
-            cacheKeys.forEach(itemKey => {
-                const checkbox = document.querySelector(`input[data-item-key="${itemKey}"]`);
-                if (checkbox && checkbox.checked !== this.localCache[itemKey]) {
-                    checkbox.checked = this.localCache[itemKey];
-                    
-                    // Trigger visual update (line-through effect)
-                    const label = checkbox.nextElementSibling;
-                    if (label) {
-                        if (this.localCache[itemKey]) {
-                            label.classList.add('line-through', 'text-slate-400', 'dark:text-slate-500');
-                        } else {
-                            label.classList.remove('line-through', 'text-slate-400', 'dark:text-slate-500');
-                        }
-                    }
-                }
-            });
-            
-            // Actualizar estadísticas inmediatamente y con delay de respaldo
-            this.updatePackingStats();
-            setTimeout(() => {
-                this.updatePackingStats();
-            }, 100);
-            
-        } catch (error) {
-            if (Logger && Logger.error) Logger.error('🎒 Error updating UI:', error);
+        // Actualizar métricas dinámicamente sin re-renderizar
+        this.updateMetricsOnly();
+        
+        // También emitir evento para compatibilidad
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+            window.dispatchEvent(new CustomEvent('packingListUpdated', {
+                detail: { items: this.localCache }
+            }));
         }
     }
 
     /**
-     * 📊 UPDATE PACKING STATS: Actualizar estadísticas de empacado con peso
+     * 📊 UPDATE METRICS ONLY: Actualizar solo las métricas sin re-renderizar
      */
-    updatePackingStats() {
-        // Check if we're in the planning tab first
-        const planningTab = document.querySelector('[data-tab="planning"]');
-        if (!planningTab || !planningTab.classList.contains('active')) {
-            // Not in planning tab, skip stats update
+    updateMetricsOnly() {
+        console.log('🔧 PackingListManager.updateMetricsOnly called');
+        const container = document.querySelector('#packing-list-content');
+        if (!container) {
+            console.log('❌ No planning-content container found');
             return;
         }
-        
-        // Force create stats container if it doesn't exist
-        let statsContainer = document.getElementById('packing-stats');
-        if (!statsContainer) {
-            const packingListContainer = document.getElementById('packing-list-content');
-            if (packingListContainer) {
-                const statsDiv = document.createElement('div');
-                statsDiv.id = 'packing-stats';
-                statsDiv.className = 'mb-6';
-                packingListContainer.insertBefore(statsDiv, packingListContainer.firstChild);
-                statsContainer = statsDiv;
-            } else {
-                // Container doesn't exist, probably not in planning tab
-                Logger.debug('🔥 packing-list-content not found - not in planning tab');
-                return;
-            }
-        }
-        
-        // Force render stats immediately
-        this.renderPackingStats(statsContainer);
-    }
 
-    renderPackingStats(statsContainer) {
-        try {
-            // Calcular desde checkboxes visibles primero
-            const checkboxes = document.querySelectorAll('#packing-list-content input[type="checkbox"]');
-            const totalItems = checkboxes.length;
-            const packedItems = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
-            
-            Logger.debug('🔥 PACKING STATS UPDATE:', { 
-                totalItems, 
-                packedItems,
-                checkboxesFound: checkboxes.length
-            });
-            
-            // Si no hay checkboxes, calcular desde localCache
-            if (checkboxes.length === 0) {
-                const totalFromCache = Object.keys(this.localCache).length;
-                const packedFromCache = Object.values(this.localCache).filter(Boolean).length;
-                
-                if (totalFromCache === 0) {
-                    setTimeout(() => {
-                        this.updatePackingStats();
-                    }, 500);
-                    return;
-                }
-                
-                // Usar datos del cache
-                const stats = {
-                    packed: packedFromCache,
-                    total: totalFromCache,
-                    percentage: totalFromCache > 0 ? Math.round((packedFromCache / totalFromCache) * 100) : 0,
-                    remaining: totalFromCache - packedFromCache
-                };
-                
-                this.renderStatsFromCache(stats, statsContainer);
-                return;
-            }
-            
-            const stats = {
-                packed: packedItems,
-                total: totalItems,
-                percentage: totalItems > 0 ? Math.round((packedItems / totalItems) * 100) : 0,
-                remaining: totalItems - packedItems
-            };
-            
-            try {
-            // Calcular peso estimado
-            const weightData = weightEstimator.calculateTotalWeight(this.localCache);
-            const analysis = weightData.analysis;
-            
-            // Colores según el estado del peso
-            const weightColors = {
-                excellent: 'text-green-600 dark:text-green-400',
-                ok: 'text-blue-600 dark:text-blue-400', 
-                caution: 'text-yellow-600 dark:text-yellow-400',
-                warning: 'text-orange-600 dark:text-orange-400',
-                critical: 'text-red-600 dark:text-red-400'
-            };
-            
-            statsContainer.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <!-- Progreso de Equipaje -->
-                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Progreso de Equipaje</p>
-                        <p class="text-2xl font-bold text-slate-900 dark:text-white">${stats.percentage}%</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${stats.packed}/${stats.total} completado</p>
-                    </div>
-                    
-                    <!-- Peso Total -->
-                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Peso Estimado</p>
-                        <p class="text-2xl font-bold text-slate-900 dark:text-white">${analysis.weightKg}kg</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">mochila total</p>
-                    </div>
-                </div>
-            `;
-        } catch (error) {
-            if (Logger && Logger.error) Logger.error('🎒 Error updating packing stats:', error);
-        }
-        } catch (error) {
-            if (Logger && Logger.error) Logger.error('🎒 Error in updatePackingStats:', error);
-        }
-    }
-    
-    /**
-     * 📊 RENDER STATS FROM CACHE: Renderizar estadísticas desde cache cuando no hay DOM
-     */
-    renderStatsFromCache(stats, statsContainer) {
-        try {
-            // Calcular peso estimado desde cache
-            const weightData = weightEstimator.calculateTotalWeight(this.localCache);
-            const analysis = weightData.analysis;
-            
-            // Colores según el estado del peso
-            const weightColors = {
-                excellent: 'text-green-600 dark:text-green-400',
-                ok: 'text-blue-600 dark:text-blue-400', 
-                caution: 'text-yellow-600 dark:text-yellow-400',
-                warning: 'text-orange-600 dark:text-orange-400',
-                critical: 'text-red-600 dark:text-red-400'
-            };
-            
-            statsContainer.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <!-- Progreso de Equipaje -->
-                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Progreso de Equipaje</p>
-                        <p class="text-2xl font-bold text-slate-900 dark:text-white">${stats.percentage}%</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${stats.packed}/${stats.total} completado</p>
-                    </div>
-                    
-                    <!-- Peso Total -->
-                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Peso Estimado</p>
-                        <p class="text-2xl font-bold text-slate-900 dark:text-white">${analysis.weightKg}kg</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">mochila total</p>
-                    </div>
-                </div>
-            `;
-            
-            Logger.debug('🔥 PACKING STATS: Rendered from cache successfully', stats);
-        } catch (error) {
-            Logger.error('🔥 PACKING STATS: Error rendering from cache:', error);
+        // Calcular estadísticas actualizadas - usar el total correcto
+        const totalItems = Object.keys(this.localCache).length;
+        console.log('🔧 Total items from localCache keys:', totalItems);
+        console.log('🔧 Current localCache:', this.localCache);
+        
+        const stats = this.getPackingStats(totalItems);
+        console.log('🔧 Calculated stats:', stats);
+
+        // Actualizar elementos de métricas
+        const packedCount = container.querySelector('#packed-count');
+        const progressPercent = container.querySelector('#progress-percent');
+        const totalWeight = container.querySelector('#total-weight');
+
+        console.log('🔧 DOM elements found:', {
+            packedCount: !!packedCount,
+            progressPercent: !!progressPercent,
+            totalWeight: !!totalWeight
+        });
+
+        if (packedCount) packedCount.textContent = `${stats.packed}/${stats.total}`;
+        if (progressPercent) progressPercent.textContent = `${stats.percentage}%`;
+        if (totalWeight) {
+            const weightText = stats.weight.totalGrams ? (stats.weight.totalGrams / 1000).toFixed(1) : '0.0';
+            console.log('🔧 Setting weight to:', `${weightText}kg`);
+            totalWeight.textContent = `${weightText}kg`;
         }
     }
 
     /**
-     * 💾 LOCAL STORAGE: Guardar en localStorage
+     * 💾 SAVE TO LOCALSTORAGE: Guardar cache en localStorage
      */
     saveToLocalStorage() {
         try {
             localStorage.setItem(this.localStorageKey, JSON.stringify(this.localCache));
         } catch (error) {
-            Logger.error('🎒 Error saving to localStorage:', error);
+            if (Logger && Logger.error) Logger.error('🎒 Error saving to localStorage:', error);
         }
     }
 
     /**
-     * 📥 LOCAL STORAGE: Cargar desde localStorage
+     * 📥 LOAD FROM LOCALSTORAGE: Cargar datos desde localStorage
      */
     loadFromLocalStorage() {
         try {
-            const saved = localStorage.getItem(this.localStorageKey);
-            return saved ? JSON.parse(saved) : {};
+            const data = localStorage.getItem(this.localStorageKey);
+            return data ? JSON.parse(data) : {};
         } catch (error) {
-            Logger.error('🎒 Error loading from localStorage:', error);
+            if (Logger && Logger.error) Logger.error('🎒 Error loading from localStorage:', error);
             return {};
         }
     }
 
     /**
-     * 🆔 DEVICE ID: Generar ID único del dispositivo
+     * 🔧 GENERATE DEVICE ID: Generar ID único del dispositivo
      */
     generateDeviceId() {
-        let deviceId = localStorage.getItem('deviceId');
-        if (!deviceId) {
-            deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('deviceId', deviceId);
-        }
+        const stored = localStorage.getItem('deviceId');
+        if (stored) return stored;
+        
+        const deviceId = 'device_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('deviceId', deviceId);
         return deviceId;
     }
 
     /**
-     * 🧹 CLEANUP: Limpiar listeners y recursos
+     * 🧹 CLEAN DUPLICATE KEYS: Limpiar claves duplicadas
      */
-    cleanup() {
-        if (this.unsubscribe) {
-            this.unsubscribe();
-            this.unsubscribe = null;
-        }
-        Logger.info('🎒 PackingListManager cleaned up');
-    }
-
-    /**
-     * 🎯 INITIALIZE: Configurar el manager con Firebase
-     */
-    async initialize(firebaseManager) {
+    async cleanDuplicateKeys() {
         try {
-            this.firebaseManager = firebaseManager;
-            this.loadFromLocalStorage();
+            const keysToRemove = [
+                'calzado_botas_trekking',
+                'ropa_camisetas_manga_larga', 
+                'calzado_sandalias_hotel'
+            ];
             
-            if (firebaseManager && firebaseManager.isConnected) {
-                // Solo sincronizar desde Firebase, NO limpiar
-                await this.syncFromFirebase();
-            }
+            // Limpiar localStorage
+            const localData = JSON.parse(localStorage.getItem('packingListV2') || '{}');
+            keysToRemove.forEach(key => delete localData[key]);
+            localStorage.setItem('packingListV2', JSON.stringify(localData));
             
-            // Force initial UI update regardless of Firebase status
-            this.updateUI();
-            
-            // Configurar listener para cambios en Firebase
-            this.setupFirebaseListener();
-            
-            if (Logger && Logger.info) Logger.info('🎒 PackingListManager initialized');
-        } catch (error) {
-            if (Logger && Logger.error) Logger.error('🎒 Error initializing PackingListManager:', error);
-        }
-    }
-
-    /**
-     * 🔄 RESET: Resetear todos los items (desmarcar todo)
-     */
-    async resetAllItems() {
-        try {
-            this.localCache = {};
-            this.saveToLocalStorage();
-            
+            // Limpiar Firestore
             if (this.firebaseManager && this.firebaseManager.isConnected) {
-                await this.syncToFirebase();
+                const { doc, updateDoc, deleteField } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const docRef = doc(this.firebaseManager.db, this.firestoreCollection, this.documentId);
+                
+                const updates = {};
+                keysToRemove.forEach(key => {
+                    updates[`items.${key}`] = deleteField();
+                });
+                
+                await updateDoc(docRef, updates);
             }
             
-            this.updateUI();
-            Logger.success('🎒 All items reset');
+            // Actualizar cache local
+            keysToRemove.forEach(key => delete this.localCache[key]);
+            
+            Logger.success('🧹 Duplicate keys cleaned successfully');
             return true;
         } catch (error) {
-            Logger.error('🎒 Error resetting items:', error);
-            return false;
-        }
-    }
-
-    /**
-     * ✅ MARK ALL PACKED: Marcar todos los items como empacados
-     */
-    async markAllPacked() {
-        try {
-            // Obtener todos los items de tripConfig
-            const allItems = Object.entries(window.tripConfig?.packingListData || {})
-                .flatMap(([category, items]) => 
-                    items.map((item, index) => `${category.replace(/\s+/g, '-')}-${index}`)
-                );
-            
-            // Marcar todos como empacados
-            allItems.forEach(itemKey => {
-                this.localCache[itemKey] = true;
-            });
-            
-            this.saveToLocalStorage();
-            
-            if (this.firebaseManager && this.firebaseManager.isConnected) {
-                await this.syncToFirebase();
-            }
-            
-            this.updateUI();
-            Logger.success('🎒 All items marked as packed');
-            return true;
-        } catch (error) {
-            Logger.error('🎒 Error marking all packed:', error);
+            Logger.error('🧹 Error cleaning duplicate keys:', error);
             return false;
         }
     }
 }
 
-// Class already exported above
+// Export the class as default
+export default PackingListManager;
 
 // Singleton instance
 let packingListManagerInstance = null;

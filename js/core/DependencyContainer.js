@@ -201,7 +201,7 @@ export class DependencyContainer {
         });
 
         this.registerFactory('packingListManager', async () => {
-            const { PackingListManager } = await import('../utils/PackingListManager.js');
+            const PackingListManager = (await import('../utils/PackingListManager.js')).default;
             return new PackingListManager();
         });
 

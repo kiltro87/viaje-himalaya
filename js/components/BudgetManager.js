@@ -47,11 +47,16 @@ export class BudgetManager {
      * 
      * @constructor
      */
-    constructor() {
+    constructor(container) {
         // 🚨 PREVENIR MÚLTIPLES INSTANCIAS (Singleton pattern)
         const existingInstance = stateManager.getState('instances.budgetManager');
         if (existingInstance) {
             Logger.warning('BudgetManager ya existe, retornando instancia existente');
+            // Force render on existing instance if container is provided
+            if (container) {
+                Logger.debug('💰 Forcing render on existing BudgetManager instance');
+                existingInstance.render(container);
+            }
             return existingInstance;
         }
         
@@ -85,7 +90,9 @@ export class BudgetManager {
         stateManager.updateState('instances.budgetManager', this);
         
         // Registrar en DependencyContainer para uso futuro
-        container.registerSingleton('budgetManagerInstance', () => this);
+        if (container && container.registerSingleton) {
+            container.registerSingleton('budgetManagerInstance', () => this);
+        }
         
         Logger.success('✅ BudgetManager inicializado correctamente');
     }
@@ -546,8 +553,12 @@ export class BudgetManager {
         // Inicializar expenses en StateManager si no existen
         if (!stateManager.getState('expenses') || stateManager.getState('expenses').length === 0) {
             const savedExpenses = JSON.parse(localStorage.getItem('tripExpensesV1')) || [];
+            console.log('💰 INIT StateManager - localStorage expenses:', savedExpenses.length, savedExpenses);
             stateManager.updateState('expenses', savedExpenses);
             Logger.data('💾 Expenses loaded from localStorage into StateManager');
+        } else {
+            const currentExpenses = stateManager.getState('expenses');
+            console.log('💰 INIT StateManager - existing expenses:', currentExpenses.length, currentExpenses);
         }
 
         // Registrar esta instancia en StateManager
@@ -582,6 +593,7 @@ export class BudgetManager {
             'Entradas y Visados': 'text-purple-500',
             'Alojamiento': 'text-indigo-500',
             'Varios': 'text-pink-500',
+            'Contingencia': 'text-red-500',
             'Actividades': 'text-teal-500',
             'Compras': 'text-amber-500',
             'Emergencias': 'text-red-500'
@@ -589,14 +601,23 @@ export class BudgetManager {
         return vibrantColors[category] || 'text-slate-500';
     }
 
-    render(container, tripConfigParam) {
+    async render(container, tripConfigParam) {
+        Logger.debug('💰 BudgetManager.render() called - START');
         Logger.debug('💰 Renderizando presupuesto...');
         Logger.debug('💰 BudgetManager.render called with container:', container);
         // Usar tripConfig importado si no se pasa como parámetro
         const tripConfigToUse = tripConfigParam || tripConfig;
         const budgetData = tripConfigToUse.budgetData.budgetData;
+        
+        Logger.debug('💰 Budget data categories:', Object.keys(budgetData));
+        Logger.debug('💰 Contingencia items:', budgetData.Contingencia);
+        
         const allExpenses = Object.values(budgetData).flat();
+        Logger.debug('💰 All expenses count:', allExpenses.length);
         const allCategories = [...new Set(allExpenses.map(item => item.category))];
+        Logger.debug('💰 All categories found:', allCategories);
+        Logger.debug('💰 allCategories includes Contingencia?', allCategories.includes('Contingencia'));
+        
         const categoryOptionsHTML = allCategories.map(cat => {
             const icon = getBudgetCategoryIcon(cat);
             return `<option value="${cat}" data-icon="${icon}">${cat}</option>`;
@@ -659,6 +680,7 @@ export class BudgetManager {
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4" id="budget-category-filters">
                     ${(() => {
                         Logger.debug('💰 Generating category buttons for:', allCategories);
+                        Logger.debug('💰 allCategories includes Contingencia?', allCategories.includes('Contingencia'));
                         return allCategories.map(cat => {
                         const icon = getBudgetCategoryIcon(cat);
                         const color = this.getCategoryColor(cat);
@@ -767,6 +789,8 @@ export class BudgetManager {
         container.style.opacity = '1 !important';
         this.tripConfig = tripConfig;
         this.setupEventListeners();
+        
+        Logger.debug('💰 BudgetManager.render() completed - END');
     }
 
     setupEventListeners() {
@@ -982,7 +1006,7 @@ export class BudgetManager {
             contentContainer.style.display = 'block';
             
             // Obtener datos de todas las categorías seleccionadas
-            const budgetData = this.tripConfig.budget.categories;
+            const budgetData = tripConfig.budgetData.budgetData;
             const allCategoryItems = Object.values(budgetData).flat().filter(item => selectedCategories.includes(item.category));
             const allCategoryExpenses = stateManager.getState('expenses').filter(exp => selectedCategories.includes(exp.category));
             
@@ -996,9 +1020,19 @@ export class BudgetManager {
                 const catExpenses = allCategoryExpenses.filter(exp => exp.category === cat);
                 
                 const budgetTotal = catItems.reduce((sum, item) => {
-                    if (item.cost) return sum + item.cost;
-                    if (item.subItems) return sum + item.subItems.reduce((subSum, subItem) => subSum + (subItem.cost || 0), 0);
-                    return sum;
+                    // Calculate individual cost for shared accommodations
+                    let itemCost = 0;
+                    if (item.shared && item.totalCost && item.splitBetween) {
+                        itemCost = item.totalCost / item.splitBetween;
+                    } else if (item.cost) {
+                        itemCost = item.cost;
+                    }
+                    
+                    if (item.subItems) {
+                        const subItemsTotal = item.subItems.reduce((subSum, subItem) => subSum + (subItem.cost || 0), 0);
+                        return sum + itemCost + subItemsTotal;
+                    }
+                    return sum + itemCost;
                 }, 0);
                 
                 const expensesTotal = catExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
@@ -1036,7 +1070,7 @@ export class BudgetManager {
                                                 <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-3">
                                                     <div class="flex justify-between items-center mb-2">
                                                         <span class="font-medium text-slate-800 dark:text-slate-200">${item.concept}</span>
-                                                        <span class="font-bold text-slate-900 dark:text-white">${this.formatCurrency(item.cost || 0, true)}</span>
+                                                        ${item.category === 'Alojamiento' ? `<span class="font-bold text-slate-900 dark:text-white">${this.formatAccommodationCost(item)}</span>` : `<span class="font-bold text-slate-900 dark:text-white">${this.formatCurrency(item.cost || 0, true)}</span>`}
                                                     </div>
                                                     <div class="space-y-1 ml-3">
                                                         ${item.subItems.map(subItem => {
@@ -1135,7 +1169,7 @@ export class BudgetManager {
                                                          title="Click para crear gasto basado en este item">
                                                         <span class="text-slate-700 dark:text-slate-300">${item.concept}</span>
                                                         <div class="flex items-center gap-2">
-                                                            <span class="font-medium text-slate-900 dark:text-white">${this.formatCurrency(item.cost || 0, true)}</span>
+                                                            ${item.category === 'Alojamiento' ? `<span class="font-medium text-slate-900 dark:text-white">${this.formatAccommodationCost(item)}</span>` : `<span class="font-medium text-slate-900 dark:text-white">${this.formatCurrency(item.cost || 0, true)}</span>`}
                                                             <span class="material-symbols-outlined text-sm text-slate-400">add_circle</span>
                                                         </div>
                                                     </div>
@@ -1348,30 +1382,30 @@ export class BudgetManager {
                         
                         if (confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
                             try {
-                                Logger.debug(`🔥 Calling Firebase deleteExpense for ID: ${expenseId}`);
+                                Logger.debug(` Calling Firebase deleteExpense for ID: ${expenseId}`);
                                 const deleteResult = await this.firebaseManager.deleteExpense(expenseId);
                                 
                                 if (!deleteResult) {
-                                    Logger.error(`🚨 DELETE FAILED for expense ID: ${expenseId}`);
+                                    Logger.error(` DELETE FAILED for expense ID: ${expenseId}`);
                                     
                                     // Si el documento no existe en Firebase, pero existe localmente,
                                     // eliminar del estado local (desincronización)
-                                    Logger.warning(`🔄 Document doesn't exist in Firebase, removing from local state`);
+                                    Logger.warning(` Document doesn't exist in Firebase, removing from local state`);
                                     const currentExpenses = stateManager.getState('expenses');
                                     const filteredExpenses = currentExpenses.filter(exp => exp.id !== expenseId);
                                     stateManager.updateState('expenses', filteredExpenses);
                                     
                                     this.updateSummaryCards();
                                     this.showCategoryContent();
-                                    this.showNotification('⚠️ Gasto eliminado (era solo local)', 'warning');
+                                    this.showNotification(' Gasto eliminado (era solo local)', 'warning');
                                     return;
                                 }
                                 
-                                Logger.success(`✅ DELETE CONFIRMED for expense ID: ${expenseId}`);
+                                Logger.success(` DELETE CONFIRMED for expense ID: ${expenseId}`);
                                 
-                                // 🎉 DELETE SUCCESSFUL - UI will be updated by onExpenseDeleted callback
-                                Logger.success(`✅ Expense ${expenseId} successfully deleted from Firebase`);
-                                this.showNotification('✅ Gasto eliminado correctamente', 'success');
+                                // DELETE SUCCESSFUL - UI will be updated by onExpenseDeleted callback
+                                Logger.success(` Expense ${expenseId} successfully deleted from Firebase`);
+                                this.showNotification(' Gasto eliminado correctamente', 'success');
                                 
                                 // 🔄 ACTUALIZAR CONTENIDO DE CATEGORÍAS SELECCIONADAS
                                 const selectedCategories = Array.from(document.querySelectorAll('.budget-filter-btn.ring-2'));
@@ -1617,11 +1651,11 @@ export class BudgetManager {
         submitBtn.innerHTML = '<span class="material-symbols-outlined">add</span>Añadir';
         form.reset();
 
+        // Configurar event listeners
+        this.setupEventListeners();
+        
         // Actualizar las tarjetas de resumen
         this.updateSummaryCards();
-        
-        // Actualizar el contenido de categorías para reflejar cambios
-        this.showCategoryContent();
     }
 
     /**
@@ -1911,7 +1945,7 @@ export class BudgetManager {
 
     // Actualizar las tarjetas de resumen dinámicamente
     updateSummaryCards() {
-        const budgetData = this.tripConfig.budget.categories;
+        const budgetData = tripConfig.budgetData.budgetData;
         const allExpenses = Object.values(budgetData).flat();
         
         // Actualizar Presupuesto Total
@@ -1951,9 +1985,20 @@ export class BudgetManager {
      * 💰 HELPER: Format currency (migrated from window.Utils)
      */
     formatCurrency(amount, showSymbol = false) {
-        if (isNaN(amount)) return showSymbol ? '€0' : '0';
-        const formatted = parseFloat(amount).toFixed(2);
-        return showSymbol ? `€${formatted}` : formatted;
+        if (typeof amount !== 'number') return showSymbol ? '0 €' : '0';
+        return showSymbol ? `${amount.toFixed(0)} €` : amount.toFixed(0);
+    }
+
+    formatAccommodationCost(item) {
+        if (!item.shared || !item.totalCost) {
+            return this.formatCurrency(item.cost, true);
+        }
+        
+        const totalCost = item.totalCost;
+        const splitBetween = item.splitBetween || 2;
+        const myCost = totalCost / splitBetween;
+        
+        return `<span class="text-blue-600 dark:text-blue-400 font-medium">${this.formatCurrency(myCost, true)}</span> <span class="text-slate-400 text-sm">de ${this.formatCurrency(totalCost, true)} (÷${splitBetween})</span>`;
     }
 
     /**
@@ -1962,11 +2007,54 @@ export class BudgetManager {
     calculateSubtotal(items) {
         if (!Array.isArray(items)) return 0;
         return items.reduce((sum, item) => {
-            const cost = parseFloat(item.cost) || 0;
+            // Calculate individual cost for shared accommodations
+            let cost = parseFloat(item.cost) || 0;
+            if (item.shared && item.totalCost && item.splitBetween) {
+                cost = item.totalCost / item.splitBetween;
+            }
             const subItems = item.subItems || [];
             const subTotal = subItems.reduce((subSum, subItem) => subSum + (parseFloat(subItem.cost) || 0), 0);
             return sum + cost + subTotal;
         }, 0);
+    }
+
+    calculateContingency(budgetData) {
+        const phases = ['nepal', 'butan'];
+        const contingencyItems = [];
+        
+        phases.forEach(phase => {
+            // Get all non-flight expenses for this phase
+            const phaseExpenses = Object.values(budgetData).flat().filter(item => 
+                item.phase === phase && 
+                item.subcategory !== 'Vuelos' && 
+                item.category !== 'Transporte' && // Exclude all transport to be safe
+                item.category !== 'Contingencia' // Don't include existing contingency in calculation
+            );
+            
+            // Calculate total for phase
+            const phaseTotal = phaseExpenses.reduce((sum, item) => {
+                let cost = parseFloat(item.cost) || 0;
+                if (item.shared && item.totalCost && item.splitBetween) {
+                    cost = item.totalCost / item.splitBetween;
+                }
+                return sum + cost;
+            }, 0);
+            
+            // 10% contingency
+            const contingencyAmount = phaseTotal * 0.1;
+            const phaseName = phase === 'nepal' ? 'Nepal' : 'Bután';
+            
+            contingencyItems.push({
+                concept: `Fondo para Imprevistos (${phaseName})`,
+                cost: contingencyAmount,
+                category: 'Contingencia',
+                phase: phase,
+                country: phaseName,
+                dynamic: true
+            });
+        });
+        
+        return contingencyItems;
     }
 
     /**

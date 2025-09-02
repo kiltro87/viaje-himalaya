@@ -1,92 +1,204 @@
-/**
- * 🧹 SCRIPT DE LIMPIEZA FIREBASE - CONSOLA DEL NAVEGADOR
- * 
- * INSTRUCCIONES:
- * 1. Abre https://kiltro87.github.io/viaje-himalaya/ en el navegador
- * 2. Abre la consola del navegador (F12)
- * 3. Copia y pega este código completo
- * 4. Presiona Enter y sigue las instrucciones
- * 
- * @author David Ferrer Figueroa
- */
+// 🧹 SCRIPT DE LIMPIEZA COMPLETA V2
+// Elimina claves duplicadas y obsoletas de localStorage y Firestore
 
-console.log('🧹 INICIANDO LIMPIEZA DE FIREBASE...');
+console.log('🧹 Iniciando limpieza completa V2...');
 
-async function cleanupFirebaseFromConsole() {
+// PASO 1: Limpiar gastos fantasma de Firebase
+async function cleanFirebaseExpenses() {
+    console.log('🔥 PASO 1: Limpiando gastos fantasma de Firebase...');
+    
     try {
-        console.log('🔥 Importando Firebase...');
-        
-        // Importar configuración
-        const { firebaseConfig } = await import('./js/config/firebaseConfig.js');
-        
-        // Importar Firebase
-        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-        const { getFirestore, collection, getDocs, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-        
-        console.log('🔥 Conectando a Firebase...');
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        
-        console.log('📊 Obteniendo gastos...');
-        const querySnapshot = await getDocs(collection(db, 'expenses'));
-        
-        const expenseCount = querySnapshot.size;
-        console.log(`📊 Encontrados ${expenseCount} gastos en Firebase`);
-        
-        if (expenseCount === 0) {
-            console.log('✅ Firebase ya está limpio - no hay gastos para eliminar');
-            return;
+        // Acceder al BudgetManager desde el StateManager global
+        const stateManager = window.stateManager;
+        if (!stateManager) {
+            console.error('❌ StateManager no encontrado');
+            return false;
         }
+
+        const budgetManager = stateManager.get('budgetManager');
+        if (!budgetManager) {
+            console.error('❌ BudgetManager no encontrado');
+            return false;
+        }
+
+        const firebaseManager = budgetManager.firebaseManager;
+        if (!firebaseManager) {
+            console.error('❌ FirebaseManager no encontrado');
+            return false;
+        }
+
+        // Obtener todos los gastos de Firebase
+        const expenses = await firebaseManager.getAllExpenses();
+        console.log(`📊 Gastos encontrados en Firebase: ${expenses.length}`);
         
-        // Confirmar eliminación
-        const confirmDelete = confirm(`¿Eliminar TODOS los ${expenseCount} gastos de Firebase?\n\nEsto solucionará el bucle infinito.`);
+        if (expenses.length === 0) {
+            console.log('✅ No hay gastos en Firebase para limpiar');
+            return true;
+        }
+
+        // Confirmar antes de eliminar
+        const confirmDelete = confirm(`⚠️ Se encontraron ${expenses.length} gastos en Firebase.\n¿Deseas eliminarlos todos? Esta acción no se puede deshacer.`);
+        
         if (!confirmDelete) {
-            console.log('❌ Operación cancelada por el usuario');
-            return;
+            console.log('❌ Limpieza de Firebase cancelada por el usuario');
+            return false;
         }
-        
-        console.log(`🗑️ Eliminando ${expenseCount} gastos...`);
-        
-        // Eliminar todos los documentos
-        const deletePromises = [];
-        querySnapshot.forEach((doc) => {
-            deletePromises.push(deleteDoc(doc.ref));
-        });
-        
-        await Promise.all(deletePromises);
-        
-        console.log(`✅ Eliminados ${expenseCount} gastos de Firebase`);
-        
-        // Limpiar localStorage
-        localStorage.removeItem('tripExpensesV1');
-        localStorage.removeItem('tripPackingList');
-        localStorage.removeItem('tripExpenses');
-        console.log('🧹 localStorage limpiado');
-        
-        // Verificar que está limpio
-        const verifySnapshot = await getDocs(collection(db, 'expenses'));
-        console.log(`✅ Verificación: ${verifySnapshot.size} gastos restantes en Firebase`);
-        
-        console.log('🎉 LIMPIEZA COMPLETADA - Firebase está limpio');
-        console.log('🔄 Recarga la página para ver los cambios');
-        
-        // Opcional: recargar automáticamente
-        if (confirm('¿Recargar la página automáticamente?')) {
-            window.location.reload();
+
+        // Eliminar todos los gastos
+        let deletedCount = 0;
+        for (const expense of expenses) {
+            try {
+                await firebaseManager.deleteExpense(expense.id);
+                deletedCount++;
+                console.log(`🗑️ Eliminado gasto: ${expense.id}`);
+            } catch (error) {
+                console.error(`❌ Error eliminando gasto ${expense.id}:`, error);
+            }
         }
-        
+
+        console.log(`✅ Firebase limpio: ${deletedCount}/${expenses.length} gastos eliminados`);
+        return true;
+
     } catch (error) {
-        console.error('❌ Error durante la limpieza:', error);
-        console.error('❌ Stack trace:', error.stack);
-        
-        // Instrucciones de respaldo
-        console.log('\n🔧 MÉTODO ALTERNATIVO:');
-        console.log('1. Ve a https://console.firebase.google.com/');
-        console.log('2. Selecciona proyecto "viaje-himalaya"');
-        console.log('3. Ve a Firestore Database');
-        console.log('4. Elimina la colección "expenses" manualmente');
+        console.error('❌ Error en limpieza de Firebase:', error);
+        return false;
     }
 }
 
+// PASO 2: Limpiar claves duplicadas de localStorage
+function cleanLocalStorageKeys() {
+    console.log('💾 PASO 2: Limpiando claves duplicadas de localStorage...');
+    
+    // Claves obsoletas que deben eliminarse completamente
+    const obsoleteKeys = [
+        'calzado_botas_trekking',      // Duplicado de calzado_botas_de_trekking
+        'ropa_camisetas_manga_larga',  // Formato incorrecto
+        'calzado_sandalias_hotel'      // Formato incorrecto
+    ];
+
+    let cleanedCount = 0;
+
+    // Obtener todas las claves de packing list actuales
+    const allKeys = Object.keys(localStorage).filter(key => 
+        key.includes('calzado_') || 
+        key.includes('ropa_') || 
+        key.includes('equipo_') || 
+        key.includes('documentos_')
+    );
+
+    console.log(`🔍 Claves de packing list encontradas: ${allKeys.length}`);
+    console.log('📋 Claves actuales:', allKeys);
+
+    // Eliminar claves obsoletas
+    for (const obsoleteKey of obsoleteKeys) {
+        if (localStorage.getItem(obsoleteKey) !== null) {
+            const value = localStorage.getItem(obsoleteKey);
+            console.log(`🗑️ Eliminando clave obsoleta: ${obsoleteKey} = ${value}`);
+            localStorage.removeItem(obsoleteKey);
+            cleanedCount++;
+        }
+    }
+
+    // Mostrar estado final
+    const finalKeys = Object.keys(localStorage).filter(key => 
+        key.includes('calzado_') || 
+        key.includes('ropa_') || 
+        key.includes('equipo_') || 
+        key.includes('documentos_')
+    );
+
+    console.log(`✅ Limpieza localStorage completada:`);
+    console.log(`   - Claves obsoletas eliminadas: ${cleanedCount}`);
+    console.log(`   - Claves finales: ${finalKeys.length}`);
+    console.log('📋 Claves finales:', finalKeys);
+
+    return { cleanedCount, finalKeys };
+}
+
+// PASO 3: Limpiar claves duplicadas de Firestore
+async function cleanFirestorePackingKeys() {
+    console.log('🔥 PASO 3: Limpiando claves duplicadas de Firestore...');
+    
+    try {
+        const stateManager = window.stateManager;
+        if (!stateManager) {
+            console.error('❌ StateManager no encontrado');
+            return false;
+        }
+
+        const packingListManager = stateManager.get('packingListManager');
+        if (!packingListManager) {
+            console.error('❌ PackingListManager no encontrado');
+            return false;
+        }
+
+        // Obtener datos actuales de Firestore
+        const currentData = await packingListManager.loadFromFirebase();
+        console.log('📊 Datos actuales en Firestore:', currentData);
+
+        if (!currentData || !currentData.items) {
+            console.log('✅ No hay datos de packing list en Firestore');
+            return true;
+        }
+
+        // Claves obsoletas que deben eliminarse de Firestore
+        const obsoleteKeys = [
+            'calzado_botas_trekking',
+            'ropa_camisetas_manga_larga', 
+            'calzado_sandalias_hotel'
+        ];
+
+        let cleanedData = { ...currentData };
+        let removedCount = 0;
+
+        // Eliminar claves obsoletas
+        for (const obsoleteKey of obsoleteKeys) {
+            if (cleanedData.items && cleanedData.items[obsoleteKey] !== undefined) {
+                console.log(`🗑️ Eliminando de Firestore: ${obsoleteKey} = ${cleanedData.items[obsoleteKey]}`);
+                delete cleanedData.items[obsoleteKey];
+                removedCount++;
+            }
+        }
+
+        if (removedCount > 0) {
+            // Actualizar Firestore con datos limpios
+            await packingListManager.saveToFirebase(cleanedData);
+            console.log(`✅ Firestore actualizado: ${removedCount} claves obsoletas eliminadas`);
+        } else {
+            console.log('✅ No se encontraron claves obsoletas en Firestore');
+        }
+
+        return true;
+
+    } catch (error) {
+        console.error('❌ Error limpiando Firestore:', error);
+        return false;
+    }
+}
+
+// EJECUTAR LIMPIEZA AUTOMÁTICA V2
+async function runCompleteCleanupV2() {
+    console.log('🚀 Ejecutando limpieza completa V2...');
+    
+    // Paso 1: Limpiar Firebase expenses (opcional)
+    console.log('⚠️ Saltando limpieza de gastos (ya realizada anteriormente)');
+    const firebaseSuccess = true;
+    
+    // Paso 2: Limpiar localStorage
+    const localStorageResult = cleanLocalStorageKeys();
+    
+    // Paso 3: Limpiar Firestore packing list
+    const firestoreSuccess = await cleanFirestorePackingKeys();
+    
+    // Resumen final
+    console.log('\n📊 RESUMEN DE LIMPIEZA V2:');
+    console.log(`🔥 Firebase expenses: ✅ Saltado (ya limpio)`);
+    console.log(`💾 localStorage: ✅ ${localStorageResult.cleanedCount} claves obsoletas eliminadas`);
+    console.log(`🔥 Firestore packing: ${firestoreSuccess ? '✅ Limpio' : '❌ Error'}`);
+    console.log('\n🎯 SIGUIENTE PASO: Recarga la página para ver los cambios');
+    
+    return { firebaseSuccess, localStorageResult, firestoreSuccess };
+}
+
 // Ejecutar automáticamente
-cleanupFirebaseFromConsole();
+runCompleteCleanupV2();

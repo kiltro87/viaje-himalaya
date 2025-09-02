@@ -32,10 +32,10 @@ export class WeightEstimator {
      */
     getItemWeight(itemKey) {
         // Buscar en todas las categorías del packingListData
-        for (const category of Object.values(tripConfig.packing.categories)) {
-            const item = category.find(item => item.key === itemKey);
+        for (const [categoryName, items] of Object.entries(tripConfig.packingListData)) {
+            const item = items.find(item => item.key === itemKey);
             if (item) {
-                return item.weight;
+                return item.weight || 100; // Usar peso del item o 100g por defecto
             }
         }
         
@@ -48,7 +48,7 @@ export class WeightEstimator {
      */
     getItemCategory(itemKey) {
         // Buscar en qué categoría está el item
-        for (const [categoryName, items] of Object.entries(tripConfig.packing.categories)) {
+        for (const [categoryName, items] of Object.entries(tripConfig.packingListData)) {
             const item = items.find(item => item.key === itemKey);
             if (item) {
                 return categoryName;
@@ -127,14 +127,44 @@ export class WeightEstimator {
     /**
      * Calcular peso total basado en items empacados
      */
+    calculatePackedWeight(packedItems) {
+        // Peso promedio por item: 0.15kg
+        const averageWeight = 0.15;
+        const totalWeight = packedItems * averageWeight;
+        console.log(`🏋️ Weight calculation: ${packedItems} items × ${averageWeight}kg = ${totalWeight}kg`);
+        return Math.round(totalWeight * 10) / 10; // Redondear a 1 decimal
+    }
+    
+    /**
+     * Calcular peso total basado en items empacados
+     */
     calculateTotalWeight(packedItems) {
+        console.log('🔍 WeightEstimator.calculateTotalWeight called with:', packedItems);
         let totalWeight = 0;
         const breakdown = {};
         
+        // Check if packedItems is empty or has no true values
+        const packedCount = Object.values(packedItems || {}).filter(Boolean).length;
+        console.log('🔍 Packed items count:', packedCount);
+        
+        // If no items are packed, return zero weight
+        if (packedCount === 0) {
+            console.log('🔍 No items packed, returning zero weight');
+            return {
+                totalGrams: 0,
+                totalKg: "0.0",
+                totalFormatted: "0kg",
+                breakdown: {},
+                analysis: this.analyzeWeight(0)
+            };
+        }
+        
         // Iterar sobre items empacados
         for (const [itemKey, isPacked] of Object.entries(packedItems)) {
+            console.log(`🔍 Processing item: ${itemKey} = ${isPacked}`);
             if (isPacked) {
                 const weight = this.getItemWeight(itemKey);
+                console.log(`🔍 Item weight: ${itemKey} = ${weight}g`);
                 totalWeight += weight;
                 
                 // Agrupar por categoría para breakdown
@@ -144,13 +174,18 @@ export class WeightEstimator {
             }
         }
         
-        return {
+        console.log(`🔍 Total weight calculated: ${totalWeight}g`);
+        
+        const result = {
             totalGrams: totalWeight,
-            totalKg: (totalWeight / 1000).toFixed(2),
+            totalKg: (totalWeight / 1000).toFixed(1),
             totalFormatted: this.formatWeight(totalWeight),
             breakdown,
             analysis: this.analyzeWeight(totalWeight)
         };
+        
+        console.log('🔍 Final weight result:', result);
+        return result;
     }
     
     /**
@@ -205,8 +240,13 @@ export class WeightEstimator {
      * Formatea peso en gramos a formato legible
      */
     formatWeight(grams) {
+        if (grams === 0) {
+            return "0kg";
+        }
+        
         if (grams >= 1000) {
             const kg = grams / 1000;
+            // Always show one decimal place for weights >= 1kg
             return `${kg.toFixed(1)}kg`;
         } else {
             return `${Math.round(grams)}g`;

@@ -74,7 +74,7 @@ export const tripConfig = {
                 { "name": "Thamel", "coords": [27.7172, 85.3138], "icon": "🛍️", "description": "Barrio turístico y centro neurálgico" },
                 { "name": "Jardín de los Sueños", "coords": [27.7172, 85.3150], "icon": "🌳", "description": "Oasis de paz de estilo neoclásico" }
             ],
-            "icon": "🛬",
+            "icon": "flight_land",
             "planA": "Llegada a KTM. Pasa por inmigración para obtener el visado on-arrival. Recoge tu equipaje y busca al representante del tour o toma un taxi prepago al hotel en Thamel. Check-in y tiempo para refrescarse.",
             "planB": "Si llegas con energía, da un primer paseo por las caóticas y fascinantes calles de Thamel para ubicarte. Para un respiro, visita el cercano Jardín de los Sueños.",
             "consejo": "Ten a mano 50 USD en efectivo para el visado de 30 días. El proceso en el aeropuerto es sencillo pero puede haber cola. Un taxi a Thamel cuesta entre 400-800 NPR.",
@@ -506,13 +506,6 @@ export const tripConfig = {
           ],
           "Tour": [
             {
-              "concept": "Itinerario \"Nepal 360\"",
-              "cost": 1100.0,
-              "category": "Tour",
-              "phase": "nepal",
-              "country": "Nepal"
-            },
-            {
               "concept": "Itinerario \"Best of Bhutan\"",
               "cost": 1602.0,
               "category": "Tour",
@@ -618,33 +611,24 @@ export const tripConfig = {
           "Alojamiento": [
             {
               "concept": "Hotel New Era (10-12 Oct)",
-              "cost": 66.0,
+              "cost": 33.0,
               "category": "Alojamiento",
-              "subcategory": "Hotel",
               "phase": "nepal",
-              "country": "Nepal",
-              "nights": 2,
-              "confirmationCode": "5740622864"
+              "country": "Nepal"
             },
             {
               "concept": "Hotel New Era (19-20 Oct)",
-              "cost": 33.0,
+              "cost": 16.5,
               "category": "Alojamiento",
-              "subcategory": "Hotel",
               "phase": "nepal",
-              "country": "Nepal",
-              "nights": 1,
-              "confirmationCode": "5740698796"
+              "country": "Nepal"
             },
             {
               "concept": "Hotel New Era (25-26 Oct)",
-              "cost": 33.0,
+              "cost": 16.5,
               "category": "Alojamiento",
-              "subcategory": "Hotel",
               "phase": "nepal",
-              "country": "Nepal",
-              "nights": 1,
-              "confirmationCode": "5379085400"
+              "country": "Nepal"
             }
           ],
           "Varios": [
@@ -766,44 +750,44 @@ export const tripConfig = {
     // Lista de equipaje con pesos estimados (en gramos)
     packingListData: {
         'Ropa': [
-            { item: 'Camisetas de manga larga (5-7)', weight: 1000, key: 'camisetas_manga_larga' },
-            { item: 'Pantalones de trekking (3-4)', weight: 1200, key: 'pantalones_trekking' },
-            { item: 'Chaleco o chaqueta ligera', weight: 300, key: 'chaqueta_ligera' },
+            { item: 'Camisetas de manga larga (5-7)', weight: 1000, key: 'ropa_camisetas_manga_larga' },
+            { item: 'Pantalones de trekking (3-4)', weight: 1200, key: 'ropa_pantalones_trekking' },
+            { item: 'Chaleco o chaqueta ligera', weight: 300, key: 'ropa_chaqueta_ligera' },
             { item: 'Ropa interior térmica', weight: 360, key: 'ropa_interior_termica' },
-            { item: 'Calcetines de trekking (5-7 pares)', weight: 480, key: 'calcetines_trekking' },
-            { item: 'Gorros de lana (2)', weight: 120, key: 'gorros_lana' },
-            { item: 'Guantes de trekking', weight: 80, key: 'guantes_trekking' },
-            { item: 'Bufanda o pañuelo', weight: 30, key: 'bufanda' }
+            { item: 'Calcetines de trekking (5-7 pares)', weight: 480, key: 'ropa_calcetines_trekking' },
+            { item: 'Gorros de lana (2)', weight: 120, key: 'ropa_gorros_lana' },
+            { item: 'Guantes de trekking', weight: 80, key: 'ropa_guantes_trekking' },
+            { item: 'Bufanda o pañuelo', weight: 30, key: 'ropa_bufanda' }
         ],
         'Calzado': [
-            { item: 'Botas de trekking', weight: 1200, key: 'botas_trekking' },
-            { item: 'Zapatillas deportivas', weight: 800, key: 'zapatillas_deportivas' },
-            { item: 'Sandalias para el hotel', weight: 300, key: 'sandalias_hotel' },
-            { item: 'Calcetines de repuesto', weight: 160, key: 'calcetines_repuesto' }
+            { item: 'Botas de trekking', weight: 1200, key: 'calzado_botas_de_trekking' },
+            { item: 'Zapatillas deportivas', weight: 800, key: 'calzado_zapatillas_deportivas' },
+            { item: 'Sandalias para el hotel', weight: 300, key: 'calzado_sandalias_para_el_hotel' },
+            { item: 'Calcetines de repuesto', weight: 160, key: 'calzado_calcetines_de_repuesto' }
         ],
         'Equipo': [
-            { item: 'Mochila de 30-40L', weight: 1500, key: 'mochila_principal' },
-            { item: 'Mochila pequeña para excursiones', weight: 400, key: 'mochila_pequena' },
-            { item: 'Botella de agua 1L', weight: 150, key: 'botella_agua' },
-            { item: 'Linterna frontal', weight: 80, key: 'linterna_frontal' },
-            { item: 'Bastones de trekking', weight: 500, key: 'bastones_trekking' },
-            { item: 'Gafas de sol', weight: 30, key: 'gafas_sol' },
-            { item: 'Protector solar SPF 50+', weight: 100, key: 'protector_solar' },
-            { item: 'Crema hidratante', weight: 50, key: 'crema_hidratante' },
-            { item: 'Kit de primeros auxilios', weight: 200, key: 'kit_primeros_auxilios' },
-            { item: 'Cámara fotográfica', weight: 400, key: 'camara_fotografica' },
-            { item: 'Power bank', weight: 300, key: 'power_bank' },
-            { item: 'Adaptadores de corriente', weight: 150, key: 'adaptadores_corriente' }
+            { item: 'Mochila de 30-40L', weight: 1500, key: 'equipo_mochila_principal' },
+            { item: 'Mochila pequeña para excursiones', weight: 400, key: 'equipo_mochila_pequena' },
+            { item: 'Botella de agua 1L', weight: 150, key: 'equipo_botella_agua' },
+            { item: 'Linterna frontal', weight: 80, key: 'equipo_linterna_frontal' },
+            { item: 'Bastones de trekking', weight: 500, key: 'equipo_bastones_trekking' },
+            { item: 'Gafas de sol', weight: 30, key: 'equipo_gafas_sol' },
+            { item: 'Protector solar SPF 50+', weight: 100, key: 'equipo_protector_solar' },
+            { item: 'Crema hidratante', weight: 50, key: 'equipo_crema_hidratante' },
+            { item: 'Kit de primeros auxilios', weight: 200, key: 'equipo_kit_primeros_auxilios' },
+            { item: 'Cámara fotográfica', weight: 400, key: 'equipo_camara_fotografica' },
+            { item: 'Power bank', weight: 300, key: 'equipo_power_bank' },
+            { item: 'Adaptadores de corriente', weight: 150, key: 'equipo_adaptadores_corriente' }
         ],
         'Documentos y Salud': [
-            { item: 'Pasaporte válido', weight: 50, key: 'pasaporte' },
-            { item: 'Visas (Nepal y Bután)', weight: 10, key: 'visas' },
-            { item: 'Seguro de viaje', weight: 5, key: 'seguro_viaje' },
-            { item: 'Tarjetas de crédito/débito', weight: 20, key: 'tarjetas_credito' },
-            { item: 'Efectivo en dólares/euros', weight: 50, key: 'efectivo' },
-            { item: 'Medicamentos personales', weight: 100, key: 'medicamentos_personales' },
-            { item: 'Pastillas para el mal de altura', weight: 30, key: 'pastillas_altura' },
-            { item: 'Repelente de mosquitos', weight: 80, key: 'repelente_mosquitos' }
+            { item: 'Pasaporte válido', weight: 50, key: 'documentos_pasaporte' },
+            { item: 'Visas (Nepal y Bután)', weight: 10, key: 'documentos_visas' },
+            { item: 'Seguro de viaje', weight: 5, key: 'documentos_seguro_viaje' },
+            { item: 'Tarjetas de crédito/débito', weight: 20, key: 'documentos_tarjetas_credito' },
+            { item: 'Efectivo en dólares/euros', weight: 50, key: 'documentos_efectivo' },
+            { item: 'Medicamentos personales', weight: 100, key: 'documentos_medicamentos_personales' },
+            { item: 'Pastillas para el mal de altura', weight: 30, key: 'documentos_pastillas_altura' },
+            { item: 'Repelente de mosquitos', weight: 80, key: 'documentos_repelente_mosquitos' }
         ]
     },
 
@@ -844,13 +828,7 @@ export const tripConfig = {
                 }
             ],
             "Tour": [
-                {
-                    concept: "Itinerario \"Nepal 360\"",
-                    cost: 1100.0,
-                    category: "Tour",
-                    phase: "nepal",
-                    country: "Nepal"
-                },
+                
                 {
                     concept: "Itinerario \"Best of Bhutan\"",
                     cost: 1602.0,
@@ -862,7 +840,6 @@ export const tripConfig = {
             "Alojamiento": [
                 {
                     concept: "Hotel New Era (10-12 Oct)",
-                    cost: 66.0,
                     category: "Alojamiento",
                     subcategory: "Hotel",
                     phase: "nepal",
@@ -875,7 +852,6 @@ export const tripConfig = {
                 },
                 {
                     concept: "Hotel New Era (19-20 Oct)",
-                    cost: 33.0,
                     category: "Alojamiento",
                     subcategory: "Hotel",
                     phase: "nepal",
@@ -888,7 +864,6 @@ export const tripConfig = {
                 },
                 {
                     concept: "Hotel New Era (25-26 Oct)",
-                    cost: 33.0,
                     category: "Alojamiento",
                     subcategory: "Hotel",
                     phase: "nepal",

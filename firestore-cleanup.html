@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpieza Firestore - Packing List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #e74c3c;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 8px 5px;
+        }
+        .btn:hover { background: #c0392b; }
+        .btn.success { background: #27ae60; }
+        .btn.info { background: #3498db; }
+        .log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+        .status {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.error { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
+        .status.success { background: #e8f5e8; color: #2e7d32; border-left: 4px solid #2e7d32; }
+        .status.warning { background: #fff3e0; color: #ef6c00; border-left: 4px solid #ef6c00; }
+        .status.info { background: #e3f2fd; color: #1565c0; border-left: 4px solid #1565c0; }
+        .keys-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .keys-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .key-item {
+            padding: 5px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .key-item.duplicate { color: #dc3545; font-weight: bold; }
+        .key-item.correct { color: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Limpieza Firestore - Packing List</h1>
+        
+        <div class="status error">
+            <strong>PROBLEMA DETECTADO:</strong><br>
+            Firestore contiene claves duplicadas que se sincronizan de vuelta a localStorage después de la limpieza.
+        </div>
+
+        <div class="status warning">
+            <strong>CLAVES DUPLICADAS A ELIMINAR:</strong><br>
+            • calzado_botas_trekking (duplicado)<br>
+            • ropa_camisetas_manga_larga (formato incorrecto)<br>
+            • calzado_sandalias_hotel (formato incorrecto)
+        </div>
+
+        <div class="status info">
+            <strong>INSTRUCCIONES:</strong><br>
+            1. Asegúrate de que localhost:8000 esté abierto en otra pestaña<br>
+            2. Haz clic en "Conectar a Firebase" para acceder a los datos<br>
+            3. Revisa las claves actuales<br>
+            4. Limpia Firestore y localStorage simultáneamente
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="btn info" onclick="connectToFirebase()">🔗 Conectar a Firebase</button>
+            <button class="btn" onclick="showCurrentData()" disabled id="showBtn">📊 Ver Datos Actuales</button>
+            <button class="btn" onclick="cleanFirestoreAndLocal()" disabled id="cleanBtn">🧹 Limpiar Todo</button>
+            <button class="btn success" onclick="verifyCleanup()" disabled id="verifyBtn">✅ Verificar Limpieza</button>
+        </div>
+
+        <div id="dataDisplay" class="keys-grid" style="display: none;">
+            <div class="keys-section">
+                <h4>🔥 Firestore Keys</h4>
+                <div id="firestoreKeys"></div>
+            </div>
+            <div class="keys-section">
+                <h4>💾 localStorage Keys</h4>
+                <div id="localStorageKeys"></div>
+            </div>
+        </div>
+        
+        <div id="log" class="log" style="display: none;"></div>
+    </div>
+
+    <script>
+        let packingListManager = null;
+        let stateManager = null;
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.style.display = 'block';
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function connectToFirebase() {
+            log('🔗 Intentando conectar a Firebase...');
+            
+            try {
+                // Acceder a la ventana principal de la app
+                const mainWindow = window.open('', 'mainApp');
+                if (!mainWindow || !mainWindow.stateManager) {
+                    // Intentar acceder desde el contexto actual
+                    if (window.parent && window.parent.stateManager) {
+                        stateManager = window.parent.stateManager;
+                    } else {
+                        throw new Error('No se puede acceder a stateManager. Asegúrate de que localhost:8000 esté abierto.');
+                    }
+                } else {
+                    stateManager = mainWindow.stateManager;
+                }
+
+                if (!stateManager) {
+                    throw new Error('StateManager no encontrado');
+                }
+
+                packingListManager = stateManager.get('packingListManager');
+                if (!packingListManager) {
+                    throw new Error('PackingListManager no encontrado');
+                }
+
+                log('✅ Conectado exitosamente a Firebase');
+                
+                // Habilitar botones
+                document.getElementById('showBtn').disabled = false;
+                document.getElementById('cleanBtn').disabled = false;
+                document.getElementById('verifyBtn').disabled = false;
+                
+                // Mostrar datos automáticamente
+                await showCurrentData();
+                
+            } catch (error) {
+                log(`❌ Error conectando: ${error.message}`);
+                log('💡 SOLUCIÓN: Abre localhost:8000 en otra pestaña primero');
+            }
+        }
+
+        async function showCurrentData() {
+            log('📊 Obteniendo datos actuales...');
+            
+            try {
+                // Obtener datos de Firestore
+                const firestoreData = await packingListManager.loadFromFirebase();
+                const firestoreKeys = firestoreData && firestoreData.items ? Object.keys(firestoreData.items) : [];
+                
+                // Obtener datos de localStorage
+                const localKeys = Object.keys(localStorage).filter(key => 
+                    key.includes('calzado_') || key.includes('ropa_') || 
+                    key.includes('equipo_') || key.includes('documentos_')
+                );
+
+                // Mostrar en la UI
+                displayKeys('firestoreKeys', firestoreKeys, 'Firestore');
+                displayKeys('localStorageKeys', localKeys, 'localStorage');
+                
+                document.getElementById('dataDisplay').style.display = 'grid';
+                
+                log(`📊 Firestore: ${firestoreKeys.length} claves`);
+                log(`📊 localStorage: ${localKeys.length} claves`);
+                
+                // Identificar duplicados
+                const duplicates = ['calzado_botas_trekking', 'ropa_camisetas_manga_larga', 'calzado_sandalias_hotel'];
+                const firestoreDuplicates = firestoreKeys.filter(key => duplicates.includes(key));
+                const localDuplicates = localKeys.filter(key => duplicates.includes(key));
+                
+                log(`🔍 Duplicados en Firestore: ${firestoreDuplicates.length}`);
+                log(`🔍 Duplicados en localStorage: ${localDuplicates.length}`);
+                
+            } catch (error) {
+                log(`❌ Error obteniendo datos: ${error.message}`);
+            }
+        }
+
+        function displayKeys(containerId, keys, source) {
+            const container = document.getElementById(containerId);
+            const duplicates = ['calzado_botas_trekking', 'ropa_camisetas_manga_larga', 'calzado_sandalias_hotel'];
+            
+            container.innerHTML = keys.map(key => {
+                const isDuplicate = duplicates.includes(key);
+                const className = isDuplicate ? 'duplicate' : 'correct';
+                const icon = isDuplicate ? '❌' : '✅';
+                return `<div class="key-item ${className}">${icon} ${key}</div>`;
+            }).join('');
+        }
+
+        async function cleanFirestoreAndLocal() {
+            log('🧹 Iniciando limpieza completa...');
+            
+            const duplicates = ['calzado_botas_trekking', 'ropa_camisetas_manga_larga', 'calzado_sandalias_hotel'];
+            let cleanedCount = 0;
+
+            try {
+                // 1. Limpiar localStorage
+                log('💾 Limpiando localStorage...');
+                duplicates.forEach(key => {
+                    if (localStorage.getItem(key) !== null) {
+                        localStorage.removeItem(key);
+                        log(`🗑️ localStorage: Eliminado ${key}`);
+                        cleanedCount++;
+                    }
+                });
+
+                // 2. Limpiar Firestore
+                log('🔥 Limpiando Firestore...');
+                const currentData = await packingListManager.loadFromFirebase();
+                
+                if (currentData && currentData.items) {
+                    let firestoreCleanedCount = 0;
+                    let cleanedData = { ...currentData };
+
+                    duplicates.forEach(key => {
+                        if (cleanedData.items[key] !== undefined) {
+                            delete cleanedData.items[key];
+                            log(`🗑️ Firestore: Eliminado ${key}`);
+                            firestoreCleanedCount++;
+                        }
+                    });
+
+                    if (firestoreCleanedCount > 0) {
+                        await packingListManager.saveToFirebase(cleanedData);
+                        log(`✅ Firestore actualizado: ${firestoreCleanedCount} claves eliminadas`);
+                    }
+                }
+
+                log(`✅ Limpieza completada: ${cleanedCount} claves eliminadas`);
+                log('🎯 Recarga localhost:8000 para ver los cambios');
+                
+                // Actualizar vista
+                setTimeout(() => showCurrentData(), 1000);
+                
+            } catch (error) {
+                log(`❌ Error en limpieza: ${error.message}`);
+            }
+        }
+
+        async function verifyCleanup() {
+            log('✅ Verificando limpieza...');
+            await showCurrentData();
+            
+            const localKeys = Object.keys(localStorage).filter(key => 
+                key.includes('calzado_') || key.includes('ropa_') || 
+                key.includes('equipo_') || key.includes('documentos_')
+            );
+            
+            const duplicates = ['calzado_botas_trekking', 'ropa_camisetas_manga_larga', 'calzado_sandalias_hotel'];
+            const remainingDuplicates = localKeys.filter(key => duplicates.includes(key));
+            
+            if (remainingDuplicates.length === 0) {
+                log('🎉 ¡LIMPIEZA EXITOSA! No se encontraron claves duplicadas');
+                log('🎯 Ahora recarga localhost:8000 para confirmar');
+            } else {
+                log(`⚠️ Aún quedan ${remainingDuplicates.length} claves duplicadas`);
+                log('🔄 Ejecuta la limpieza nuevamente');
+            }
+        }
+
+        // Intentar conexión automática si es posible
+        window.onload = function() {
+            log('🚀 Página cargada. Haz clic en "Conectar a Firebase" para comenzar.');
+        };
+    </script>
+</body>
+</html>
