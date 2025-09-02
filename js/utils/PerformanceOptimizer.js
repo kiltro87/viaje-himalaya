@@ -299,7 +299,7 @@ export class PerformanceOptimizer {
         ];
 
         const preloadPromises = criticalModules.map(module => {
-            return import(module).catch(error => {
+            return import(/* @vite-ignore */ module).catch(error => {
                 Logger.warn(`Failed to preload critical module: ${module}`, error);
             });
         });
@@ -343,13 +343,13 @@ export class PerformanceOptimizer {
             
             switch (moduleName) {
                 case 'spending-insights':
-                    module = await import('../components/SpendingInsights.js');
+                    module = await import(/* @vite-ignore */ '../components/SpendingInsights.js');
                     break;
                 case 'chart-components':
                     module = await this.loadChartComponents();
                     break;
                 case 'map-renderer':
-                    module = await import('../components/renderers/MapRenderer.js');
+                    module = await import(/* @vite-ignore */ '../components/renderers/MapRenderer.js');
                     break;
             }
             

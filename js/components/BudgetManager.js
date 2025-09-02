@@ -1855,9 +1855,10 @@ export class BudgetManager {
                 Logger.error('Error creating expense from budget item:', error);
                 
                 // ❌ REVERTIR CAMBIOS OPTIMISTAS
-                stateManager.getState('expenses') = stateManager.getState('expenses').filter(exp => 
+                const currentExpenses = stateManager.getState('expenses').filter(exp => 
                     !(exp.concept === concept && exp.amount === amount && exp.category === category)
                 );
+                stateManager.setState('expenses', currentExpenses);
                 
                 this.updateSummaryCards();
                 this.showCategoryContent();
