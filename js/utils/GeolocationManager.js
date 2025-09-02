@@ -276,7 +276,7 @@ export class GeolocationManager {
      * @param {GeolocationPosition} position - Posición actual
      */
     checkDestinationProximity(position) {
-        if (!tripConfig.itinerary.data || !Array.isArray(tripConfig.itinerary.data)) {
+        if (!tripConfig.itinerary || !Array.isArray(tripConfig.itinerary)) {
             return;
         }
 
@@ -284,7 +284,7 @@ export class GeolocationManager {
         const currentLng = position.coords.longitude;
 
         // Verificar cada día del itinerario
-        tripConfig.itinerary.data.forEach(day => {
+        tripConfig.itinerary.forEach(day => {
             if (day.coordinates) {
                 const distance = this.calculateDistance(
                     currentLat, currentLng,
@@ -303,7 +303,7 @@ export class GeolocationManager {
         });
 
         // Verificar lugares específicos por día
-        tripConfig.itinerary.data.forEach(day => {
+        tripConfig.itinerary.forEach(day => {
             if (day.places) {
                 day.places.forEach(place => {
                     if (place.coords && place.coords.length === 2) {
@@ -447,14 +447,14 @@ export class GeolocationManager {
             return [];
         }
 
-        if (!tripConfig.itinerary.data) {
+        if (!tripConfig.itinerary) {
             return [];
         }
 
         const position = this.currentPosition || this.lastKnownPosition;
         const distances = [];
 
-        tripConfig.itinerary.data.forEach(day => {
+        tripConfig.itinerary.forEach(day => {
             if (day.coordinates) {
                 const distance = this.calculateDistance(
                     position.coords.latitude,

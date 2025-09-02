@@ -46,7 +46,7 @@ export class HotelManager {
      * Cargar datos de hoteles desde tripConfig
      */
     loadHotelsData() {
-        const hotelsData = tripConfig.accommodations.hotels || {};
+        const hotelsData = tripConfig.accommodations || [];
         
         Object.values(hotelsData).forEach(hotel => {
             this.hotels.set(hotel.id, hotel);
@@ -59,7 +59,7 @@ export class HotelManager {
      * Cargar datos de reservas desde tripConfig
      */
     loadReservationsData() {
-        const reservationsData = tripConfig.accommodations.reservations || [];
+        const reservationsData = tripConfig.accommodations.flatMap(hotel => hotel.reservations || []) || [];
         
         reservationsData.forEach(reservation => {
             this.reservations.set(reservation.id, reservation);

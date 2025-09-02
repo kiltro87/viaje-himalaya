@@ -443,11 +443,11 @@ export class OfflineMapManager {
      * Añade marcadores de lugares del viaje
      */
     addTravelMarkers(map) {
-        if (!tripConfig.itinerary.data) return;
+        if (!tripConfig.itinerary) return;
 
         const markers = [];
 
-        tripConfig.itinerary.data.forEach((day, index) => {
+        tripConfig.itinerary.forEach((day, index) => {
             if (day.coordinates) {
                 // Extraer número de día del id (ej: "day-1" -> "1") o usar índice + 1
                 const dayNumber = day.id ? day.id.replace('day-', '') : (index + 1);

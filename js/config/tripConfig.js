@@ -6,19 +6,18 @@
  * toda la información del viaje, incluyendo itinerario, presupuesto,
  * vuelos, clima, agencias y equipaje.
  * 
- * Estructura de datos:
- * - itineraryData: Array con todos los días del viaje (18 días)
- *   Cada día incluye: id, phase, country, location, title, description, places[], coords, icon, etc.
- * - budgetData: Presupuesto categorizado con items detallados
- * - flightsData: Información de vuelos de ida y vuelta
- * - packingListData: Lista de equipaje por categorías
- * - weatherData: Información climática por fases del viaje
- * - weatherLocations: Datos climáticos detallados por ciudades
- * - agenciesData: Información de agencias y servicios
- * - calendarData: Getters para cálculos de fechas y estadísticas
+ * Nueva estructura nested:
+ * - trip: Información básica del viaje (fechas, duración, viajeros)
+ * - itinerary: Array con todos los días del viaje (18 días)
+ * - weather: Información climática completa (current + locations)
+ * - flights: Información de vuelos completa
+ * - accommodations: Hoteles y reservas unificados
+ * - budget: Presupuesto categorizado
+ * - packing: Lista de equipaje por categorías
+ * - services: Agencias, seguros y servicios de emergencia
  * 
  * @author David Ferrer Figueroa
- * @version 2.0.0
+ * @version 4.0.0
  * @since 2024
  */
 
@@ -30,25 +29,16 @@ export const tripConfig = {
         endDate: "2025-10-26", 
         duration: 18,
         travelers: 2,
-        currency: "EUR"
-    },
-
-    // === ITINERARIO COMPLETO (preservado) ===
-    itinerary: {
-    // Metadatos del viaje
-    tripInfo: {
-        title: "Mi Aventura en el Himalaya",
-        subtitle: "Un recorrido para descubrir Nepal y Bután",
-        description: "Una aventura épica de 18 días explorando los tesoros culturales y naturales del Himalaya",
+        currency: "EUR",
         
         // Configuración de APIs
         weatherApiKey: "1b1dbbeb6444b4ea9961811467326ea6",
         destinations: ["Nepal", "Bután"],
-        totalDays: 18,
         year: 2025
     },
 
-        data: [
+    // === ITINERARIO COMPLETO (preservado) ===
+    itinerary: [
         {
             "id": "day-1",
             "phase": "nepal",
@@ -627,43 +617,34 @@ export const tripConfig = {
           ],
           "Alojamiento": [
             {
-              "concept": "Hotel New Era (10-12 Oct) - Mi parte",
-              "cost": 33.0,
+              "concept": "Hotel New Era (10-12 Oct)",
+              "cost": 66.0,
               "category": "Alojamiento",
               "subcategory": "Hotel",
               "phase": "nepal",
               "country": "Nepal",
               "nights": 2,
-              "confirmationCode": "5740622864",
-              "shared": true,
-              "totalCost": 66.0,
-              "splitBetween": 2
+              "confirmationCode": "5740622864"
             },
             {
-              "concept": "Hotel New Era (19-20 Oct) - Mi parte",
-              "cost": 16.5,
+              "concept": "Hotel New Era (19-20 Oct)",
+              "cost": 33.0,
               "category": "Alojamiento",
               "subcategory": "Hotel",
               "phase": "nepal",
               "country": "Nepal",
               "nights": 1,
-              "confirmationCode": "5740698796",
-              "shared": true,
-              "totalCost": 33.0,
-              "splitBetween": 2
+              "confirmationCode": "5740698796"
             },
             {
-              "concept": "Hotel New Era (25-26 Oct) - Mi parte",
-              "cost": 16.5,
+              "concept": "Hotel New Era (25-26 Oct)",
+              "cost": 33.0,
               "category": "Alojamiento",
               "subcategory": "Hotel",
               "phase": "nepal",
               "country": "Nepal",
               "nights": 1,
-              "confirmationCode": "5379085400",
-              "shared": true,
-              "totalCost": 33.0,
-              "splitBetween": 2
+              "confirmationCode": "5379085400"
             }
           ],
           "Varios": [
@@ -826,325 +807,460 @@ export const tripConfig = {
         ]
     },
 
+    // === PRESUPUESTO PRESERVADO ===
+    budget: {
+        categories: {
+            "Transporte": [
+                {
+                    concept: "Vuelos Madrid-Kathmandu",
+                    cost: 850.0,
+                    category: "Transporte", 
+                    subcategory: "Vuelos",
+                    phase: "international",
+                    country: "Internacional"
+                },
+                {
+                    concept: "Vuelos Kathmandu-Paro",
+                    cost: 350.0,
+                    category: "Transporte",
+                    subcategory: "Vuelos",
+                    phase: "butan",
+                    country: "Bután"
+                },
+                {
+                    concept: "Vuelos Paro-Kathmandu",
+                    cost: 350.0,
+                    category: "Transporte",
+                    subcategory: "Vuelos", 
+                    phase: "butan",
+                    country: "Bután"
+                },
+                {
+                    concept: "Autobuses (2 viajes)",
+                    cost: 1.0,
+                    category: "Transporte",
+                    phase: "nepal",
+                    country: "Nepal"
+                }
+            ],
+            "Tour": [
+                {
+                    concept: "Itinerario \"Nepal 360\"",
+                    cost: 1100.0,
+                    category: "Tour",
+                    phase: "nepal",
+                    country: "Nepal"
+                },
+                {
+                    concept: "Itinerario \"Best of Bhutan\"",
+                    cost: 1602.0,
+                    category: "Tour",
+                    phase: "butan",
+                    country: "Bután"
+                }
+            ],
+            "Alojamiento": [
+                {
+                    concept: "Hotel New Era (10-12 Oct)",
+                    cost: 66.0,
+                    category: "Alojamiento",
+                    subcategory: "Hotel",
+                    phase: "nepal",
+                    country: "Nepal",
+                    nights: 2,
+                    confirmationCode: "5740622864",
+                    shared: true,
+                    totalCost: 66.0,
+                    splitBetween: 2
+                },
+                {
+                    concept: "Hotel New Era (19-20 Oct)",
+                    cost: 33.0,
+                    category: "Alojamiento",
+                    subcategory: "Hotel",
+                    phase: "nepal",
+                    country: "Nepal",
+                    nights: 1,
+                    confirmationCode: "5740698796",
+                    shared: true,
+                    totalCost: 33.0,
+                    splitBetween: 2
+                },
+                {
+                    concept: "Hotel New Era (25-26 Oct)",
+                    cost: 33.0,
+                    category: "Alojamiento",
+                    subcategory: "Hotel",
+                    phase: "nepal",
+                    country: "Nepal",
+                    nights: 1,
+                    confirmationCode: "5379085400",
+                    shared: true,
+                    totalCost: 33.0,
+                    splitBetween: 2
+                }
+            ],
+            "Comida y Bebida": [
+                {
+                    concept: "Comidas en Nepal",
+                    cost: 187.0,
+                    category: "Comida y Bebida",
+                    phase: "nepal",
+                    country: "Nepal"
+                },
+                {
+                    concept: "Bebidas",
+                    cost: 45.0,
+                    category: "Comida y Bebida",
+                    phase: "butan",
+                    country: "Bután"
+                }
+            ],
+            "Entradas y Visados": [
+                {
+                    concept: "Visado de Nepal (30 días)",
+                    cost: 50.0,
+                    category: "Entradas y Visados",
+                    phase: "nepal",
+                    country: "Nepal"
+                },
+                {
+                    concept: "Plaza Durbar, Katmandú",
+                    cost: 7.0,
+                    category: "Entradas y Visados",
+                    phase: "nepal",
+                    country: "Nepal"
+                },
+                {
+                    concept: "Swayambhunath (Templo de los Monos)",
+                    cost: 1.5,
+                    category: "Entradas y Visados",
+                    phase: "nepal",
+                    country: "Nepal"
+                },
+                {
+                    concept: "Pashupatinath",
+                    cost: 7.0,
+                    category: "Entradas y Visados",
+                    phase: "nepal",
+                    country: "Nepal"
+                },
+                {
+                    concept: "Estupa de Boudhanath",
+                    cost: 3.0,
+                    category: "Entradas y Visados",
+                    phase: "nepal",
+                    country: "Nepal"
+                },
+                {
+                    concept: "Monasterio Taktsang (Nido del Tigre)",
+                    cost: 22.0,
+                    category: "Entradas y Visados",
+                    phase: "butan",
+                    country: "Bután"
+                },
+                {
+                    concept: "Tashichho Dzong",
+                    cost: 11.0,
+                    category: "Entradas y Visados",
+                    phase: "butan",
+                    country: "Bután"
+                },
+                {
+                    concept: "Punakha Dzong",
+                    cost: 11.0,
+                    category: "Entradas y Visados",
+                    phase: "butan",
+                    country: "Bután"
+                },
+                {
+                    concept: "Memorial Chorten",
+                    cost: 11.0,
+                    category: "Entradas y Visados",
+                    phase: "butan",
+                    country: "Bután"
+                },
+                {
+                    concept: "Buddha Dordenma",
+                    cost: 11.0,
+                    category: "Entradas y Visados",
+                    phase: "butan",
+                    country: "Bután"
+                },
+                {
+                    concept: "Rinpung Dzong",
+                    cost: 11.0,
+                    category: "Entradas y Visados",
+                    phase: "butan",
+                    country: "Bután"
+                }
+            ],
+            "Varios": [
+                {
+                    concept: "Propinas guías y conductores",
+                    cost: 50.0,
+                    category: "Varios",
+                    phase: "general",
+                    country: "General"
+                },
+                {
+                    concept: "Souvenirs y compras",
+                    cost: 100.0,
+                    category: "Varios",
+                    phase: "general",
+                    country: "General"
+                }
+            ]
+        }
+    },
+
+    // === LISTA DE EQUIPAJE PRESERVADA ===
+    packing: {
+        categories: {
+            "Ropa": [
+                { item: "Camisetas", weight: 200, key: "camisetas" },
+                { item: "Pantalones trekking", weight: 400, key: "pantalones_trekking" },
+                { item: "Chaqueta impermeable", weight: 350, key: "chaqueta_impermeable" },
+                { item: "Forro polar", weight: 300, key: "forro_polar" },
+                { item: "Ropa interior", weight: 150, key: "ropa_interior" },
+                { item: "Calcetines trekking", weight: 100, key: "calcetines_trekking" },
+                { item: "Gorro y guantes", weight: 80, key: "gorro_guantes" },
+                { item: "Pañuelo/buff", weight: 30, key: "panuelo_buff" }
+            ],
+            "Calzado": [
+                { item: "Botas de trekking", weight: 800, key: "botas_trekking" },
+                { item: "Zapatillas cómodas", weight: 400, key: "zapatillas_comodas" },
+                { item: "Sandalias", weight: 200, key: "sandalias" }
+            ],
+            "Equipo": [
+                { item: "Mochila grande (65L)", weight: 2000, key: "mochila_grande" },
+                { item: "Mochila pequeña (daypack)", weight: 500, key: "mochila_pequena" },
+                { item: "Saco de dormir", weight: 1200, key: "saco_dormir" },
+                { item: "Bastones de trekking", weight: 600, key: "bastones_trekking" },
+                { item: "Linterna frontal", weight: 100, key: "linterna_frontal" },
+                { item: "Gafas de sol", weight: 50, key: "gafas_sol" },
+                { item: "Protector solar", weight: 100, key: "protector_solar" },
+                { item: "Botella de agua", weight: 150, key: "botella_agua" }
+            ],
+            "Electrónicos": [
+                { item: "Cámara", weight: 300, key: "camara" },
+                { item: "Powerbank", weight: 250, key: "powerbank" },
+                { item: "Cargadores", weight: 200, key: "cargadores" },
+                { item: "Adaptador universal", weight: 100, key: "adaptador_universal" }
+            ],
+            "Documentos y Salud": [
+                { item: "Pasaporte", weight: 50, key: "pasaporte" },
+                { item: "Visas (Nepal y Bután)", weight: 10, key: "visas" },
+                { item: "Seguro de viaje", weight: 5, key: "seguro_viaje" },
+                { item: "Tarjetas de crédito/débito", weight: 20, key: "tarjetas_credito" },
+                { item: "Efectivo en dólares/euros", weight: 50, key: "efectivo" },
+                { item: "Medicamentos personales", weight: 100, key: "medicamentos_personales" },
+                { item: "Pastillas para el mal de altura", weight: 30, key: "pastillas_altura" },
+                { item: "Repelente de mosquitos", weight: 80, key: "repelente_mosquitos" }
+            ]
+        }
+    },
+
     // === ALOJAMIENTOS UNIFICADOS ===
-    accommodations: {
-        hotels: [
+    accommodations: [
         {
-            id: 'hotel-001',
-            name: 'Hotel New Era',
-            location: 'Kathmandu',
-            country: 'Nepal',
+            id: "hotel-new-era",
+            name: "Hotel New Era",
+            location: "Kathmandu", 
+            country: "Nepal",
             coordinates: [27.713687, 85.311688],
             pricePerNight: 33,
-            currency: 'EUR',
+            currency: "EUR",
             contact: {
-                phone: '+977-1-5919371',
-                email: '5379085400-bkyb.xm6k.jgkb.dsjr@property.booking.com'
+                phone: "+977-1-5919371",
+                email: "5379085400-bkyb.xm6k.jgkb.dsjr@property.booking.com",
+                bookingUrl: "https://www.booking.com/hotel/np/new-era-kathmandu.en-gb.html"
             },
-            images: [
-                'https://cf.bstatic.com/xdata/images/hotel/max1024x768/435033630.jpg?k=51e0a2ea7e364c7275021e65eb1419e2ff7bfbe8d7cf0bf013903d63c7f2b561&o='
-            ],
-            description: 'Hotel cómodo en Kathmandu con habitaciones twin para viajeros',
-            URL: 'https://www.booking.com/hotel/np/new-era-kathmandu.en-gb.html?label=gen173nr-10CAEoggI46AdIM1gEaEaIAQGYATO4AQfIAQzYAQPoAQH4AQGIAgGoAgG4Aoqg2MUGwAIB0gIkNDUzYmI0YTUtZjYyZC00MjgxLTk1MjEtOWFmMTEwMmJhZDVk2AIB4AIB&sid=45e1ed6e515c3ff7c9daf6f79cd83831&aid=304142'
-        }
-        ],
-        
-        reservations: [
-        {
-            id: 'res-001',
-            hotelId: 'hotel-001',
-            checkInDate: '2025-10-10',
-            checkOutDate: '2025-10-12',
-            nights: 2,
-            itineraryDays: [2, 3],
-            roomType: 'Twin Room',
-            totalCost: 66,
-            myCost: 33,
-            currency: 'EUR',
-            status: 'confirmed',
-            confirmationCode: '5740622864',
-            pinCode: '1293',
-            guestNames: ['2 Adults'],
-            specialRequests: 'Twin beds, one room',
-            shared: true,
-            splitBetween: 2
-        },
-        {
-            id: 'res-002',
-            hotelId: 'hotel-001',
-            checkInDate: '2025-10-19',
-            checkOutDate: '2025-10-20',
-            nights: 1,
-            itineraryDays: [11],
-            roomType: 'Twin Room',
-            totalCost: 33,
-            myCost: 16.5,
-            currency: 'EUR',
-            status: 'confirmed',
-            confirmationCode: '5740698796',
-            pinCode: '3845',
-            guestNames: ['2 Adults'],
-            specialRequests: 'Twin beds, one room',
-            shared: true,
-            splitBetween: 2
-        },
-        {
-            id: 'res-003',
-            hotelId: 'hotel-001',
-            checkInDate: '2025-10-25',
-            checkOutDate: '2025-10-26',
-            nights: 1,
-            itineraryDays: [17],
-            roomType: 'Twin Room',
-            totalCost: 33,
-            myCost: 16.5,
-            currency: 'EUR',
-            status: 'confirmed',
-            confirmationCode: '5379085400',
-            pinCode: '3232',
-            guestNames: ['2 Adults'],
-            specialRequests: 'Twin beds, one room',
-            shared: true,
-            splitBetween: 2
-        }
-        ],
-        
-        // Métodos de utilidad
-        getHotelById(hotelId) {
-            return this.hotels.find(h => h.id === hotelId);
-        },
-        
-        getReservationById(reservationId) {
-            return this.reservations.find(r => r.id === reservationId);
-        },
-        
-        getReservationsByHotel(hotelId) {
-            return this.reservations.filter(r => r.hotelId === hotelId);
-        },
-        
-        getTotalAccommodationCost() {
-            return this.reservations.reduce((total, res) => total + (res.myCost || res.totalCost || 0), 0);
-        }
-    },
-
-    // === CALENDARIO Y FECHAS ===
-    calendar: {
-        getStartDate() {
-            return tripConfig.trip.startDate;
-        },
-        
-        getEndDate() {
-            return tripConfig.trip.endDate;
-        },
-        getTotalDays() {
-            return tripConfig.itineraryData.length;
-        },
-        getTotalCountries() {
-            // Obtener países únicos de los datos del itinerario
-            const countries = new Set();
-            tripConfig.itineraryData.forEach(day => {
-                if (day.country) {
-                    countries.add(day.country);
+            images: ["https://cf.bstatic.com/xdata/images/hotel/max1024x768/435033630.jpg"],
+            description: "Hotel cómodo en Kathmandu con habitaciones twin",
+            
+            reservations: [
+                {
+                    id: "res-001",
+                    checkIn: "2025-10-10",
+                    checkOut: "2025-10-12", 
+                    nights: 2,
+                    roomType: "Twin Room",
+                    guests: 2,
+                    totalCost: 66,
+                    myCost: 33,
+                    shared: true,
+                    splitBetween: 2,
+                    confirmationCode: "5740622864",
+                    pinCode: "1293",
+                    status: "confirmed",
+                    specialRequests: "Twin beds, one room",
+                    itineraryDays: [2, 3]
+                },
+                {
+                    id: "res-002",
+                    checkIn: "2025-10-19",
+                    checkOut: "2025-10-20", 
+                    nights: 1,
+                    roomType: "Twin Room",
+                    guests: 2,
+                    totalCost: 33,
+                    myCost: 16.5,
+                    shared: true,
+                    splitBetween: 2,
+                    confirmationCode: "5740698796",
+                    pinCode: "3845",
+                    status: "confirmed",
+                    specialRequests: "Twin beds, one room",
+                    itineraryDays: [11]
+                },
+                {
+                    id: "res-003",
+                    checkIn: "2025-10-25",
+                    checkOut: "2025-10-26", 
+                    nights: 1,
+                    roomType: "Twin Room",
+                    guests: 2,
+                    totalCost: 33,
+                    myCost: 16.5,
+                    shared: true,
+                    splitBetween: 2,
+                    confirmationCode: "5379085400",
+                    pinCode: "3232",
+                    status: "confirmed",
+                    specialRequests: "Twin beds, one room",
+                    itineraryDays: [17]
                 }
-            });
-            return countries.size;
-        }
-    },
-
-    // Datos de vuelos
-    flightsData: [
-        { 
-            type: 'Internacional', 
-            title: 'Vuelo de Ida', 
-            airline: 'Qatar Airways', 
-            segments: [ 
-                { 
-                    from: 'MAD', 
-                    fromDateTime: '9 de Octubre de 2025 22:45', 
-                    to: 'DOH', 
-                    toDateTime: '10 de Octubre de 2025 06:30', 
-                    layover: 'Tránsito de 2h 55m en Doha (DOH)' 
-                }, 
-                { 
-                    from: 'DOH', 
-                    fromDateTime: '10 de Octubre de 2025 09:25', 
-                    to: 'KTM', 
-                    toDateTime: '10 de Octubre de 2025 16:45' 
-                } 
-            ] 
-        },
-        { 
-            type: 'Regional', 
-            title: 'Katmandú → Paro', 
-            airline: 'Druk Air', 
-            segments: [
-                { 
-                    from: 'KTM', 
-                    fromDateTime: '20 de Octubre de 2025 09:10', 
-                    to: 'PBH', 
-                    toDateTime: '20 de Octubre de 2025 10:30' 
-                }
-            ] 
-        },
-        { 
-            type: 'Regional', 
-            title: 'Paro → Katmandú', 
-            airline: 'Bhutan Airlines', 
-            segments: [
-                { 
-                    from: 'PBH', 
-                    fromDateTime: '25 de Octubre de 2025 07:05', 
-                    to: 'KTM', 
-                    toDateTime: '25 de Octubre de 2025 08:00' 
-                }
-            ] 
-        },
-        { 
-            type: 'Internacional', 
-            title: 'Vuelo de Vuelta', 
-            airline: 'Qatar Airways', 
-            segments: [ 
-                { 
-                    from: 'KTM', 
-                    fromDateTime: '26 de Octubre 09:35', 
-                    to: 'DOH', 
-                    toDateTime: '26 de Octubre 12:25', 
-                    layover: 'Tránsito de 2h 55m en Doha (DOH)' 
-                }, 
-                { 
-                    from: 'DOH', 
-                    fromDateTime: '26 de Octubre 15:20', 
-                    to: 'MAD', 
-                    toDateTime: '26 de Octubre 20:55' 
-                } 
-            ] 
+            ]
         }
     ],
 
-    // Datos del clima por fase del viaje
-    weatherData: {
-        nepal: {
-            temperature: '22°C',
-            condition: 'Templado',
-            icon: 'wb_sunny',
-            description: 'Clima templado y soleado, ideal para trekking'
+    // === CLIMA COMPLETO (preservado) ===
+    weather: {
+        current: {
+            nepal: {
+                temperature: "22°C",
+                condition: "Soleado", 
+                icon: "wb_sunny",
+                description: "Clima perfecto para trekking"
+            },
+            bhutan: {
+                temperature: "18°C",
+                condition: "Fresco",
+                icon: "partly_cloudy_day", 
+                description: "Clima fresco de montaña, perfecto para explorar"
+            }
         },
-        butan: {
-            temperature: '18°C', 
-            condition: 'Fresco',
-            icon: 'partly_cloudy_day',
-            description: 'Clima fresco de montaña, perfecto para explorar'
-        }
-        },
-        
         locations: [
-        { location: 'Katmandú', dayTemp: '22-25°C', nightTemp: '5-10°C', icon: 'location_city', color: 'text-blue-600' }, 
-        { location: 'Pokhara', dayTemp: '22-25°C', nightTemp: '5-10°C', icon: 'landscape', color: 'text-green-600' },
-        { location: 'Chitwan', dayTemp: '25-30°C', nightTemp: '15-20°C', icon: 'wb_sunny', color: 'text-orange-600' }, 
-        { location: 'Thimphu', dayTemp: '15-22°C', nightTemp: '0-7°C', icon: 'terrain', color: 'text-slate-600' },
-        { location: 'Paro', dayTemp: '15-22°C', nightTemp: '0-7°C', icon: 'terrain', color: 'text-slate-600' }, 
-        { location: 'Punakha', dayTemp: '18-25°C', nightTemp: '10-15°C', icon: 'landscape', color: 'text-green-600' }
+            { location: "Katmandú", dayTemp: "22-25°C", nightTemp: "5-10°C", icon: "location_city", color: "text-blue-600" }, 
+            { location: "Pokhara", dayTemp: "22-25°C", nightTemp: "5-10°C", icon: "landscape", color: "text-green-600" },
+            { location: "Chitwan", dayTemp: "25-30°C", nightTemp: "15-20°C", icon: "wb_sunny", color: "text-orange-600" }, 
+            { location: "Thimphu", dayTemp: "15-22°C", nightTemp: "0-7°C", icon: "terrain", color: "text-slate-600" }, 
+            { location: "Paro", dayTemp: "15-22°C", nightTemp: "0-7°C", icon: "terrain", color: "text-slate-600" }, 
+            { location: "Punakha", dayTemp: "18-25°C", nightTemp: "10-15°C", icon: "landscape", color: "text-green-600" }
         ]
     },
 
     // === VUELOS COMPLETOS (preservados) ===
-    flights: {
-        data: tripConfig_flights || [],
-        
-        getFlightByType(type) {
-            return this.data.find(f => f.type === type);
+    flights: [
+        { 
+            type: 'Internacional', 
+            title: 'Vuelo de Ida',
+            airline: 'Qatar Airways',
+            segments: [
+                {
+                    from: 'MAD',
+                    fromDateTime: '9 de Octubre 22:45',
+                    to: 'DOH', 
+                    toDateTime: '10 de Octubre 06:30',
+                    layover: 'Tránsito de 2h 55m en Doha (DOH)'
+                },
+                {
+                    from: 'DOH',
+                    fromDateTime: '10 de Octubre 09:25', 
+                    to: 'KTM',
+                    toDateTime: '10 de Octubre 16:45'
+                }
+            ]
         },
-        
-        getInternationalFlights() {
-            return this.data.filter(f => f.type === 'Internacional');
+        { 
+            type: 'Internacional', 
+            title: 'Vuelo de Vuelta',
+            airline: 'Qatar Airways',
+            segments: [
+                {
+                    from: 'KTM',
+                    fromDateTime: '26 de Octubre 18:00',
+                    to: 'DOH', 
+                    toDateTime: '26 de Octubre 20:15',
+                    layover: 'Tránsito de 2h 30m en Doha (DOH)'
+                },
+                {
+                    from: 'DOH',
+                    fromDateTime: '26 de Octubre 22:45', 
+                    to: 'MAD',
+                    toDateTime: '27 de Octubre 04:30'
+                }
+            ]
         },
-        
-        getRegionalFlights() {
-            return this.data.filter(f => f.type === 'Regional');
+        { 
+            type: 'Regional', 
+            title: 'Kathmandu - Paro',
+            airline: 'Druk Air',
+            segments: [
+                {
+                    from: 'KTM',
+                    fromDateTime: '20 de Octubre 07:15',
+                    to: 'PBH', 
+                    toDateTime: '20 de Octubre 08:15'
+                }
+            ]
+        },
+        { 
+            type: 'Regional', 
+            title: 'Paro - Kathmandu',
+            airline: 'Druk Air',
+            segments: [
+                {
+                    from: 'PBH',
+                    fromDateTime: '25 de Octubre 09:00',
+                    to: 'KTM', 
+                    toDateTime: '25 de Octubre 10:00'
+                }
+            ]
         }
-    },
+    ],
 
     // === SERVICIOS Y AGENCIAS ===
     services: {
-        agencies: {
-        bhutan: {
-            name: 'Best of Bhutan',
-            icon: 'temple_buddhist', 
-            color: 'text-orange-600 dark:text-orange-400',
-            tour: 'Best of Bhutan Tour (6 días)',
-            url: 'https://www.bhutan-acorn.com/tour/6-days-best-of-bhutan-tour',
-            price: '1,602€',
-            description: 'Agencia local especializada en turismo sostenible en Bután',
-            contact: 'Bhutan Acorn Tours & Treks'
-        },
+        agencies: [
+            {
+                id: "bhutan-acorn",
+                name: "Best of Bhutan",
+                type: "tour_operator",
+                icon: "temple_buddhist",
+                color: "text-orange-600 dark:text-orange-400",
+                tour: "Best of Bhutan Tour (6 días)",
+                price: "1,602€",
+                url: "https://www.bhutan-acorn.com/tour/6-days-best-of-bhutan-tour",
+                description: "Agencia local especializada en turismo sostenible",
+                contact: "Bhutan Acorn Tours & Treks"
+            }
+        ],
         insurance: {
-            name: 'Seguro de Viaje',
-            icon: 'security',
-            color: 'text-purple-600 dark:text-purple-400',
-            status: 'pending',
-            description: 'Información del seguro pendiente de añadir'
+            name: "Seguro de Viaje",
+            icon: "security", 
+            color: "text-purple-600 dark:text-purple-400",
+            status: "pending",
+            description: "Información del seguro pendiente de añadir"
         },
         emergency: {
-            name: 'Información Importante',
-            icon: 'info',
-            color: 'text-red-600 dark:text-red-400',
-            embassy: 'Embajada España Nepal: +977 1 4123789',
-            hospital: 'CIWEC Clinic, Katmandú',
-            timezone: 'Nepal: UTC+5:45 | Bután: UTC+6:00'
-        },
-        
-        // Métodos de utilidad
-        getAgencyById(agencyId) {
-            return this[agencyId] || null;
-        },
-        
-        getAllAgencies() {
-            return Object.values(this).filter(item => typeof item === 'object' && item.name);
+            name: "Información Importante",
+            icon: "info",
+            color: "text-red-600 dark:text-red-400", 
+            embassy: "Embajada España Nepal: +977 1 4123789",
+            hospital: "CIWEC Clinic, Katmandú",
+            timezone: "Nepal: UTC+5:45 | Bután: UTC+6:00"
         }
-    },
-    
-    // === COMPATIBILIDAD HACIA ATRÁS ===
-    // Getters para mantener compatibilidad con código existente
-    get itineraryData() {
-        return this.itinerary.data;
-    },
-    
-    get budgetData() {
-        return this.budget;
-    },
-    
-    get packingData() {
-        return this.packing;
-    },
-    
-    get hotelsData() {
-        return this.accommodations.hotels;
-    },
-    
-    get reservationsData() {
-        return this.accommodations.reservations;
-    },
-    
-    get weatherData() {
-        return this.weather.current;
-    },
-    
-    get weatherLocations() {
-        return this.weather.locations;
-    },
-    
-    get agenciesData() {
-        return this.services.agencies;
-    },
-    
-    get flightsData() {
-        return this.flights.data;
-    },
-    
-    get calendarData() {
-        return this.calendar;
     }
-};
-
-// Datos de vuelos (se mantendrán separados temporalmente)
-const tripConfig_flights = [
+}; 

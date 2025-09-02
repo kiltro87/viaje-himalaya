@@ -108,7 +108,7 @@ export class CustomMapMarkers {
     }
     
     loadItineraryMarkers() {
-        tripConfig.itinerary.data.forEach(day => {
+        tripConfig.itinerary.forEach(day => {
             if (day.places && day.places.length > 0) {
                 day.places.forEach(place => {
                     this.addMarker(place, day);

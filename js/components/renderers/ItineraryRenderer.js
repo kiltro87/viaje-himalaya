@@ -108,7 +108,7 @@ export class ItineraryRenderer {
         return phases.map(phase => {
             Logger.data(`🔄 Processing phase: ${phase.title} with ${phase.days ? phase.days.length : 0} days`);
             
-            const phaseDays = tripConfig.itinerary.data.filter(day => day.phase === phase.phase);
+            const phaseDays = tripConfig.itinerary.filter(day => day.phase === phase.phase);
             Logger.data(`📋 Filtered ${phaseDays.length} days for phase ${phase.phase}`);
             
             return `
@@ -352,12 +352,12 @@ export class ItineraryRenderer {
      */
     generateItineraryPhases() {
         Logger.data('🔍 Generating itinerary phases...');
-        Logger.data(`📊 Total days in itinerary.data: ${tripConfig.itinerary.data.length}`);
+        Logger.data(`📊 Total days in itinerary: ${tripConfig.itinerary.length}`);
         
         const phases = [];
-        const nepalDays = tripConfig.itinerary.data.filter(day => day.phase === 'nepal');
-        const butanDays = tripConfig.itinerary.data.filter(day => day.phase === 'butan');
-        const farewellDays = tripConfig.itinerary.data.filter(day => day.phase === 'farewell');
+        const nepalDays = tripConfig.itinerary.filter(day => day.phase === 'nepal');
+        const butanDays = tripConfig.itinerary.filter(day => day.phase === 'butan');
+        const farewellDays = tripConfig.itinerary.filter(day => day.phase === 'farewell');
         
         Logger.data(`🇳🇵 Nepal days found: ${nepalDays.length}`);
         Logger.data(`🇧🇹 Bhutan days found: ${butanDays.length}`);
@@ -472,7 +472,7 @@ export class ItineraryRenderer {
             Logger.ui(`🎯 Scroll to current day: dayDiff=${dayDiff}`);
             
             // Si estamos durante el viaje, hacer scroll al día actual
-            if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.data.length) {
+            if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.length) {
                 const currentDayId = `day-${dayDiff + 1}`;
                 const targetElement = document.querySelector(`[data-day-id="${currentDayId}"]`);
                 

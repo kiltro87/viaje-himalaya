@@ -23,7 +23,7 @@ import { tripConfig } from '../config/tripConfig.js';
 
 export class WeatherManager {
     constructor() {
-        this.apiKey = tripConfig.itinerary.tripInfo.weatherApiKey || window.WEATHER_API_KEY || localStorage.getItem('weatherApiKey'); // Configurada desde tripConfig
+        this.apiKey = tripConfig.trip.weatherApiKey || window.WEATHER_API_KEY || localStorage.getItem('weatherApiKey'); // Configurada desde tripConfig
         this.baseUrl = 'https://api.openweathermap.org/data/2.5';
         this.forecastUrl = 'https://api.openweathermap.org/data/2.5/forecast';
         this.cache = new Map();
@@ -286,8 +286,8 @@ export class WeatherManager {
      */
     calculateTripStartFromFlights() {
         try {
-            if (window.tripConfig?.flights.data && window.tripConfig.flights.data.length > 0) {
-                const firstFlight = window.tripConfig.flights.data[0];
+            if (window.tripConfig?.flights && window.tripConfig.flights.length > 0) {
+                const firstFlight = window.tripConfig.flights[0];
                 if (firstFlight.segments && firstFlight.segments.length > 0) {
                     const dateStr = firstFlight.segments[0].fromDateTime;
                     const match = dateStr.match(/(\d+) de (\w+)/);

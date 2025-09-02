@@ -52,13 +52,13 @@ export class CurrencyConverter {
                 await this.updateRates();
             }
         } catch (error) {
-            Logger.warn('Failed to load cached rates, using defaults', error);
+            Logger.warning('Failed to load cached rates, using defaults', error);
         }
     }
     
     async updateRates() {
         if (!navigator.onLine) {
-            Logger.info('Offline - using cached rates');
+            Logger.data('Offline - using cached rates');
             return;
         }
         
@@ -92,7 +92,7 @@ export class CurrencyConverter {
             Logger.success('Currency rates updated successfully');
             
         } catch (error) {
-            Logger.warn('Failed to update currency rates', error);
+            Logger.warning('Failed to update currency rates', error);
             
             // Fallback: usar tasas aproximadas fijas
             this.rates = {
@@ -131,7 +131,7 @@ export class CurrencyConverter {
         const toUpper = to.toUpperCase();
         
         if (!this.rates[fromUpper] || !this.rates[fromUpper][toUpper]) {
-            Logger.warn(`Conversion rate not available: ${fromUpper} → ${toUpper}`);
+            Logger.warning(`Conversion rate not available: ${fromUpper} → ${toUpper}`);
             return amount; // Devolver cantidad original si no hay tasa
         }
         

@@ -590,17 +590,32 @@ export class BudgetManager {
                 
                 <!-- Resumen General Simplificado -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Presupuesto Total</p>
-                        <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="budget-total">${this.formatCurrency(this.calculateSubtotal(allExpenses), true)}</p>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">account_balance_wallet</span>
+                            <div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Presupuesto Total</p>
+                                <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="budget-total">${this.formatCurrency(this.calculateSubtotal(allExpenses), true)}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Gastado</p>
-                        <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="total-spent">${this.formatCurrency(stateManager.getState('expenses').reduce((sum, exp) => sum + (exp.amount || 0), 0), true)}</p>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-red-600 dark:text-red-400 text-3xl">trending_down</span>
+                            <div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Gastado</p>
+                                <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="total-spent">${this.formatCurrency(stateManager.getState('expenses').reduce((sum, exp) => sum + (exp.amount || 0), 0), true)}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-center p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Gastos Registrados</p>
-                        <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="expenses-count">${stateManager.getState('expenses').length}</p>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">receipt_long</span>
+                            <div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Gastos Registrados</p>
+                                <p class="text-2xl font-bold text-slate-900 dark:text-white" data-summary="expenses-count">${stateManager.getState('expenses').length}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 

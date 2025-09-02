@@ -54,29 +54,47 @@ export class TodayRenderer {
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
                         <div class="flex items-center gap-3 mb-6">
-                            <span class="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">trending_up</span>
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Progreso del Viaje</h3>
+                            <span class="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">trending_up</span>
+                            <div class="flex-1">
+                                <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Progreso del Viaje</h3>
+                                <p class="text-lg text-slate-600 dark:text-slate-400">Seguimiento de tu aventura</p>
+                            </div>
                         </div>
                     
                         <div class="space-y-4">
-                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-sm font-medium text-blue-800 dark:text-blue-200">Días completados</span>
-                                    <span class="text-xs text-blue-600 dark:text-blue-400" id="trip-progress-percentage">0%</span>
+                            <!-- Tarjeta de progreso principal -->
+                            <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <span class="material-symbols-outlined text-blue-500 dark:text-blue-400 text-3xl">timeline</span>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Días completados</p>
+                                        <p class="text-2xl font-bold text-slate-900 dark:text-white" id="trip-progress-percentage">0%</p>
+                                    </div>
                                 </div>
-                                <div class="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
-                                    <div id="progress-bar" class="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-standard" style="width: 0%"></div>
+                                <div class="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-3">
+                                    <div id="progress-bar" class="bg-blue-600 dark:bg-blue-400 h-3 rounded-full transition-standard" style="width: 0%"></div>
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-3 text-center">
-                                <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
-                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itinerary.data.length}</div>
-                                    <div class="text-xs text-slate-600 dark:text-slate-400">días totales</div>
+                            <!-- Tarjetas de métricas -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-green-500 dark:text-green-400 text-3xl">calendar_month</span>
+                                        <div>
+                                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Días totales</p>
+                                            <p class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itinerary.length}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
-                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="days-elapsed">0</div>
-                                    <div class="text-xs text-slate-600 dark:text-slate-400">días transcurridos</div>
+                                <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-orange-500 dark:text-orange-400 text-3xl">event_available</span>
+                                        <div>
+                                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Días transcurridos</p>
+                                            <p class="text-2xl font-bold text-slate-900 dark:text-white" id="days-elapsed">0</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -135,7 +153,7 @@ export class TodayRenderer {
             const today = stateManager.getCurrentDate();
             const tripStartDate = this.getTripStartDate();
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
-            const totalDays = tripConfig.itinerary.data.length;
+            const totalDays = tripConfig.itinerary.length;
             
             // Debug adicional para DaySimulator
             const isSimulating = window.DaySimulator && window.DaySimulator.isSimulating;
@@ -215,14 +233,14 @@ export class TodayRenderer {
                 today, 
                 tripStartDate, 
                 dayDiff, 
-                totalDays: tripConfig.itinerary.data.length,
+                totalDays: tripConfig.itinerary.length,
                 isSimulating,
                 simulatedDate,
                 realDate: new Date()
             });
             
-            if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.data.length) {
-                const currentDayData = tripConfig.itinerary.data[dayDiff];
+            if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.length) {
+                const currentDayData = tripConfig.itinerary[dayDiff];
                 const location = currentDayData.location;
                 
                 // Debug para clima
@@ -293,8 +311,8 @@ export class TodayRenderer {
                 return;
             }
             
-            if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.data.length) {
-                const currentDayData = tripConfig.itinerary.data[dayDiff];
+            if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.length) {
+                const currentDayData = tripConfig.itinerary[dayDiff];
                 
                 let activityIcon = 'hiking';
                 let activityType = 'Actividades del día';
@@ -399,7 +417,7 @@ export class TodayRenderer {
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                             <div class="bg-white dark:bg-slate-700 rounded-xl p-4">
-                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">${tripConfig.itinerary.data.length}</div>
+                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">${tripConfig.itinerary.length}</div>
                                 <div class="text-sm text-slate-600 dark:text-slate-400">días totales</div>
                             </div>
                             <div class="bg-white dark:bg-slate-700 rounded-xl p-4">
@@ -424,21 +442,21 @@ export class TodayRenderer {
     getTripStartDate() {
         try {
             // Primero intentar obtener la fecha desde calendarData
-            if (tripConfig.itinerary.tripStartDate) {
-                Logger.debug('📅 Using tripStartDate from itinerary:', tripConfig.itinerary.tripStartDate);
-                return new Date(tripConfig.itinerary.tripStartDate);
+            if (tripConfig.trip && tripConfig.trip.startDate) {
+                Logger.debug('📅 Using startDate from trip:', tripConfig.trip.startDate);
+                return new Date(tripConfig.trip.startDate);
             }
             
             // Fallback: calcular desde getFormattedStartDate si está disponible
-            if (tripConfig.itinerary.getFormattedStartDate && typeof tripConfig.itinerary.getFormattedStartDate === 'function') {
-                const startDateString = tripConfig.itinerary.getFormattedStartDate();
+            if (tripConfig.trip && typeof tripConfig.trip.getFormattedStartDate === 'function') {
+                const startDateString = tripConfig.trip.getFormattedStartDate();
                 Logger.debug('📅 Using getFormattedStartDate:', startDateString);
                 return new Date(startDateString);
             }
             
             // Fallback: usar primera fecha del itinerario si está disponible
-            if (tripConfig.itinerary.data && tripConfig.itinerary.data.length > 0) {
-                const firstDay = tripConfig.itinerary.data[0];
+            if (tripConfig.itinerary && tripConfig.itinerary.length > 0) {
+                const firstDay = tripConfig.itinerary[0];
                 if (firstDay.date) {
                     Logger.debug('📅 Using first day date from itinerary:', firstDay.date);
                     return new Date(firstDay.date);
@@ -446,12 +464,12 @@ export class TodayRenderer {
             }
             
             // Buscar la fecha del primer vuelo internacional (misma lógica que SummaryRenderer)
-            const firstInternationalFlight = tripConfig.flights.data.find(f => f.type === 'Internacional');
+            const firstInternationalFlight = tripConfig.flights.find(f => f.type === 'Internacional');
             if (firstInternationalFlight && firstInternationalFlight.segments && firstInternationalFlight.segments.length > 0) {
                 const firstSegment = firstInternationalFlight.segments[0];
                 // Extraer la fecha del string "9 de Octubre 22:45"
                 const departureDate = firstSegment.fromDateTime;
-                const year = tripConfig.itinerary.tripInfo.year; // Usar el año del tripConfig
+                const year = tripConfig.trip.year; // Usar el año del tripConfig
                 
                 // Parsear la fecha (ej. "9 de Octubre 22:45" en 2025)
                 const months = {

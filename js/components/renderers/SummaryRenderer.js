@@ -50,8 +50,8 @@ export class SummaryRenderer {
         Logger.ui('📊 Generating summary sections');
         
         // Calcular estadísticas dinámicamente
-        const totalDays = tripConfig.itineraryData.length;
-        const totalCountries = tripConfig.calendarData.getTotalCountries();
+        const totalDays = tripConfig.itinerary.length;
+        const totalCountries = tripConfig.trip.destinations.length;
         
         // Calcular presupuesto total y gastos reales dinámicamente
         const grandTotal = this.calculateTotalBudget();
@@ -61,35 +61,43 @@ export class SummaryRenderer {
         const costPerDay = Math.max(grandTotal, totalSpent) / totalDays;
 
         return `
-            <!-- Grid de Estadísticas (formato 2 filas: icono+número arriba, texto abajo) -->
+            <!-- Grid de Estadísticas (iconos a la izquierda como presupuesto) -->
             <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-                <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
-                    <div class="flex items-center justify-center gap-3 mb-2">
-                        <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-2xl">calendar_month</span>
-                        <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">${totalDays}</p>
+                <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-blue-500 dark:text-blue-400 text-3xl">calendar_month</span>
+                        <div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Días de aventura</p>
+                            <p class="text-2xl font-bold text-slate-900 dark:text-white">${totalDays}</p>
+                        </div>
                     </div>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm text-center">días de aventura</p>
                 </div>
-                <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
-                    <div class="flex items-center justify-center gap-3 mb-2">
-                        <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-2xl">public</span>
-                        <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">${totalCountries}</p>
+                <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-green-500 dark:text-green-400 text-3xl">public</span>
+                        <div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Países visitados</p>
+                            <p class="text-2xl font-bold text-slate-900 dark:text-white">${totalCountries}</p>
+                        </div>
                     </div>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm text-center">países visitados</p>
                 </div>
-                <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
-                    <div class="flex items-center justify-center gap-3 mb-2">
-                        <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-2xl">account_balance_wallet</span>
-                        <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">€${grandTotal.toFixed(0)}</p>
+                <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-purple-500 dark:text-purple-400 text-3xl">account_balance_wallet</span>
+                        <div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Presupuesto total</p>
+                            <p class="text-2xl font-bold text-slate-900 dark:text-white">€${grandTotal.toFixed(0)}</p>
+                        </div>
                     </div>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm text-center">presupuesto total</p>
                 </div>
-                <div class="bg-white dark:bg-slate-800 radius-card p-4 sm:p-6 shadow-card border border-slate-200 dark:border-slate-700">
-                    <div class="flex items-center justify-center gap-3 mb-2">
-                        <span class="material-symbols-outlined text-orange-600 dark:text-orange-400 text-2xl">trending_up</span>
-                        <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">€${costPerDay.toFixed(0)}</p>
+                <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-orange-500 dark:text-orange-400 text-3xl">trending_up</span>
+                        <div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Coste por día</p>
+                            <p class="text-2xl font-bold text-slate-900 dark:text-white">€${costPerDay.toFixed(0)}</p>
+                        </div>
                     </div>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm text-center">coste por día</p>
                 </div>
             </section>
 
@@ -119,8 +127,8 @@ export class SummaryRenderer {
         if (!mainContent) return;
 
         // Calcular estadísticas dinámicamente
-        const totalDays = tripConfig.itineraryData.length;
-        const totalCountries = tripConfig.calendarData.getTotalCountries();
+        const totalDays = tripConfig.itinerary.length;
+        const totalCountries = tripConfig.trip.destinations.length;
         
         // Calcular presupuesto total y gastos reales dinámicamente
         const grandTotal = this.calculateTotalBudget();
@@ -292,8 +300,8 @@ export class SummaryRenderer {
      */
     calculateTotalBudget() {
         try {
-            // Acceder a la estructura correcta: budgetData.budgetData
-            const budgetDataSource = stateManager.getState('config.tripConfig')?.budgetData?.budgetData || tripConfig?.budgetData?.budgetData || {};
+            // Acceder a la estructura correcta: budget.categories
+            const budgetDataSource = stateManager.getState('config.tripConfig')?.budget?.categories || tripConfig?.budget?.categories || {};
             let total = 0;
             
             // Sumar todas las categorías de presupuesto
@@ -394,7 +402,7 @@ export class SummaryRenderer {
             };
 
             // Contar actividades por categoría basándose en palabras clave
-            tripConfig.itineraryData.forEach(day => {
+            tripConfig.itinerary.forEach(day => {
                 const text = (day.title + ' ' + day.description).toLowerCase();
                 
                 if (text.includes('templo') || text.includes('monasterio') || text.includes('cultura') || text.includes('tradición')) {
@@ -444,7 +452,7 @@ export class SummaryRenderer {
             // Actualizar fechas del viaje
             const tripStartDate = this.getTripStartDate();
             const tripEndDate = new Date(tripStartDate);
-            tripEndDate.setDate(tripStartDate.getDate() + tripConfig.itineraryData.length - 1);
+            tripEndDate.setDate(tripStartDate.getDate() + tripConfig.itinerary.length - 1);
             
             const startDateFormatted = DateUtils.formatMediumDate(tripStartDate);
             const endDateFormatted = DateUtils.formatMediumDate(tripEndDate);
@@ -479,8 +487,8 @@ export class SummaryRenderer {
     getTripStartDate() {
         try {
             // 1. Intentar obtener desde datos de vuelos (fuente más confiable)
-            if (tripConfig.flightsData && tripConfig.flightsData.length > 0) {
-                const firstFlight = tripConfig.flightsData.find(f => f.type === 'Internacional' && f.title.includes('Ida'));
+            if (tripConfig.flights && tripConfig.flights.length > 0) {
+                const firstFlight = tripConfig.flights.find(f => f.type === 'Internacional' && f.title.includes('Ida'));
                 if (firstFlight && firstFlight.segments && firstFlight.segments.length > 0) {
                     const departureDate = firstFlight.segments[0].fromDateTime;
                     // Parsear "9 de Octubre 22:45" para obtener año actual
@@ -502,15 +510,15 @@ export class SummaryRenderer {
                 }
             }
             
-            // 2. Intentar desde calendarData
-            const calendarData = tripConfig.calendarData;
-            if (calendarData && calendarData.tripStartDate) {
-                return new Date(calendarData.tripStartDate);
+            // 2. Intentar desde trip data
+            const tripData = tripConfig.trip;
+            if (tripData && tripData.startDate) {
+                return new Date(tripData.startDate);
             }
             
             // 3. Intentar desde primer día del itinerario
-            if (tripConfig.itineraryData && tripConfig.itineraryData[0]) {
-                const firstDay = tripConfig.itineraryData[0];
+            if (tripConfig.itinerary && tripConfig.itinerary[0]) {
+                const firstDay = tripConfig.itinerary[0];
                 if (firstDay.date) {
                     return new Date(firstDay.date);
                 }
@@ -536,7 +544,7 @@ export class SummaryRenderer {
             const today = stateManager.getCurrentDate();
             const tripStartDate = this.getTripStartDate();
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
-            const totalDays = tripConfig.itineraryData.length;
+            const totalDays = tripConfig.itinerary.length;
             
             const daysCompletedElement = document.getElementById('days-completed');
             const tripStatusElement = document.getElementById('trip-status');
@@ -586,12 +594,12 @@ export class SummaryRenderer {
                 todayDateElement.textContent = todayFormatted;
             }
             
-            Logger.data(`📅 Today summary update`, { dayDiff, tripLength: tripConfig.itineraryData.length });
+            Logger.data(`📅 Today summary update`, { dayDiff, tripLength: tripConfig.itinerary.length });
 
             if (dayDiff < 0) {
                 // ANTES DEL VIAJE
                 this.renderPreTripSummary(container, Math.abs(dayDiff));
-            } else if (dayDiff >= 0 && dayDiff < tripConfig.itineraryData.length) {
+            } else if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.length) {
                 // DURANTE EL VIAJE
                 this.renderDuringTripSummary(container, dayDiff);
             } else {
@@ -610,20 +618,35 @@ export class SummaryRenderer {
      */
     renderPreTripSummary(container, daysUntil) {
         container.innerHTML = `
-            <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
-                <div class="flex items-center gap-3 mb-3">
-                    <span class="material-symbols-outlined text-orange-600 dark:text-orange-400">schedule</span>
-                    <h3 class="font-semibold text-orange-800 dark:text-orange-200">¡El viaje está por comenzar!</h3>
+            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-3xl text-orange-600 dark:text-orange-400">schedule</span>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">¡El viaje está por comenzar!</h3>
+                        <p class="text-lg text-slate-600 dark:text-slate-400">Preparativos finales</p>
+                    </div>
                 </div>
-                <p class="text-orange-700 dark:text-orange-300">
-                    Faltan <strong>${daysUntil} días</strong> para partir hacia el Himalaya. 
-                    Es momento de finalizar los preparativos y revisar el equipaje.
+                
+                <!-- Tarjeta de cuenta regresiva -->
+                <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-orange-500 dark:text-orange-400 text-3xl">event</span>
+                        <div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Días restantes</p>
+                            <p class="text-2xl font-bold text-slate-900 dark:text-white">${daysUntil}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-slate-700 dark:text-slate-300 mb-6">
+                    Es momento de finalizar los preparativos y revisar el equipaje para partir hacia el Himalaya.
                 </p>
-                <div class="mt-3 flex gap-2">
-                    <span class="px-2 py-1 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded text-sm">
+                
+                <div class="flex gap-2">
+                    <span class="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm font-medium">
                         ✈️ Vuelo confirmado
                     </span>
-                    <span class="px-2 py-1 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded text-sm">
+                    <span class="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm font-medium">
                         🎒 Revisar equipaje
                     </span>
                 </div>
@@ -635,45 +658,48 @@ export class SummaryRenderer {
      * 🏔️ RENDERIZAR RESUMEN DURANTE EL VIAJE
      */
     renderDuringTripSummary(container, dayIndex) {
-        const currentDay = tripConfig.itineraryData[dayIndex];
+        const currentDay = tripConfig.itinerary[dayIndex];
         if (!currentDay) return;
 
         const dayNumber = dayIndex + 1;
-        const totalDays = tripConfig.itineraryData.length;
+        const totalDays = tripConfig.itinerary.length;
         const progressPercentage = ((dayNumber - 1) / totalDays) * 100;
 
         container.innerHTML = `
-            <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-                <div class="flex items-center gap-3 mb-3">
-                    <span class="material-symbols-outlined text-green-600 dark:text-green-400">${currentDay.icon || 'hiking'}</span>
-                    <div>
-                        <h3 class="font-semibold text-green-800 dark:text-green-200">Día ${dayNumber} de ${totalDays}</h3>
-                        <p class="text-sm text-green-600 dark:text-green-400">${currentDay.title}</p>
+            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-3xl text-green-600 dark:text-green-400">${currentDay.icon || 'hiking'}</span>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Día ${dayNumber} de ${totalDays}</h3>
+                        <p class="text-lg text-slate-600 dark:text-slate-400">${currentDay.title}</p>
                     </div>
                 </div>
                 
-                <p class="text-green-700 dark:text-green-300 mb-3">
+                <p class="text-slate-700 dark:text-slate-300 mb-6">
                     ${currentDay.description}
                 </p>
                 
-                <!-- Barra de progreso -->
-                <div class="mb-3">
-                    <div class="flex justify-between text-xs text-green-600 dark:text-green-400 mb-1">
-                        <span>Progreso del viaje</span>
-                        <span>${Math.round(progressPercentage)}%</span>
+                <!-- Tarjeta de progreso -->
+                <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50 mb-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="material-symbols-outlined text-green-500 dark:text-green-400 text-3xl">trending_up</span>
+                        <div class="flex-1">
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Progreso del viaje</p>
+                            <p class="text-2xl font-bold text-slate-900 dark:text-white">${Math.round(progressPercentage)}%</p>
+                        </div>
                     </div>
-                    <div class="w-full bg-green-200 dark:bg-green-800 rounded-full h-2">
-                        <div class="bg-green-600 h-2 rounded-full transition-normal" 
+                    <div class="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-3">
+                        <div class="bg-green-600 h-3 rounded-full transition-normal" 
                              style="width: ${progressPercentage}%"></div>
                     </div>
                 </div>
 
                 <div class="flex gap-2">
-                    <span class="px-2 py-1 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded text-sm">
+                    <span class="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm font-medium">
                         📍 ${currentDay.location || 'En ruta'}
                     </span>
                     ${currentDay.country ? 
-                        `<span class="px-2 py-1 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded text-sm">
+                        `<span class="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm font-medium">
                             🏳️ ${currentDay.country}
                         </span>` : ''
                     }
@@ -687,21 +713,37 @@ export class SummaryRenderer {
      */
     renderPostTripSummary(container) {
         container.innerHTML = `
-            <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
-                <div class="flex items-center gap-3 mb-3">
-                    <span class="material-symbols-outlined text-purple-600 dark:text-purple-400">celebration</span>
-                    <h3 class="font-semibold text-purple-800 dark:text-purple-200">¡Viaje completado!</h3>
+            <div class="bg-white dark:bg-slate-800 radius-card shadow-card border border-slate-200 dark:border-slate-700 p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-3xl text-purple-600 dark:text-purple-400">celebration</span>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">¡Viaje completado!</h3>
+                        <p class="text-lg text-slate-600 dark:text-slate-400">Aventura finalizada</p>
+                    </div>
                 </div>
-                <p class="text-purple-700 dark:text-purple-300 mb-3">
+                
+                <!-- Tarjeta de celebración -->
+                <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-purple-500 dark:text-purple-400 text-3xl">emoji_events</span>
+                        <div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Estado del viaje</p>
+                            <p class="text-2xl font-bold text-slate-900 dark:text-white">100%</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-slate-700 dark:text-slate-300 mb-6">
                     Has completado tu increíble aventura por el Himalaya. 
                     ¡Seguro que tienes miles de recuerdos y experiencias únicas!
                 </p>
+                
                 <div class="flex gap-2">
-                    <span class="px-2 py-1 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded text-sm">
-                        ✅ ${tripConfig.itineraryData.length} días completados
-                    </span>
-                    <span class="px-2 py-1 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded text-sm">
+                    <span class="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm font-medium">
                         🏔️ Himalaya conquistado
+                    </span>
+                    <span class="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm font-medium">
+                        📸 Recuerdos únicos
                     </span>
                 </div>
             </div>

@@ -308,7 +308,7 @@ export class UIRenderer {
                             
                             <div class="grid grid-cols-2 gap-3 text-center">
                                 <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
-                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itinerary.data.length}</div>
+                                    <div class="text-2xl font-bold text-slate-900 dark:text-white" id="total-days">${tripConfig.itinerary.length}</div>
                                     <div class="text-xs text-slate-600 dark:text-slate-400">días totales</div>
                             </div>
                                 <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3">
@@ -439,7 +439,7 @@ export class UIRenderer {
             const today = stateManager.getCurrentDate();
             const tripStartDate = this.getTripStartDate();
             const dayDiff = Math.floor((today - tripStartDate) / (1000 * 60 * 60 * 24));
-            const totalDays = tripConfig.itinerary.data.length;
+            const totalDays = tripConfig.itinerary.length;
             
             const progressDaysElement = document.getElementById('progress-days');
             const progressBarElement = document.getElementById('progress-bar');
@@ -486,7 +486,7 @@ export class UIRenderer {
             
             let weatherHTML = '';
             
-            if (dayDiff < 0 || dayDiff >= tripConfig.itinerary.data.length) {
+            if (dayDiff < 0 || dayDiff >= tripConfig.itinerary.length) {
                 // Fuera del viaje
                 weatherHTML = `
                     <div class="text-center p-6 text-slate-600 dark:text-slate-400">
@@ -496,7 +496,7 @@ export class UIRenderer {
                 `;
             } else {
                 // Durante el viaje
-                const currentDayData = tripConfig.itinerary.data[dayDiff];
+                const currentDayData = tripConfig.itinerary[dayDiff];
                 const location = this.extractLocationFromDay(currentDayData);
                 const weatherData = this.getWeatherForLocation(location);
                 
@@ -534,7 +534,7 @@ export class UIRenderer {
             }
             
             weatherContainer.innerHTML = weatherHTML;
-            Logger.debug('Today weather updated for location:', this.extractLocationFromDay(tripConfig.itinerary.data[dayDiff] || {}));
+            Logger.debug('Today weather updated for location:', this.extractLocationFromDay(tripConfig.itinerary[dayDiff] || {}));
             
         } catch (error) {
             Logger.error('Error updating today weather:', error);
@@ -603,8 +603,8 @@ export class UIRenderer {
                 return;
             }
             
-            if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.data.length) {
-                const currentDayData = tripConfig.itinerary.data[dayDiff];
+            if (dayDiff >= 0 && dayDiff < tripConfig.itinerary.length) {
+                const currentDayData = tripConfig.itinerary[dayDiff];
                 Logger.debug(`📅 HOY DEBUG: dayDiff=${dayDiff}, accessing day ${dayDiff + 1}, data:`, currentDayData.title, `ID: ${currentDayData.id}`);
                 
                 // Determinar el icono y tipo de actividad
@@ -833,21 +833,22 @@ export class UIRenderer {
     getTripStartDate() {
         try {
             // Primero intentar obtener la fecha desde calendarData
-            if (tripConfig.itinerary.tripStartDate) {
-                Logger.debug('Using tripStartDate from itinerary:', tripConfig.itinerary.tripStartDate);
-                return new Date(tripConfig.itinerary.tripStartDate);
+            if (tripConfig.trip && tripConfig.trip.startDate) {
+                Logger.debug('Using startDate from trip:', tripConfig.trip.startDate);
+                return new Date(tripConfig.trip.startDate);
             }
             
             // Fallback: calcular desde getFormattedStartDate si está disponible
-            if (tripConfig.itinerary.getFormattedStartDate && typeof tripConfig.itinerary.getFormattedStartDate === 'function') {
-                const startDateString = tripConfig.itinerary.getFormattedStartDate();
+            // Fallback: usar método de formateo si existe
+            if (tripConfig.trip && tripConfig.trip.getFormattedStartDate && typeof tripConfig.trip.getFormattedStartDate === 'function') {
+                const startDateString = tripConfig.trip.getFormattedStartDate();
                 Logger.debug('Using getFormattedStartDate:', startDateString);
                 return new Date(startDateString);
             }
             
             // Fallback: usar primera fecha del itinerario si está disponible
-            if (tripConfig.itinerary.data && tripConfig.itinerary.data.length > 0) {
-                const firstDay = tripConfig.itinerary.data[0];
+            if (tripConfig.itinerary && tripConfig.itinerary.length > 0) {
+                const firstDay = tripConfig.itinerary[0];
                 if (firstDay.date) {
                     Logger.debug('Using first day date from itinerary:', firstDay.date);
                     return new Date(firstDay.date);
@@ -855,12 +856,12 @@ export class UIRenderer {
             }
             
             // Buscar la fecha del primer vuelo internacional (misma lógica que SummaryRenderer)
-            const firstInternationalFlight = tripConfig.flights.data.find(f => f.type === 'Internacional');
+            const firstInternationalFlight = tripConfig.flights.find(f => f.type === 'Internacional');
             if (firstInternationalFlight && firstInternationalFlight.segments && firstInternationalFlight.segments.length > 0) {
                 const firstSegment = firstInternationalFlight.segments[0];
                 // Extraer la fecha del string "9 de Octubre 22:45"
                 const departureDate = firstSegment.fromDateTime;
-                const year = tripConfig.itinerary.tripInfo.year; // Usar el año del tripConfig
+                const year = tripConfig.trip.year; // Usar el año del tripConfig
                 
                 // Parsear la fecha (ej. "9 de Octubre 22:45" en 2025)
                 const months = {
@@ -971,7 +972,7 @@ export class UIRenderer {
      * Mostrar modal de detalles del itinerario
      */
     showItineraryModal(dayId) {
-        const day = tripConfig.itinerary.data.find(d => d.id === dayId);
+        const day = tripConfig.itinerary.find(d => d.id === dayId);
         if (!day) {
             Logger.warning(`showItineraryModal not available for day: ${dayId}`);
             return;
@@ -1664,7 +1665,7 @@ export class UIRenderer {
             Logger.debug(`🔍 Looking for flights on: ${targetDateFormatted}`);
             
             // Buscar en todos los vuelos
-            for (const flight of tripConfig.flights.data) {
+            for (const flight of tripConfig.flights) {
                 if (flight.segments) {
                     for (const segment of flight.segments) {
                         if (segment.fromDateTime) {
@@ -1703,7 +1704,7 @@ export class UIRenderer {
             const monthIndex = months[monthName];
             
             if (monthIndex !== undefined) {
-                const year = tripConfig.itinerary.tripInfo?.year || 2025;
+                const year = tripConfig.trip?.year || 2025;
                 return new Date(year, monthIndex, day);
             }
             
@@ -1971,7 +1972,7 @@ export class UIRenderer {
         // Extraer información de alojamientos del tripConfig
         const accommodationsByLocation = {};
         
-        tripConfig.itinerary.data.forEach(day => {
+        tripConfig.itinerary.forEach(day => {
             if (day.accommodation && day.accommodation !== 'Vuelo nocturno') {
                 const location = this.extractLocationFromDay(day);
                 if (!accommodationsByLocation[location]) {

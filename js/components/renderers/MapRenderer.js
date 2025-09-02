@@ -138,7 +138,7 @@ export class MapRenderer {
     createItineraryMarkers() {
         const markers = [];
         
-        tripConfig.itineraryData.forEach(day => {
+        tripConfig.itinerary.forEach(day => {
             if (day.coords) {
                 const dayNumber = parseInt(day.id.replace('day-', ''));
                 const tripDate = this.getTripDate(dayNumber - 1);
@@ -417,8 +417,8 @@ export class MapRenderer {
      * @private
      */
     createNearbyPlaceMarkers(map, dayId) {
-        // Buscar el día en itineraryData y obtener sus places
-        const dayData = tripConfig.itineraryData.find(day => day.id === dayId);
+        // Buscar el día en itinerary y obtener sus places
+        const dayData = tripConfig.itinerary.find(day => day.id === dayId);
         const nearbyPlaces = dayData?.places || [];
         const markers = [];
         
@@ -456,7 +456,7 @@ export class MapRenderer {
         Logger.debug(`🎯 Adjusting modal map view for day: ${dayId}, coords:`, coords);
         
         // Obtener lugares específicos SOLO de este día
-        const dayData = tripConfig.itineraryData.find(day => day.id === dayId);
+        const dayData = tripConfig.itinerary.find(day => day.id === dayId);
         const dayPlaces = dayData?.places || [];
         const allDayCoords = []; 
         
