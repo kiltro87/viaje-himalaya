@@ -111,20 +111,17 @@ export class BudgetManager {
         };
         
         this.firebaseManager.onExpenseDeleted = (expenseId) => {
-            Logger.debug(`🔔 FirebaseManager onExpenseDeleted callback triggered for: ${expenseId}`);
             
             // 🔄 ACTUALIZAR ESTADO LOCAL: Remover el gasto eliminado
             const currentExpenses = stateManager.getState('expenses');
             const filteredExpenses = currentExpenses.filter(exp => exp.id !== expenseId);
             stateManager.updateState('expenses', filteredExpenses);
             
-            Logger.debug(`📊 State updated after delete: ${currentExpenses.length} → ${filteredExpenses.length} expenses`);
             
             // 🚀 ACTUALIZAR UI
             this.updateSummaryCards();
             this.showCategoryContent(); // Refresh category content if visible
             
-            Logger.debug(`✅ onExpenseDeleted callback completed successfully`);
         };
         
         this.firebaseManager.onSyncStatusChanged = (status) => {
@@ -331,7 +328,6 @@ export class BudgetManager {
         // 🚨 PREVENIR MÚLTIPLES LISTENERS
         if (this.realtimeUnsubscribe) {
             if (!Logger.isMobile) {
-                Logger.debug('Firebase listener exists, unsubscribing previous one');
             }
             this.realtimeUnsubscribe();
             this.realtimeUnsubscribe = null;
@@ -345,7 +341,6 @@ export class BudgetManager {
         }
         
         if (!Logger.isMobile) {
-            Logger.debug('Setting up NEW Firebase realtime listener');
         }
         
         // 🚨 DEBOUNCE para evitar actualizaciones demasiado frecuentes
@@ -353,7 +348,6 @@ export class BudgetManager {
         
         this.realtimeUnsubscribe = await this.firebaseManager.setupRealtimeListener((expenses) => {
             if (!Logger.isMobile) {
-                Logger.debug('🔥 DEBUG: Realtime callback triggered with', expenses.length, 'expenses');
             }
             Logger.budget(`Realtime update: ${expenses.length} expenses received`);
             
@@ -372,14 +366,12 @@ export class BudgetManager {
                     this.processFirebaseUpdate(expenses);
                 } else {
                     if (!Logger.isMobile) {
-                        Logger.debug('🔥 DEBUG: No changes detected, skipping UI update');
                     }
                 }
             }, 300); // Aumentado a 300ms para mejor rendimiento
         });
         
         if (!Logger.isMobile) {
-            Logger.debug('🔥 DEBUG: Realtime sync setup completed');
         }
     }
     
@@ -408,7 +400,6 @@ export class BudgetManager {
                 
                 stateManager.updateState('expenses', processedExpenses);
                 if (!Logger.isMobile) {
-                    Logger.debug('🔥 DEBUG: AppState.expenses REPLACED with', processedExpenses.length, 'expenses');
                 }
                 
                 // 🚨 NO GUARDAR EN LOCALSTORAGE - Firebase es la fuente de verdad
@@ -419,7 +410,6 @@ export class BudgetManager {
             // Actualizar UI si está visible
             if (document.getElementById('budget-container')) {
                 if (!Logger.isMobile) {
-                    Logger.debug('🔥 DEBUG: Updating budget UI...');
                 }
                 this.updateSummaryCards();
                 
@@ -429,7 +419,6 @@ export class BudgetManager {
                     const activeCategory = document.querySelector('.category-btn.active')?.dataset.category;
                     if (activeCategory) {
                         if (!Logger.isMobile) {
-                            Logger.debug('🔥 DEBUG: Updating category content for:', activeCategory);
                         }
                         this.showCategoryContent(activeCategory);
                     }
@@ -590,8 +579,6 @@ export class BudgetManager {
     }
 
     render(container, tripConfigParam) {
-        Logger.debug('💰 Renderizando presupuesto...');
-        Logger.debug('💰 BudgetManager.render called with container:', container);
         // Usar tripConfig importado si no se pasa como parámetro
         const tripConfigToUse = tripConfigParam || tripConfig;
         const budgetData = tripConfigToUse.budgetData.budgetData;
@@ -658,11 +645,9 @@ export class BudgetManager {
                     </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4" id="budget-category-filters">
                     ${(() => {
-                        Logger.debug('💰 Generating category buttons for:', allCategories);
                         return allCategories.map(cat => {
                         const icon = getBudgetCategoryIcon(cat);
                         const color = this.getCategoryColor(cat);
-                        Logger.debug(`🎨 Category: ${cat}, Icon: ${icon}, Color: ${color}`);
                         return `<button data-category="${cat}" class="budget-filter-btn group bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 cursor-pointer">
                             <div class="flex items-center gap-3 p-4">
                                 <span class="material-symbols-outlined text-2xl ${this.getVibrantCategoryColor(cat)} flex-shrink-0">${icon}</span>
@@ -738,7 +723,6 @@ export class BudgetManager {
                                 <div id="category-dropdown-list" class="fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-60 overflow-y-auto hidden" style="z-index: 99999 !important; min-width: 200px;">
                                     ${allCategories.map(cat => {
                                         const icon = getBudgetCategoryIcon(cat);
-                                        Logger.debug(`🎨 Dropdown Category: ${cat}, Icon: ${icon}`);
                                         return `
                                             <div class="category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-sm" data-value="${cat}">
                                                 <span class="material-symbols-outlined ${this.getVibrantCategoryColor(cat)}">${icon}</span>
@@ -1344,11 +1328,9 @@ export class BudgetManager {
                         e.preventDefault();
                         e.stopPropagation();
                         const expenseId = btn.dataset.expenseId;
-                        Logger.debug(`🗑️ Delete button clicked for expense ID: ${expenseId}`);
                         
                         if (confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
                             try {
-                                Logger.debug(`🔥 Calling Firebase deleteExpense for ID: ${expenseId}`);
                                 const deleteResult = await this.firebaseManager.deleteExpense(expenseId);
                                 
                                 if (!deleteResult) {
@@ -2034,6 +2016,5 @@ export class BudgetManager {
             });
         });
 
-        Logger.debug('✅ Budget form listeners configured');
     }
 }

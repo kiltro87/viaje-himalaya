@@ -258,13 +258,11 @@ export class FirebaseManager {
             const localExpenses = JSON.parse(localStorage.getItem('tripExpensesV1') || '[]');
             
             if (localExpenses.length > 0) {
-                Logger.debug('🔥 Checking if migration is needed...');
                 
                 // Verificar si ya hay datos en Firebase para evitar duplicación
                 const existingExpenses = await this.getAllExpenses();
                 
                 if (existingExpenses.length === 0) {
-                    Logger.debug('🔥 No existing Firebase data, proceeding with migration...');
                     Logger.data(`Migrating ${localExpenses.length} expenses from localStorage to Firebase`);
                     
                     for (const expense of localExpenses) {
@@ -276,7 +274,6 @@ export class FirebaseManager {
                     
                     Logger.success(`Successfully migrated ${localExpenses.length} expenses to Firebase`);
                 } else {
-                    Logger.debug('🔥 Firebase already has data, skipping migration to avoid duplicates');
                     Logger.data(`Skipping migration - Firebase already has ${existingExpenses.length} expenses`);
                 }
             }
@@ -295,19 +292,16 @@ export class FirebaseManager {
      */
     async addExpense(expense, triggerCallbacks = true) {
         if (!this.isMobile) {
-            Logger.debug('🔥 addExpense called', { expense, isConnected: this.isConnected });
         }
         
         if (!this.isConnected) {
             if (!this.isMobile) {
-                Logger.debug('🔥 Not connected, using localStorage');
             }
             return this.addExpenseLocal(expense);
         }
 
         try {
             if (!this.isMobile) {
-                Logger.debug('🔥 Importing Firestore modules...');
             }
             const { collection, addDoc, serverTimestamp } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
@@ -321,9 +315,6 @@ export class FirebaseManager {
             };
 
             if (!this.isMobile) {
-                Logger.debug('🔥 Expense data prepared:', expenseData);
-                Logger.debug('🔥 Database reference:', this.db);
-                Logger.debug('🔥 Collection name:', firestoreConfig.collections.expenses);
             }
 
             const docRef = await addDoc(collection(this.db, firestoreConfig.collections.expenses), expenseData);
@@ -399,7 +390,6 @@ export class FirebaseManager {
             if (!existingSnapshot.empty) {
                 // 🔄 YA EXISTE → Actualizar el documento existente
                 const existingDoc = existingSnapshot.docs[0];
-                Logger.debug('🔄 Documento existente encontrado, actualizando:', existingDoc.id);
                 
                 const updateData = {
                     ...updates,
@@ -412,7 +402,6 @@ export class FirebaseManager {
                 
             } else {
                 // 🆕 NO EXISTE → Crear nuevo con el ID como docId
-                Logger.debug('🆕 Creando nuevo documento con ID:', expenseId);
                 
                 const upsertData = {
                     // Datos base del gasto (para crear si no existe)
@@ -457,7 +446,6 @@ export class FirebaseManager {
      * @returns {Promise<boolean>} True si se eliminó correctamente
      */
     async deleteExpense(expenseId) {
-        Logger.debug(`🔥 Firebase deleteExpense called for ID: ${expenseId}`);
         
         if (!this.isConnected) {
             Logger.warning('Not connected to Firebase, using local delete');
@@ -468,31 +456,18 @@ export class FirebaseManager {
             const { doc, deleteDoc, getDoc, collection, getDocs } = 
                 await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
-            Logger.debug(`🔍 DELETE: Collection name: "${firestoreConfig.collections.expenses}"`);
-            Logger.debug(`🔍 DELETE: ExpenseId: "${expenseId}"`);
-            Logger.debug(`🔍 DELETE: Database:`, this.db);
             
             // CRITICAL TEST: Verificar si existe usando string literal
-            Logger.debug(`🧪 DELETE TEST: Using literal 'expenses' collection`);
             const testDocRef = doc(this.db, 'expenses', expenseId);
             const testDocSnap = await getDoc(testDocRef);
-            Logger.debug(`🧪 DELETE TEST RESULT: Document exists with literal = ${testDocSnap.exists()}`);
-            
-            if (testDocSnap.exists()) {
-                Logger.debug(`🧪 DOCUMENT DATA:`, testDocSnap.data());
-            }
             
             // ADDITIONAL TEST: Buscar documento en toda la colección
             const testCollectionRef = collection(this.db, 'expenses');
             const testCollectionSnap = await getDocs(testCollectionRef);
-            Logger.debug(`🧪 DELETE COLLECTION TEST: Found ${testCollectionSnap.size} total documents`);
-            
             // CRITICAL: Buscar el documento específico en toda la colección
             let foundDocument = false;
             let allDocumentIds = [];
             let documentsWithIdField = [];
-            
-            Logger.debug(`🔍 SCANNING ALL ${testCollectionSnap.size} DOCUMENTS:`);
             
             testCollectionSnap.forEach((doc) => {
                 const docId = doc.id;
@@ -504,19 +479,14 @@ export class FirebaseManager {
                     documentsWithIdField.push({firebaseId: docId, idField: docIdField});
                 }
                 
-                Logger.debug(`📄 Doc: firebaseId="${docId}", data.id="${docIdField || 'NONE'}", concept="${docData.concept || 'NONE'}"`);
                 
                 // Buscar tanto por Firebase ID como por campo ID
                 if (docId === expenseId || docIdField === expenseId) {
                     foundDocument = true;
                     Logger.success(`🎯 FOUND TARGET! firebaseId="${docId}", data.id="${docIdField}", target="${expenseId}"`);
-                    Logger.debug(`🎯 DOCUMENT DATA:`, docData);
                 }
             });
             
-            Logger.debug(`🔍 ALL FIREBASE IDs: ${allDocumentIds.join(', ')}`);
-            Logger.debug(`🔍 ALL ID FIELDS: ${documentsWithIdField.map(d => `${d.firebaseId}→${d.idField}`).join(', ')}`);
-            Logger.debug(`🔍 TARGET: "${expenseId}"`);
             
             if (!foundDocument) {
                 Logger.error(`🚨 CRITICAL: Target "${expenseId}" NOT FOUND in any document (firebase ID or id field)`);
@@ -541,17 +511,13 @@ export class FirebaseManager {
                 
                 // Usar el Firebase Document ID correcto
                 const docRef = doc(this.db, firestoreConfig.collections.expenses, correctFirebaseId);
-                Logger.debug(`🔍 DELETE: DocRef created with CORRECT Firebase ID: ${correctFirebaseId}`);
-                
                 const docSnap = await getDoc(docRef);
-                Logger.debug(`🔍 DELETE: getDoc executed with correct ID, exists = ${docSnap.exists()}`);
                 
                 if (!docSnap.exists()) {
                     Logger.error(`🚨 Even with correct Firebase ID, document not found: ${correctFirebaseId}`);
                     return false;
                 }
                 
-                Logger.debug(`✅ Document ${expenseId} exists, proceeding with delete using Firebase ID: ${correctFirebaseId}`);
             
             // Eliminar el documento usando el ID correcto
             await deleteDoc(docRef);
@@ -571,11 +537,8 @@ export class FirebaseManager {
             this.updateLocalStorage();
             
             if (this.onExpenseDeleted) {
-                Logger.debug(`🔔 Calling onExpenseDeleted callback for: ${expenseId}`);
                 this.onExpenseDeleted(expenseId);
-                Logger.debug(`🔔 onExpenseDeleted callback completed`);
             } else {
-                Logger.debug(`🔔 No onExpenseDeleted callback registered`);
             }
             
             return true;
