@@ -107,7 +107,7 @@ export const SHADOW = {
  */
 export const CARD_STYLES = {
     // Tarjeta principal estándar
-    PRIMARY: 'bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300',
+    PRIMARY: 'bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer',
     
     // Tarjeta de resumen/estadística
     SUMMARY: 'bg-slate-50 dark:bg-slate-700 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-600/50 p-4',

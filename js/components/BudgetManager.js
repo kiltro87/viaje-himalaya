@@ -569,8 +569,24 @@ export class BudgetManager {
      * @param {string} category - Nombre de la categoría
      * @returns {object} Objeto con todas las clases de color (bg, text, border)
      */
-    getCategoryColorSet(category) {
-        return getBudgetCategoryColors(category);
+    getCategoryColor(category) {
+        const colors = getBudgetCategoryColors();
+        return colors[category] || 'bg-slate-500';
+    }
+
+    getVibrantCategoryColor(category) {
+        const vibrantColors = {
+            'Transporte': 'text-orange-500',
+            'Tour': 'text-blue-500', 
+            'Comida y Bebida': 'text-green-500',
+            'Entradas y Visados': 'text-purple-500',
+            'Alojamiento': 'text-indigo-500',
+            'Varios': 'text-pink-500',
+            'Actividades': 'text-teal-500',
+            'Compras': 'text-amber-500',
+            'Emergencias': 'text-red-500'
+        };
+        return vibrantColors[category] || 'text-slate-500';
     }
 
     render(container, tripConfigParam) {
@@ -640,16 +656,18 @@ export class BudgetManager {
                             Análisis por Categorías
                         </h3>
                     </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3" id="budget-category-filters">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4" id="budget-category-filters">
                     ${(() => {
                         Logger.debug('💰 Generating category buttons for:', allCategories);
                         return allCategories.map(cat => {
                         const icon = getBudgetCategoryIcon(cat);
                         const color = this.getCategoryColor(cat);
                         Logger.debug(`🎨 Category: ${cat}, Icon: ${icon}, Color: ${color}`);
-                        return `<button data-category="${cat}" class="budget-filter-btn group flex items-center gap-3 p-4 text-left bg-white dark:bg-slate-800 radius-standard border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 transition-standard">
-                            <span class="material-symbols-outlined text-2xl ${color.replace('bg-', 'text-')} flex-shrink-0">${icon}</span>
-                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${cat}</span>
+                        return `<button data-category="${cat}" class="budget-filter-btn group bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 cursor-pointer">
+                            <div class="flex items-center gap-3 p-4">
+                                <span class="material-symbols-outlined text-2xl ${this.getVibrantCategoryColor(cat)} flex-shrink-0">${icon}</span>
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${cat}</span>
+                            </div>
                         </button>`;
                         });
                     })().join('')}
@@ -722,8 +740,8 @@ export class BudgetManager {
                                         const icon = getBudgetCategoryIcon(cat);
                                         Logger.debug(`🎨 Dropdown Category: ${cat}, Icon: ${icon}`);
                                         return `
-                                            <div class="category-option flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors" data-value="${cat}">
-                                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${icon}</span>
+                                            <div class="category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-sm" data-value="${cat}">
+                                                <span class="material-symbols-outlined ${this.getVibrantCategoryColor(cat)}">${icon}</span>
                                                 <span class="text-slate-900 dark:text-white">${cat}</span>
                                             </div>
                                         `;
@@ -735,7 +753,7 @@ export class BudgetManager {
                             <input type="hidden" id="expense-category" name="category" required>
                         </div>
                         <button type="submit" id="add-expense-btn"
-                                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold radius-standard shadow-card shadow-card-hover transition-standard flex items-center gap-2 whitespace-nowrap">
+                                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
                             <span class="material-symbols-outlined" id="add-btn-icon">add</span>
                             <span id="add-btn-text">Agregar</span>
                         </button>
@@ -988,9 +1006,9 @@ export class BudgetManager {
                 const categoryColor = this.getCategoryColor(cat);
                 
                 return `
-                    <div class="bg-white dark:bg-slate-800 radius-card shadow-card shadow-card-hover border border-slate-200 dark:border-slate-700 p-6 transition-standard">
-                        <div class="flex items-center gap-4 mb-4">
-                            <span class="material-symbols-outlined text-3xl ${categoryColor.replace('bg-', 'text-')}">${categoryIcon}</span>
+                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-center gap-4 mb-4 p-6 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+                            <span class="material-symbols-outlined text-3xl ${this.getVibrantCategoryColor(cat)}">${categoryIcon}</span>
                             <div class="flex-1">
                                 <h4 class="font-bold text-lg text-slate-900 dark:text-white">${cat}</h4>
                                 <div class="text-2xl font-bold text-slate-900 dark:text-white mt-1">
@@ -1003,7 +1021,7 @@ export class BudgetManager {
                         </div>
                         
                         <!-- Desglose Detallado -->
-                        <div class="space-y-4">
+                        <div class="space-y-4 p-6 pt-0">
                             ${catItems.length > 0 ? `
                             <div>
                                 <h5 class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3 flex items-center gap-2">
@@ -1078,7 +1096,7 @@ export class BudgetManager {
                                                                                     <div class="budget-inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-item-id="${subItemId}">
                                                                                         ${allCategories.map(category => `
                                                                                             <div class="budget-inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-xs" data-value="${category}" data-item-id="${subItemId}">
-                                                                                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${getBudgetCategoryIcon(category)}</span>
+                                                                                                <span class="material-symbols-outlined ${this.getVibrantCategoryColor(category)}">${getBudgetCategoryIcon(category)}</span>
                                                                                                 <span class="text-slate-900 dark:text-white">${category}</span>
                                                                                             </div>
                                                                                         `).join('')}
@@ -1158,7 +1176,7 @@ export class BudgetManager {
                                                                     <div class="budget-inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-item-id="${itemId}">
                                                                         ${allCategories.map(category => `
                                                                             <div class="budget-inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-sm" data-value="${category}" data-item-id="${itemId}">
-                                                                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${getBudgetCategoryIcon(category)}</span>
+                                                                                <span class="material-symbols-outlined ${this.getVibrantCategoryColor(category)}">${getBudgetCategoryIcon(category)}</span>
                                                                                 <span class="text-slate-900 dark:text-white">${category}</span>
                                                                             </div>
                                                                         `).join('')}
@@ -1235,7 +1253,7 @@ export class BudgetManager {
                                                             <div class="inline-category-dropdown hidden fixed bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 radius-standard shadow-card max-h-48 overflow-y-auto" style="z-index: 99999 !important; min-width: 200px;" data-expense-id="${exp.id}">
                                                                 ${allCategories.map(cat => `
                                                                     <div class="inline-category-option flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors text-sm" data-value="${cat}" data-expense-id="${exp.id}">
-                                                                        <span class="material-symbols-outlined text-slate-600 dark:text-slate-400">${getBudgetCategoryIcon(cat)}</span>
+                                                                        <span class="material-symbols-outlined ${this.getVibrantCategoryColor(cat)}">${getBudgetCategoryIcon(cat)}</span>
                                                                         <span class="text-slate-900 dark:text-white">${cat}</span>
                                                                     </div>
                                                                 `).join('')}
